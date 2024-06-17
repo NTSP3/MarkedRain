@@ -1,0 +1,364 @@
+# Configuration file for MarkedRain 
+
+mainmenu "Configuration"
+
+menu "Makefile customizations"
+    config bool_show_notice
+        bool "Display notice everytime make is run"
+        default y
+        help
+            Shows some information regarding auto-creation of directories 
+            in red colour at the start of the building process. Turn off
+            if you want to stop this from being shown again.
+
+    config bool_show_cmd
+        bool "Display all commands being sent to the terminal"
+        default n
+        help
+            Removes the '@' symbol from the start of every command,
+            effectively showing them in the terminal screen. Enable
+            this if you want to debug something or just need to have
+            a more verbose building process.
+
+    config bool_show_cmd_out
+        bool "Display all outputs of commands"
+        default y
+        help
+            Removes "> /dev/null" from the end of all commands,
+            making the output not redirect to void & showing them.
+            Enable it so you can see what the stuff called by make
+            are doing.
+
+    config val_common_struct
+        string "Common sections in Makefile to be run"
+        default "buildroot kernel final"
+        help
+            Write the names of sections in the Makefile that you
+            want to execute always. Do not edit unless you know
+            what you are doing.
+endmenu
+
+menu "Source configuration"
+    config src_dir
+        string "Project's source directory"
+        default "source"
+        help
+            The source directory contains all the files used to
+            build MarkedRain OS. If you renamed the folder, or
+            want to switch up the source files a bit, rename
+            this value too. Remember, the new source directory
+            must contain all of the stuff as the old one, like
+            "buildroot" and "configs".
+
+    config src_dir_buildroot
+        string "Buildroot source directory"
+        default "$(src_dir)/buildroot"
+        help
+            The buildroot source directory contains source
+            code for various buildroot utilites.
+
+    config src_dir_linux
+        string "Linux kernel directory (bzImage file)"
+        default "$(src_dir)/kernel/bzImage"
+        help
+            The linux kernel directory contains the kernel
+            image that's used in MRain OS. If you renamed
+            the kernel directory or the bzImage file,
+            change this value to point to that file.
+
+    config src_dir_conf
+        string "Configurations directory"
+        default "$(src_dir)/configs"
+        help
+            The configurations directory contains files
+            that are used for the compiling and using
+            procedures of the operating system.
+
+    config src_dir_scripts
+        string "Scripting directory"
+        default "$(src_dir)/scripts"
+        help
+            The scripting directory has scripts that are
+            used while making the operating system.
+
+    config bool_clean_start
+        bool "Wipe MRain output directory before compiling"
+        default n
+        help
+            Runs 'rm -rf' on the output directory, usually "bin/".
+            It deletes all previous files located in the output
+            directory of MRain, not on its source programs. Stuff
+            like "output/" in "source/buildroot" will not be
+            deleted. May take longer for the next make compilation
+            due to the deleting process, but it ensures there's no
+            leftovers from previous compilations.
+
+endmenu
+
+menu "Destination configuration"
+    config bool_auto_dir
+        bool "Remake directory structure before compiling"
+        default y
+        depends on !bool_clean_start
+        help
+            Creates the output directories specified before any
+            sort of building. Usually the output directory is
+            "bin/". This folder is made using "mkdir -p" so it
+            doesn't error out if it exists. This feature is
+            recommended to keep turned on.
+
+    config bin_dir
+        string "Main output directory"
+        default "bin"
+        help
+            The main output directory can be used as
+            a base for any variables, by default it's
+            bin_dir_iso and bin_dir_tmp. Editing this
+            will only cause the "bin" directory to be
+            changed to your liking & no harm to the
+            OS created.
+
+    config bin_dir_iso
+        string "Location & name to output the ISO image"
+        default "$(bin_dir)/boot.iso"
+        help
+            This variable contains the location and name
+            of the ISO file that will be made after the 
+            MRain OS finishes building.
+            The directory must already exist.
+
+    config bin_dir_tmp
+        string "Location to put temporary contents"
+        default "$(bin_dir)/temp"
+        help
+            This variable contains the location where
+            temporary files will reside. This location
+            is mostly used to put the stuff in it into
+            the iso image.
+
+    config val_dev_iso_size
+        int "Size of the iso image in megabytes"
+        default 200
+        depends on bool_use_sylin_exlin
+        help
+            Set the size of the null file used for the iso image
+            when Extlinux is used instead of GRUB. The value must
+            be in megabytes (MB). You cannot do something like
+            "100MB", only the "100" part is supported.
+
+endmenu
+
+menu "Operating System configuration"
+
+    menu "Bootloader configuration"
+        config bool_use_sylin_exlin
+            bool "Use syslinux instead of GRUB."
+            default n
+            help
+                By default, MRain uses the GNU/Grub bootloader.
+                However, the limitations imposed by the iso9660
+                filesystem makes the iso not writable from the
+                shell. Using syslinux, the fs is also changed to
+                ext4. This makes it writable. Use this option
+                for writability.
+
+        config val_grub-boot_default
+            int "Default entry to boot"
+            default 0
+            help
+                Specifies the default entry to be booted into in
+                GRUB and Extlinux. The iso image is probably
+                only going to have MRain in it, so set this to 0.
+
+        config val_grub-boot_timeout
+            int "Seconds before booting automatically"
+            default 0
+            help
+                Specifies the amount of time to wait in seconds
+                before automatically booting the entry specified
+                in "val_grub-boot_default".
+
+        if !bool_use_sylin_exlin
+            config val_grub-boot_resolution
+                string "Screen resolution to use on boot"
+                default "1024x768"
+                help
+                    The string entered in the format <width>x<height>x<depth> is
+                    used as the screen resolution for linux in the booting process.
+                    Beware, there are only a handful of resolutions supported,
+                    "1024x768" being one of them - not too big, not too small.
+                    That's what she didn't say.
+        endif
+
+        if bool_use_sylin_exlin
+            choice
+                prompt "Extlinux VGA mode to use on boot"
+                default syslinux-vga_792
+                help
+                    The VGA Modes are used to determine the screen resolution
+                    and colour depth used while the system is booting in
+                    Syslinux.
+
+                config syslinux-vga_771
+                    bool "771 (800x600x8)"
+                    help
+                        Sets the VGA mode to 771, which corresponds to
+                        a screen resolution of 800x600 with 8-bit color depth.
+
+                config syslinux-vga_788
+                    bool "788 (800x600x16)"
+                    help
+                        Sets the VGA mode to 788, which corresponds to
+                        a screen resolution of 800x600 with 16-bit color depth.
+
+                config syslinux-vga_789
+                    bool "789 (800x600x24)"
+                    help
+                        Sets the VGA mode to 789, which corresponds to
+                        a screen resolution of 800x600 with 24-bit color depth.
+
+                config syslinux-vga_773
+                    bool "773 (1024x768x8)"
+                    help
+                        Sets the VGA mode to 773, which corresponds to
+                        a screen resolution of 1024x768 with 8-bit color depth.
+
+                config syslinux-vga_791
+                    bool "791 (1024x768x16)"
+                    help
+                        Sets the VGA mode to 791, which corresponds to
+                        a screen resolution of 1024x768 with 16-bit color depth.
+
+                config syslinux-vga_792
+                    bool "792 (1024x768x24)"
+                    help
+                        Sets the VGA mode to 792, which corresponds to
+                        a screen resolution of 1024x768 with 24-bit color depth.
+
+                config syslinux-vga_353
+                    bool "353 (1182x864x8)"
+                    help
+                        Sets the VGA mode to 353, which corresponds to
+                        a screen resolution of 1182x864 with 8-bit color depth.
+
+                config syslinux-vga_355
+                    bool "355 (1182x864x16)"
+                    help
+                        Sets the VGA mode to 355, which corresponds to
+                        a screen resolution of 1182x864 with 16-bit color depth.
+
+                config syslinux-vga_775
+                    bool "775 (1280x1024x8)"
+                    help
+                        Sets the VGA mode to 775, which corresponds to
+                        a screen resolution of 1280x1024 with 8-bit color depth.
+
+                config syslinux-vga_794
+                    bool "794 (1280x1024x16)"
+                    help
+                        Sets the VGA mode to 794, which corresponds to
+                        a screen resolution of 1280x1024 with 16-bit color depth.
+
+                config syslinux-vga_795
+                    bool "795 (1280x1024x24)"
+                    help
+                        Sets the VGA mode to 795, which corresponds to
+                        a screen resolution of 1280x1024 with 24-bit color depth.
+
+                config syslinux-vga_796
+                    bool "796 (1600x1200x8)"
+                    help
+                        Sets the VGA mode to 796, which corresponds to
+                        a screen resolution of 1600x1200 with 8-bit color depth.
+
+                config syslinux-vga_798
+                    bool "798 (1600x1200x16)"
+                    help
+                        Sets the VGA mode to 798, which corresponds to
+                        a screen resolution of 1600x1200 with 16-bit color depth.
+
+                config syslinux-vga_799
+                    bool "799 (1600x1200x24)"
+                    help
+                        Sets the VGA mode to 799, which corresponds to
+                        a screen resolution of 1600x1200 with 24-bit color depth.
+            endchoice
+        endif
+
+        config val_grub-entry-one_name
+            string "Distribution name in bootloader"
+            default "MarkedRain Linux "
+            help
+                The name that gets displayed on booting as the first entry's
+                name. Will not get seen if timeout is zero, or the menu is
+                hidden for whatever reason.
+
+        config val_grub-entry-one_li_root
+            string "Device to mount as root"
+            default "/dev/sda"
+            help
+                This is the device that the linux kernel mounts as
+                root during boot as "root=<value>". Do not change
+                unless you are having problems relating to root.
+
+        config val_grub-entry-one_li_params
+            string "Additional parameters to pass to kernel"
+            default "rw"
+            help
+                The options here will get passed into kernel,
+                after everything before it like "root=/dev".
+                Seperate all options with spaces, like
+                "quiet rw"
+    endmenu
+
+    config sys_dir_sys
+        string "System directory"
+        default "/System"
+        help
+            Enter the location of the system directory.
+            This value can be used in Makefile using
+            $(sys_dir_sys). This directory houses most
+            important files that are used by MRain OS.
+
+    config sys_dir_linux
+        string "Linux kernel location & name in the final iso"
+        default "$(sys_dir_sys)/base/kernel"
+        help
+            Enter the location to copy the linux kernel into in the iso
+            image. This value would also be used to determine the kernel's
+            location from the grub or extlinux config file.
+
+    comment "Other configurations"
+
+
+endmenu
+
+menu "Utilities"
+    config util_vm
+        string "Virtualization software"
+        default "qemu-system-x86_64"
+        help
+            The VM software is used to run the iso image created with
+            make. If you change this to anything other than QEMU, change
+            the parameters too to make it work with that software.
+
+    config util_vm_params
+        string "Parameters to be sent to the Virtualization software"
+        default "-m 256M"
+        help
+            These parameters will be directly sent to the VM software
+            by appending it to the end of its filename. Different
+            VM software may have different ways of interpreting the 
+            same thing, so do your research before modifying this.
+            Though, no harm if you edit this. Just reset it.
+
+    config util_sylin
+        string "Application used to create syslinux bootloader"
+        depends on bool_use_sylin_exlin
+        default "extlinux"
+        help
+            This variable holds the name of the application used
+            to build the bootloader used by Syslinux. By default,
+            the image filesystem is Ext4, so the application used
+            is extlinux.
+endmenu

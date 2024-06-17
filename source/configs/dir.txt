@@ -1,0 +1,32 @@
+# Uses script "mk_sys_dir.sh"
+# 20th of May, 2024 21:00
+#
+# This file contains the folders to be created during
+# the making of MarkedRain Operating System. The format
+# is as follows:
+#
+#       root/<directory>
+#
+# where "directory" is the name of the dir you want to
+# create. All entries must begin with "root". It will get
+# replaced with whatever the root directory is, as
+# defined in the makefile "bin_dir_raw" variable.
+#
+# Directores with spaces in them should look like this:
+#
+#       root/hello world with spaces
+#
+# You don't need to put quotes or do anything extra.
+# That also means you cannot put comments following
+# any folder entries, else they would be treated as
+# part of the folder's name.
+#
+
+root/
+root/boot
+root/boot/grub
+root/boot/syslinux
+root/System
+root/System/base
+root/System/global
+root/System/rootfs

@@ -1,0 +1,364 @@
+# Ancient makefile without menuconfig - last edited 29-5-2024 @ 4:43 pm - its heavy raining here guys!
+#
+# The following is the old code:
+
+#==--[ Makefile for MRainOS - Linux based ]--==#
+# ---[ Makefile variable configuration ]--- #
+#  --[ Boolean values (true/false) ]--  #
+bool_show_notice=true#                         # Set to "true" if you want to show notice.
+bool_clean_start=false#                        # Set to "true" if you want make to delete the output directory of MRain everytime you compile it
+bool_auto_dir=true#                            # Set to "true" if you want to auto-create the fsdirs always (Overridden by bool_clean_start)
+bool_show_cmd=false#                           # Set to "true" to show commands (excluding echoes) being sent to the tty
+bool_show_cmd_out=true#                        # Set to "true" to show the output of commands ("false" only supresses MOST of the outputs, not ALL.)
+bool_use_sylin_exlin=true#                     # Set to "true" if you want to use Syslinux/Extlinux instead of GNU/GRUB
+bool_del_tmp_dir=true#                         # (not really needed when clean start exists) Set to "true" to delete the temporary directory's contents after make finishes building
+#  --[ Generic values (alpha-numerical) ]--  #
+val_common_struct=buildroot kernel config final
+                                               # Common structures (if you added a new section to makefile that has to be run before making iso, put it here!!!)
+val_dev_iso_size=200#                          # The size of initial null file used for ext/syslinux (developer). Value is in megabytes, i.e., if this is set to "600", a 600MB file gets created.
+#val_cpuproc=4#                                # (not needed, we use buildroot) Number of CPU processors (used for busybox)
+val_current_dir=$(shell pwd)#                  # Gets the current working directory
+#  --[ Bootloader configuration ]--  #
+val_grub-boot_default=0#                       # The default entry gnu-grub would automatically select
+val_grub-boot_timeout=5#                       # The default timeout for gnu-grub before booting automatically
+val_grub-boot_resolution=1024x768#             # The screen resolution gnu-grub sets the display to
+val_grub-entry-one_name=MarkedRain Linux #     # The first entry's name
+#val_grub-entry-one_root=hd0#                  # The first entry's device to select as root (not needed if the only os is mrain) (If you uncomment this, uncomment the line where it echoes this into grub.cfg in the config section)
+val_grub-entry-one_li_kernel=/$(sys_dir_base)/$(sys_name_linux)
+                                               # The linux kernel of the first entry
+val_grub-entry-one_li_root=/dev/sda#           # The device to mount as root in linux
+val_grub-entry-one_li_params=rw#               # The parameters to be sent to the kernel on boot
+val_sylin-entry-one_li_vga_mode=792#           # The VGA mode Extlinux will use on booting
+#  --[ Null variables (assignable in later code) ]--  #
+val_nul_mkfile_variables=#                     # Makefile variables that will be used in all make instructions
+val_nul_mkfile_default=#                       # Customizable variable used to hold default mkfile structure
+val_nul_ttyopt=#                               # Customizable variable used to determine whether to show/hide commands being sent to the tty
+val_nul_ttycmd=@#                              # Customizable variable used to show/hide commands being sent to the tty (@ is here to hide cmds being shown in 'make clean' and stuff)
+val_nul_outopt=#                               # Customizable variable used to determine whether to show/hide command outputs
+val_nul_outcmd=#                               # Customizable variable used to show/hide command outputs
+val_nul_superuser=#                            # Customizable variable used to request sudo for every file operations
+
+# ---[ Source configuration ]--- #
+#  --[ Directories ]-- #
+src_dir=source#                                # Project directory
+src_dir_linux=$(src_dir)/kernel#               # Source dir of the kernel
+src_dir_busybox=$(src_dir)/busybox#            # Source dir of busybox
+src_dir_buildroot=$(src_dir)/buildroot#        # Source dir of buildroot
+src_dir_conf=$(src_dir)/configs#               # Source dir of configuration files
+src_dir_scripts=$(src_dir)/scripts#            # Source dir of script files
+#  --[ Namings ]-- #
+src_name_linux=bzImage#                        # Source filename of the kernel
+src_name_grubconf=grub.cfg#                    # Source filename of GNU Grub configuration
+src_name_dirconf=dir.txt#                      # Source filename of directory configuration
+src_name_envconf=environment.txt#              # Source filename of environment configuration
+src_name_script_dir=mk_sys_dir.sh#             # Source filename of directory script
+src_name_script_get=get_sys_dir.sh#            # Source filename of variable capture script
+#src_name_linuxinit=init#                      # Source filename of Linux bash initialization file
+
+# ---[ System configuration ]--- #
+#  --[ Directories ]-- # Defined in environment.txt, not here!!!
+sys_dir_boot=$(shell $(rsh_get_script) boot_directory $(rsh_env_conf))
+                                               # System directory for boot configs
+sys_dir_grub=$(sys_dir_boot)/$(shell $(rsh_get_script) boot_grub $(rsh_env_conf))
+                                               # System directory for grub boot configs
+sys_dir_sylin=$(sys_dir_boot)/$(shell $(rsh_get_script) boot_sylin $(rsh_env_conf))
+                                               # System directory for syslinux boot configs
+sys_dir_exlin=$(sys_dir_boot)/$(shell $(rsh_get_script) boot_exlin $(rsh_env_conf))
+                                               # System directory for extlinux boot configs
+sys_dir_sys=$(shell $(rsh_get_script) system_directory $(rsh_env_conf))#
+                                               # System directory for root system files
+sys_dir_base=$(sys_dir_sys)/$(shell $(rsh_get_script) system_base $(rsh_env_conf))
+                                               # System directory for base system files (eg. kernel)
+#  --[ Namings ]-- #
+sys_name_linux=kernel#                         # System filename of the kernel
+#sys_name_init=init.cpio#                      # System filename of initramfs
+
+# ---[ Output configuration ]--- #
+#  --[ Directories ]-- #
+#bin_dir_raw=bin/extract#                      # Old output directory
+bin_dir_tmp=bin/temp#                          # Output directory for temporary files & extracted iso image
+bin_dir_iso=bin#                               # Output directory for iso image
+#bin_dir_boot=$(bin_dir_tmp)/$(sys_dir_boot)#  # Output directory for boot files
+#bin_dir_grub=$(bin_dir_tmp)/$(sys_dir_grub)#  # Output directory for grub boot files
+#bin_dir_sys=$(bin_dir_tmp)/$(sys_dir_sys)#    # Output directory for system files
+#bin_dir_base=$(bin_dir_tmp)/$(sys_dir_base)#  # Output directory for base sys files
+#  --[ Namings ]-- #
+bin_name_iso=boot.iso#                         # Output filename of the iso image
+
+# ---[ Utilities ]--- #
+#util_make=make#                               # Tool used to compile additional sources using Makefiles
+util_sylin=extlinux#                           # Tool used to make iso bootable (syslinux stuff: either syslinux or extlinux (if filesystem is ext))
+util_vm=qemu-system-x86_64#                    # Tool used to run iso image
+util_vm_params=-m 256M#                        # Parameters to be sent to the vm (cdrom param must be at last if you are booting from cdrom!)
+
+# +++[ Random shortners (no need to be changed) ]+++ #
+rsh_grub_conf=$(bin_dir_tmp)/$(sys_dir_grub)/grub.cfg
+rsh_sylin_conf=$(bin_dir_tmp)/$(sys_dir_sylin)/syslinux.cfg
+rsh_exlin_conf=$(bin_dir_tmp)/$(sys_dir_exlin)/syslinux.cfg
+rsh_env_conf=$(src_dir_conf)/$(src_name_envconf)
+rsh_get_script=$(src_dir_scripts)/$(src_name_script_get)
+
+# +++ Phony +++ #
+.PHONY: all setvars test notice dirs buildroot kernel busybox config final rm_tmp iso run runs clean dev_setcmd_show dev_iso_sylin_one dev_iso_sylin_two yo
+
+# --- Default --- #
+all: setvars
+	@echo "\e[92m"
+	@echo "    -------------------------------------------------------------------------------"
+	@echo "    // The iso is now ready. You can find it in '$(bin_dir_iso)/$(bin_name_iso)' //"
+	@echo "    // If you want to run this iso image now, use 'make run' //"
+	@echo "    // If you want to automatically open the iso in $(util_vm), use 'make runs' //"
+	@echo "\e[0m"
+
+# --- Variable Construction --- #
+setvars:
+	@echo ""
+	@echo "\e[36m               +++++++++++++++++ MRain Operating System +++++++++++++++++               \e[0m"
+    ifeq ($(bool_show_cmd), true)
+	    @echo "\e[32m               !**     ShowCommand (bool_show_cmd) is set to true     **!               \e[0m"
+	    $(eval val_nul_ttyopt = dev_setcmd_show)
+	    $(eval val_nul_ttycmd := )
+    else
+	    @echo "\e[91m               !**        ShowCommand (bool_show_cmd) is false        **!               \e[0m"	
+    endif
+    ifeq ($(bool_show_cmd_out), true)
+	    @echo "\e[32m               !**  ShowAppOutput (bool_show_cmd_out) is set to true  **!               \e[0m"
+    else
+	    @echo "\e[91m               !**     ShowAppOutput (bool_show_cmd_out) is false     **!               \e[0m"	
+		$(eval val_nul_outopt = dev_setcmd_show_out)
+	    $(eval val_nul_outcmd = > /dev/null)
+	    $(eval val_nul_mkfile_variables += --no-print-directory)
+    endif
+    ifeq ($(bool_show_notice), true)
+	    @echo "\e[32m               !**    ShowNotice (bool_show_notice) is set to true    **!               \e[0m"
+		$(val_nul_ttycmd)$(MAKE) $(val_nul_ttyopt) $(val_nul_outopt) notice $(val_nul_mkfile_variables)
+    else
+	    @echo "\e[91m               !**       ShowNotice (bool_show_notice) is false       **!               \e[0m"
+    endif
+    ifeq ($(bool_use_sylin_exlin), true)
+	    @echo "\e[32m           (1) !** BootSyslinux (bool_use_sylin_exlin) is set to true **! (1)           \e[0m"
+	    @echo "\e[36m               !**          BootSyslinux: Calling CleanStart          **!               \e[0m"
+	    $(val_nul_ttycmd)$(MAKE) $(val_nul_ttyopt) $(val_nul_outopt) clean $(val_nul_mkfile_variables)
+	    @echo "\e[32m    // Creating '$(bin_dir_iso)' & '$(bin_dir_tmp)' //\e[0m"
+	    $(val_nul_ttycmd)mkdir -p $(bin_dir_iso) $(bin_dir_tmp)
+	    @echo "\e[36m               !**           BootSyslinux: Calling part one           **!               \e[0m"
+	    $(val_nul_ttycmd)$(MAKE) $(val_nul_ttyopt) $(val_nul_outopt) dev_iso_sylin_one $(val_nul_mkfile_variables)
+	    @echo "\e[32m    // Updating superuser variable //\e[0m"
+	    $(eval val_nul_superuseropt = dev_use_sudo)
+	    $(eval val_nul_superuser = sudo )
+	    @echo "\e[1;30;41m    !! From this point on, you may get more requests for admin privileges !!    \e[0m"
+	    @echo "\e[36m               !**        BootSyslinux - Calling Autodirectory        **!               \e[0m"
+	    $(val_nul_ttycmd)$(MAKE) $(val_nul_ttyopt) $(val_nul_outopt) $(val_nul_superuseropt) dirs $(val_nul_mkfile_variables)
+    else
+	    @echo "\e[91m           (1) !**    BootSyslinux (bool_use_sylin_exlin) is false    **! (1)           \e[0m"
+        ifeq ($(bool_clean_start), true)
+	        @echo "\e[32m               !**    CleanStart (bool_clean_start) is set to true    **!               \e[0m"
+	        $(val_nul_ttycmd)$(MAKE) $(val_nul_ttyopt) $(val_nul_outopt) clean $(val_nul_mkfile_variables)
+	        @echo "\e[36m               !**         CleanStart - Calling Autodirectory         **!               \e[0m"
+	        $(val_nul_ttycmd)$(MAKE) $(val_nul_ttyopt) $(val_nul_outopt) dirs $(val_nul_mkfile_variables)
+        else
+	        @echo "\e[91m               !**       CleanStart (bool_clean_start) is false       **!               \e[0m"	
+            ifeq ($(bool_auto_dir), true)
+	            @echo "\e[32m               !**    Autodirectory (bool_auto_dir) is set to true    **!               \e[0m"
+	            $(val_nul_ttycmd)$(MAKE) $(val_nul_ttyopt) $(val_nul_outopt) dirs $(val_nul_mkfile_variables)
+            else
+	            @echo "\e[91m               !**       Autodirectory (bool_auto_dir) is false       **!               \e[0m"
+            endif
+        endif
+    endif
+	@echo "\e[36m               !**        Executing common structural sections        **!               \e[0m"
+	$(val_nul_ttycmd)$(MAKE) $(val_nul_ttyopt) $(val_nul_outopt) $(val_nul_superuseropt) $(val_common_struct) $(val_nul_mkfile_variables)
+    ifeq ($(bool_use_sylin_exlin), true)
+	    @echo "\e[32m           (2) !** BootSyslinux (bool_use_sylin_exlin) is set to true **! (2)           \e[0m"
+	    $(val_nul_ttycmd)$(MAKE) $(val_nul_ttyopt) $(val_nul_outopt) $(val_nul_superuseropt) dev_iso_sylin_two $(val_nul_mkfile_variables)
+    else
+	    @echo "\e[91m           (2) !**    BootSyslinux (bool_use_sylin_exlin) is false    **! (2)           \e[0m"
+	    @echo "\e[36m               !**           Executing Makefile to use grub           **!               \e[0m"
+	    $(val_nul_ttycmd)$(MAKE) $(val_nul_ttyopt) $(val_nul_outopt) iso $(val_nul_mkfile_variables)
+    endif
+    ifeq ($(bool_del_tmp_dir), true)
+	    @echo "\e[32m               !**RemoveTmpDirectory (bool_del_tmp_dir) is set to true**!               \e[0m"
+	    $(val_nul_ttycmd)$(MAKE) $(val_nul_ttyopt) $(val_nul_outopt) rm_tmp $(val_nul_mkfile_variables)
+    else
+	    @echo "\e[91m               !**   RemoveTmpDirectory (bool_del_tmp_dir) is false   **!               \e[0m"
+    endif
+
+# --- Notice --- #
+notice:
+	@echo "\e[91m"
+	@echo "    ------------------------------------"
+	@echo "    \/ MRAIN-LINUX COMPILATION SCRIPT \/"
+	@echo "     ++++++++++++++++++++++++++++++++++"
+	@echo ""
+	@echo "    If this is your first time compiling, or the output directories:"
+	@echo "    '$(bin_dir_iso)', '$(bin_dir_tmp)' and its sub-dirs doesn't exist, run this:"
+	@echo ""
+	@echo "        make dirs"
+	@echo ""
+	@echo "    and then run Makefile again. You can also use 'make clean' to delete those dirs."
+	@echo ""
+	@echo "    If you configured the makefile to auto-create all dirs everytime, you can ignore this message by"
+	@echo "    setting the variable 'bool_show_notice' to false in the Makefile."
+	@echo ""
+	@echo "     ++++++++++++++++++++++++++++++++++"
+	@echo "    /\ MRAIN-LINUX COMPILATION SCRIPT /\ "
+	@echo "    ------------------------------------\e[0m"
+	@echo ""
+
+# --- Directories --- #
+dirs:
+	@echo ""
+	@echo "\e[32m    // Creating directories //\e[0m"
+	$(val_nul_ttycmd)$(val_nul_superuser)mkdir -p $(bin_dir_iso) $(bin_dir_tmp)
+	$(val_nul_ttycmd)$(val_nul_superuser)$(src_dir_scripts)/$(src_name_script_dir) $(src_dir_conf)/$(src_name_dirconf) $(bin_dir_tmp) $(val_nul_outcmd)
+#	$(bin_dir_tmp)/$(sys_dir_boot) $(bin_dir_tmp)/$(sys_dir_grub) $(bin_dir_tmp)/$(sys_dir_sylin) $(bin_dir_tmp)/$(sys_dir_exlin) $(bin_dir_tmp)/$(sys_dir_sys) $(bin_dir_tmp)/$(sys_dir_base) 
+#	$(val_nul_ttycmd)mkdir -p $(bin_dir_tmp)/var $(bin_dir_tmp)/etc $(bin_dir_tmp)/root $(bin_dir_tmp)/tmp $(bin_dir_tmp)/dev $(bin_dir_tmp)/proc
+#	$(val_nul_ttycmd)mkdir -p $(bin_dir_tmp)/initramfs
+	@echo ""
+
+# --- Buildroot --- #
+buildroot:
+	@echo ""
+	@echo "\e[95m    // Compiling Buildroot //\e[0m"
+	$(val_nul_ttycmd)$(MAKE) -C $(src_dir_buildroot) $(val_nul_outcmd)
+#	@echo ""
+#	@echo "\e[95m    // Creating temporary directory //\e[0m"
+#	$(val_nul_ttycmd)mkdir -p $(bin_dir_tmp)/rootfs
+#	@echo ""
+#	@echo "\e[95m    // Extracting rootfs archive to '$(bin_dir_tmp)/rootfs' //\e[0m"
+#	$(val_nul_ttycmd)tar xf $(src_dir_buildroot)/output/images/rootfs.tar -C $(bin_dir_tmp)/rootfs $(val_nul_outcmd)
+#	@echo ""
+#	@echo "\e[95m    // Copying rootfs into '$(bin_dir_tmp)' //\e[0m"
+#	$(val_nul_ttycmd)cp -r $(bin_dir_tmp)/rootfs/* $(bin_dir_tmp) $(val_nul_outcmd)
+	@echo ""
+	@echo "\e[95m    // Extracting rootfs archive to '$(bin_dir_tmp)' //\e[0m"
+	$(val_nul_ttycmd)$(val_nul_superuser)tar xf $(src_dir_buildroot)/output/images/rootfs.tar -C $(bin_dir_tmp) $(val_nul_outcmd)
+
+# --- Kernel --- #
+kernel:
+	@echo ""
+	@echo "\e[95m    // Copying linux into '$(bin_dir_tmp)/$(sys_dir_base)' //\e[0m"
+	$(val_nul_ttycmd)$(val_nul_superuser)cp $(src_dir_linux)/$(src_name_linux) $(bin_dir_tmp)/$(sys_dir_base)/$(sys_name_linux) $(val_nul_outcmd)
+
+# --- Busybox --- #
+busybox:
+	@echo ""
+	@echo "\e[95m    // Compiling BusyBox //\e[0m"
+	$(val_nul_ttycmd)$(MAKE) -C $(src_dir_busybox) -j $(val_cpuproc) $(val_nul_outcmd)
+	@echo ""
+	@echo "\e[95m    // Installing BusyBox //\e[0m"
+	$(val_nul_ttycmd)$(val_nul_superuser)$(MAKE) -C $(src_dir_busybox) CONFIG_PREFIX=$(val_current_dir)/$(bin_dir_tmp) install $(val_nul_outcmd)
+#	$(val_nul_ttycmd)$(MAKE) -C $(src_dir_busybox) CONFIG_PREFIX=$(val_current_dir)/$(bin_dir_tmp)/initramfs install
+
+# --- Configs --- #
+config:
+	@echo ""
+	@echo "\e[95m    // Adding/Making Configuration files //\e[0m"
+	@echo "\e[38;5;206m     / Grub boot config /\e[0m"
+	$(val_nul_ttycmd)$(val_nul_superuser)bash -c 'echo default=$(val_grub-boot_default) > $(rsh_grub_conf)'
+	$(val_nul_ttycmd)$(val_nul_superuser)bash -c 'echo timeout=$(val_grub-boot_timeout) >> $(rsh_grub_conf)'
+	$(val_nul_ttycmd)$(val_nul_superuser)bash -c 'echo gfxpayload=$(val_grub-boot_resolution) >> $(rsh_grub_conf)'
+	$(val_nul_ttycmd)$(val_nul_superuser)bash -c 'echo >> $(rsh_grub_conf)'
+	$(val_nul_ttycmd)$(val_nul_superuser)bash -c 'echo menuentry \"$(val_grub-entry-one_name)\" { >> $(rsh_grub_conf)'
+#	$(val_nul_ttycmd)echo "    set root=$(val_grub-entry-one_root)" >> $(rsh_grub_conf)
+	$(val_nul_ttycmd)$(val_nul_superuser)bash -c 'echo "    linux $(val_grub-entry-one_li_kernel) root=$(val_grub-entry-one_li_root) $(val_grub-entry-one_li_params)" >> $(rsh_grub_conf)'
+	$(val_nul_ttycmd)$(val_nul_superuser)bash -c 'echo } >> $(rsh_grub_conf)'
+	$(val_nul_ttycmd)$(val_nul_superuser)bash -c 'echo "" >> $(rsh_grub_conf)'
+	@echo "\e[38;5;206m     / Syslinux config /\e[0m"
+	$(val_nul_ttycmd)$(val_nul_superuser)bash -c 'echo "DEFAULT $(val_grub-boot_default)" > $(rsh_sylin_conf)'
+	$(val_nul_ttycmd)$(val_nul_superuser)bash -c 'echo "PROMPT 1" >> $(rsh_sylin_conf)'
+	$(val_nul_ttycmd)$(val_nul_superuser)bash -c 'echo "TIMEOUT $(val_grub-boot_timeout)0" >> $(rsh_sylin_conf)'
+	$(val_nul_ttycmd)$(val_nul_superuser)bash -c 'echo "" >> $(rsh_sylin_conf)'
+	$(val_nul_ttycmd)$(val_nul_superuser)bash -c 'echo "LABEL $(val_grub-boot_default)" >> $(rsh_sylin_conf)'
+	$(val_nul_ttycmd)$(val_nul_superuser)bash -c 'echo "    MENU LABEL $(val_grub-entry-one_name)" >> $(rsh_sylin_conf)'
+	$(val_nul_ttycmd)$(val_nul_superuser)bash -c 'echo "    KERNEL $(val_grub-entry-one_li_kernel)" >> $(rsh_sylin_conf)'
+	$(val_nul_ttycmd)$(val_nul_superuser)bash -c 'echo "    APPEND root=$(val_grub-entry-one_li_root) $(val_grub-entry-one_li_params) vga=$(val_sylin-entry-one_li_vga_mode)" >> $(rsh_sylin_conf)'
+	@echo "\e[38;5;206m     / Extlinux config /\e[0m"
+	$(val_nul_ttycmd)$(val_nul_superuser)cp $(rsh_sylin_conf) $(rsh_exlin_conf) $(val_nul_outcmd)
+#	$(val_nul_ttycmd)cp $(src_dir_conf)/$(src_name_grubconf) $(bin_dir_tmp)/$(sys_dir_grub)/grub.cfg
+#	@echo "     / Linux kernel init /"
+#	$(val_nul_ttycmd)cp $(src_dir_conf)/$(src_name_linuxinit) $(bin_dir_tmp)/initramfs/init
+
+# --- Finalization --- #
+final:
+	@echo ""
+	@echo "\e[95m    // Doing finalization procedures //\e[0m"
+#	@echo "\e[38;5;206m     / Adding root declarations to necessary files /\e[0m"
+#	$(val_nul_ttycmd)echo "root:x:0:0:root:/root:/bin/ash" > $(bin_dir_tmp)/etc/passwd
+#	$(val_nul_ttycmd)echo "root:x:0:" > $(bin_dir_tmp)/etc/group
+#	@echo "     / Removing linuxrc /"
+#	$(val_nul_ttycmd)rm $(bin_dir_tmp)/initramfs/linuxrc
+#	@echo "     / Making init executable /"
+#	$(val_nul_ttycmd)chmod +x $(bin_dir_tmp)/initramfs/init
+#	@echo "     / Creating init archive /"
+#	$(val_nul_ttycmd)cd $(bin_dir_tmp)/initramfs && find . | cpio -o -H newc > ../init.cpio
+#	@echo "     / Copying init archive /"
+#	$(val_nul_ttycmd)cp $(bin_dir_tmp)/init.cpio $(bin_dir_base)/$(bin_name_init)
+
+# --- Clean Temporary Directory --- #
+rm_tmp:
+	@echo ""
+	@echo "\e[91m    // Cleaning temporary files //\e[0m"
+	$(val_nul_ttycmd)rm -rf  $(bin_dir_tmp)
+
+# --- GRUB --- #
+iso:
+	@echo ""
+	@echo "\e[95m    // Creating new disc image with GRUB //\e[0m"
+	$(val_nul_ttycmd)grub-mkrescue -o $(bin_dir_iso)/$(bin_name_iso) $(bin_dir_tmp) $(val_nul_outcmd)
+
+# --- Run --- #
+run:
+	@echo ""
+	@echo "\e[36m    // Now running '$(bin_name_iso)' using '$(util_vm)' //\e[0m"
+	$(val_nul_ttycmd)$(util_vm) $(util_vm_params) $(bin_dir_iso)/$(bin_name_iso) $(val_nul_outcmd)
+
+runs: setvars run
+
+# --- Clean --- #
+clean:
+	@echo ""
+	$(val_nul_ttycmd)if mountpoint -q "$(bin_dir_tmp)"; then \
+		echo "\e[91m    // Unmounting '$(bin_dir_tmp)' (May ask for superuser access) //\e[0m"; \
+		sudo umount "$(bin_dir_tmp)" $(val_nul_outcmd); \
+	fi
+	@echo "\e[91m    // Deleting directories //\e[0m"
+	$(val_nul_ttycmd)rm -rf  $(bin_dir_tmp) $(bin_dir_iso)
+	@echo ""
+
+# ---[ Developer testing stuff ]--- #
+yo:
+	@echo "yo the dir is $(val_current_dir)"
+
+dev_iso_sylin_one:
+	@echo ""
+	@echo "\e[95m    // Creating new disc image with syslinux //\e[0m"
+	@echo "\e[38;5;206m     / Creating an empty null file ($(val_dev_iso_size)MB) /\e[0m"
+	$(val_nul_ttycmd)dd if=/dev/zero of=$(bin_dir_iso)/$(bin_name_iso) bs=1M count=$(val_dev_iso_size) $(val_nul_outcmd)
+	@echo "\e[38;5;206m     / Creating an ext4 filesystem /\e[0m"
+	$(val_nul_ttycmd)mkfs.ext4 $(bin_dir_iso)/$(bin_name_iso) $(val_nul_outcmd)
+	@echo "\e[38;5;206m     / Mounting iso image to '$(bin_dir_tmp)' (May ask for superuser access) /\e[0m"
+	$(val_nul_ttycmd)sudo mount $(bin_dir_iso)/$(bin_name_iso) $(bin_dir_tmp) $(val_nul_outcmd)
+
+dev_iso_sylin_two:
+#	@echo "\e[38;5;206m     / Copying extracted files to the image (May ask for superuser access) /\e[0m"
+#	$(val_nul_ttycmd)sudo cp -r $(bin_dir_tmp)/* $(bin_dir_tmp) $(val_nul_outcmd)
+	@echo "\e[38;5;206m     / Installing syslinux (May ask for superuser access) /\e[0m"
+	$(val_nul_ttycmd)sudo extlinux --install $(bin_dir_tmp) $(val_nul_outcmd)
+	@echo "\e[38;5;206m     / Unmounting '$(bin_dir_tmp)' (May ask for superuser access) /\e[0m"
+	$(val_nul_ttycmd)sudo umount $(bin_dir_tmp) $(val_nul_outcmd)
+
+dev_setcmd_show:
+	$(eval val_nul_ttycmd = )
+	@echo "Makefile 'nothing to be done' msg fix" > /dev/null
+
+dev_setcmd_show_out:
+	$(eval val_nul_outcmd = > /dev/null)
+	@echo "Makefile 'nothing to be done' msg fix" > /dev/null
+
+dev_use_sudo:
+	$(eval val_nul_superuser = sudo )
+	@echo "Makefile 'nothing to be done' msg fix" > /dev/null
+
+wipe: clean
+	@clear

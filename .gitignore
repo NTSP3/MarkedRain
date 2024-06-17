@@ -1,0 +1,35 @@
+#
+# .gitignore tells git to ignore certain stuff if
+# the user wants to upload the source to github or
+# similar.
+#
+# MarkedRain | 16th of June, 2024 at 20:46 like someone cares
+#
+
+# Default bin directory
+bin/
+
+# make menuconfig tmp & usr cfg
+.config
+.config.mk
+.config.old
+.kconfig.d
+.tmpconfig.h
+*.o
+
+# gitignore of Buildroot
+source/buildroot/output
+source/buildroot/dl
+source/buildroot/.auto.deps
+source/buildroot/.config.cmd
+source/buildroot/.config.old
+source/buildroot/.config.tmp
+source/buildroot/.config
+source/buildroot/*.depend
+source/buildroot/*.o
+source/buildroot/*.patch
+source/buildroot/*.diff
+source/buildroot/*.orig
+source/buildroot/*.rej
+source/buildroot/*~
+source/buildroot/*.pyc
