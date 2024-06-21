@@ -16,15 +16,12 @@ bin/
 .kconfig.d
 .tmpconfig.h
 *.o
+source/configs/hash_buildroot_conf.txt
 
 # gitignore of Buildroot
 source/buildroot/output
 source/buildroot/dl
 source/buildroot/.auto.deps
-source/buildroot/.config.cmd
-source/buildroot/.config.old
-source/buildroot/.config.tmp
-source/buildroot/.config
 source/buildroot/*.depend
 source/buildroot/*.o
 source/buildroot/*.patch
