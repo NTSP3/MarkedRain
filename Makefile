@@ -5,8 +5,30 @@ PATCHLEVEL = 0
 SUBLEVEL = 1
 EXTRAVERSION = bruh
 
--include .config.mk#                           # Include .config.mk (added by me)
-.DEFAULT_GOAL := all#                          # Jump to 'all' if nothing is specified (also added by me)
+# begin added code by me - common var init for all struct:
+-include .config.mk#                           # Include .config.mk
+
+.PHONY: init
+init:
+	@echo ""
+	@echo "\e[36m               +++++++++++++++++ MRain Operating System +++++++++++++++++               \e[0m"
+    ifeq ($(bool_show_cmd), y)
+	    @echo "\e[32m               !**     ShowCommand (bool_show_cmd) is set to true     **!               \e[0m"
+	    $(eval val_nul_ttyopt = dev_setcmd_show)
+	    $(eval val_nul_ttycmd := )
+    else
+	    @echo "\e[91m               !**        ShowCommand (bool_show_cmd) is false        **!               \e[0m"	
+    endif
+    ifeq ($(bool_show_cmd_out), y)
+	    @echo "\e[32m               !**  ShowAppOutput (bool_show_cmd_out) is set to true  **!               \e[0m"
+    else
+	    @echo "\e[91m               !**     ShowAppOutput (bool_show_cmd_out) is false     **!               \e[0m"	
+	    $(eval val_nul_outopt = dev_setcmd_show_out)
+	    $(eval val_nul_outcmd = > /dev/null)
+	    $(eval val_nul_mkfile_variables += --no-print-directory)
+    endif
+.DEFAULT_GOAL := all
+# end.
 
 srctree		:= $(if $(KBUILD_SRC),$(KBUILD_SRC),$(CURDIR))
 export
@@ -17,11 +39,11 @@ include $(srctree)/make/Kbuild.include
 KERNELVERSION = $(VERSION).$(PATCHLEVEL).$(SUBLEVEL)-$(EXTRAVERSION)
 
 .PHONY: config
-config:
-	@$(MAKE) $(build)=make/kconfig $@ --no-print-directory
+config: init#                                  # Edited to use mk vars
+	$(MAKE) $(build)=make/kconfig $@ $(val_nul_mkfile_variables)
 
-%config:
-	@$(MAKE) $(build)=make/kconfig $@ --no-print-directory
+%config: init#                                 # Edited to use mk vars
+	$(MAKE) $(build)=make/kconfig $@ $(val_nul_mkfile_variables)
 
 # ---[ Makefile required variable configuration ]--- #
 val_current_dir=$(shell pwd)#                  # Gets the current working directory
@@ -46,9 +68,7 @@ all: setvars
 
 # --- Variable Construction --- #
 .PHONY: setvars
-setvars:
-	@echo ""
-	@echo "\e[36m               +++++++++++++++++ MRain Operating System +++++++++++++++++               \e[0m"
+setvars: init
 	@if [ -f .config.mk ]; then \
 	    echo "\e[32m               !**              Configuration file found              **!               \e[0m"; \
 	else \
@@ -56,27 +76,6 @@ setvars:
 	    echo ".config.mk is not found. Run 'make menuconfig', save it & try again"; \
 		false; \
 	fi
-    ifeq ($(bool_show_cmd), y)
-	    @echo "\e[32m               !**     ShowCommand (bool_show_cmd) is set to true     **!               \e[0m"
-	    $(eval val_nul_ttyopt = dev_setcmd_show)
-	    $(eval val_nul_ttycmd := )
-    else
-	    @echo "\e[91m               !**        ShowCommand (bool_show_cmd) is false        **!               \e[0m"	
-    endif
-    ifeq ($(bool_show_cmd_out), y)
-	    @echo "\e[32m               !**  ShowAppOutput (bool_show_cmd_out) is set to true  **!               \e[0m"
-    else
-	    @echo "\e[91m               !**     ShowAppOutput (bool_show_cmd_out) is false     **!               \e[0m"	
-		$(eval val_nul_outopt = dev_setcmd_show_out)
-	    $(eval val_nul_outcmd = > /dev/null)
-	    $(eval val_nul_mkfile_variables += --no-print-directory)
-    endif
-    ifeq ($(bool_show_notice), y)
-	    @echo "\e[32m               !**    ShowNotice (bool_show_notice) is set to true    **!               \e[0m"
-		$(val_nul_ttycmd)$(MAKE) $(val_nul_ttyopt) $(val_nul_outopt) notice $(val_nul_mkfile_variables)
-    else
-	    @echo "\e[91m               !**       ShowNotice (bool_show_notice) is false       **!               \e[0m"
-    endif
     ifeq ($(bool_use_sylin_exlin), y)
 	    @echo "\e[32m           (1) !** BootSyslinux (bool_use_sylin_exlin) is set to true **! (1)           \e[0m"
 	    @echo "\e[36m               !**          BootSyslinux: Calling CleanStart          **!               \e[0m"
@@ -125,29 +124,6 @@ setvars:
 	    @echo "\e[91m               !**   RemoveTmpDirectory (bool_del_tmp_dir) is false   **!               \e[0m"
     endif
 
-# --- Notice --- #
-.PHONY: notice
-notice:
-	@echo "\e[91m"
-	@echo "    ------------------------------------"
-	@echo "    \/ MRAIN-LINUX COMPILATION SCRIPT \/"
-	@echo "     ++++++++++++++++++++++++++++++++++"
-	@echo ""
-	@echo "    If this is your first time compiling, or the output directories:"
-	@echo "    '$(bin_dir_iso)', '$(bin_dir_tmp)' and its sub-dirs doesn't exist, run this:"
-	@echo ""
-	@echo "        make dirs"
-	@echo ""
-	@echo "    and then run Makefile again. You can also use 'make clean' to delete those dirs."
-	@echo ""
-	@echo "    If you configured the makefile to auto-create all dirs everytime, you can ignore this message by"
-	@echo "    setting the variable 'bool_show_notice' to false in the menuconfig."
-	@echo ""
-	@echo "     ++++++++++++++++++++++++++++++++++"
-	@echo "    /\ MRAIN-LINUX COMPILATION SCRIPT /\ "
-	@echo "    ------------------------------------\e[0m"
-	@echo ""
-
 # --- Directories --- #
 .PHONY: dirs
 dirs:
@@ -164,7 +140,7 @@ buildroot:
 	@echo "\e[95m    // Adding buildroot into the image //\e[0m"
 	$(val_nul_ttycmd)if [ ! -f "$(src_dir_buildroot)/.config" ]; then \
 	    echo "\e[38;5;206m     / rootfs.tar does not exist, making Buildroot /\e[0m"; \
-	    $(MAKE) -C $(src_dir_buildroot) $(val_nul_outcmd); \
+	    $(MAKE) -C $(src_dir_buildroot) $(val_nul_mkfile_variables); \
 	    echo "\e[38;5;206m     / Saving hash of .config /\e[0m"; \
 	    shasum $(src_dir_buildroot)/.config | cut -d ' ' -f 1 > $(src_dir_conf)/hash_buildroot_conf.txt; \
 	else \
@@ -173,7 +149,7 @@ buildroot:
 	    tmp_sh_brnew=$$(shasum $(src_dir_buildroot)/.config | cut -d ' ' -f 1); \
 	    if [ "$$tmp_sh_brold" != "$$tmp_sh_brnew" ]; then \
 	        echo "\e[38;5;206m     / Hashes don't match, making Buildroot /\e[0m"; \
-	        $(MAKE) -C $(src_dir_buildroot) $(val_nul_outcmd); \
+	        $(MAKE) -C $(src_dir_buildroot) $(val_nul_mkfile_variables); \
 	        echo "\e[38;5;206m     / Saving hash of .config /\e[0m"; \
 	        shasum $(src_dir_buildroot)/.config | cut -d ' ' -f 1 > $(src_dir_conf)/hash_buildroot_conf.txt; \
 	    fi \
@@ -241,8 +217,10 @@ run:
 runs: setvars run
 
 # --- Clean --- #
-.PHONY: clean
-clean:
+.PHONY: clean cleancode
+clean: init cleancode
+
+cleancode:
 	@echo ""
 	$(val_nul_ttycmd)if mountpoint -q "$(bin_dir_tmp)"; then \
 		echo "\e[91m    // Unmounting '$(bin_dir_tmp)' (May ask for superuser access) //\e[0m"; \
@@ -251,6 +229,27 @@ clean:
 	@echo "\e[91m    // Deleting directories and image //\e[0m"
 	$(val_nul_ttycmd)rm -rf $(bin_dir_tmp) $(bin_dir_iso) $(bin_dir)
 	@echo ""
+
+# --- Clean all stuff --- #
+.PHONY: cleanall
+cleanall: init
+	@echo ""
+	@echo "\e[91m  WARNING: Doing 'cleanall' will run clean on ALL the source files,"
+	@echo "  which may make them take longer to compile.\e[0m"
+	@echo ""
+	@echo "\e[38;5;206m  Press "Y" and enter to continue, any other key will terminate.\e[0m"
+	$(val_nul_ttycmd)read choice; \
+	if [ "$$choice" = "Y" ] || [ "$$choice" = "y" ]; then \
+	    $(MAKE) cleancode $(val_nul_mkfile_variables); \
+	    echo "\e[91m    // Cleaning buildroot //\e[0m"; \
+	    $(MAKE) -C $(src_dir_buildroot) clean $(val_nul_mkfile_variables); \
+		echo ""; \
+	    echo "\e[32m  Done. Run 'make' to re-compile. Be prepared to wait a long time. \e[0m"; \
+		echo ""; \
+	else \
+	    echo "\e[32m  Cancelled. \e[0m"; \
+	    echo ""; \
+	fi
 
 # ---[ Developer testing stuff + more ]--- #
 # +++ Dev phony +++ #
@@ -287,8 +286,8 @@ dev_use_sudo:
 	$(eval val_nul_superuser = sudo )
 	@echo "Makefile 'nothing to be done' msg fix" > /dev/null
 
-wipe: clean
-	@clear
+wipe: init clean
+	$(val_nul_ttycmd)clear
 
 unused_commented_code:
 # Following stuff is commented code not available in Makefile.old that I put here because I feel like it.
