@@ -3,14 +3,6 @@
 mainmenu "Configuration"
 
 menu "Makefile customizations"
-    config bool_show_notice
-        bool "Display notice everytime make is run"
-        default y
-        help
-            Shows some information regarding auto-creation of directories 
-            in red colour at the start of the building process. Turn off
-            if you want to stop this from being shown again.
-
     config bool_show_cmd
         bool "Display all commands being sent to the terminal"
         default n
