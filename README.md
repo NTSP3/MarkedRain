@@ -9,7 +9,7 @@ The "MarkedRain" is a new linux OS that uses buildroot with OpenRC as init. It i
 
 ![Preview 2](media/preview2.png "MarkedRain OS preview 2")
 
-![Preview 3](media/preview3.png "MarkedRain OS preview 3")
+![Preview 3](media/preview3.gif "MarkedRain OS preview 3")
 
 ## To-do Goals
 
