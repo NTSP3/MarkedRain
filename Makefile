@@ -138,7 +138,7 @@ dirs:
 buildroot:
 	@echo ""
 	@echo "\e[95m    // Adding buildroot into the image //\e[0m"
-	$(val_nul_ttycmd)if [ ! -f "$(src_dir_buildroot)/.config" ]; then \
+	$(val_nul_ttycmd)if [ ! -f "$(src_dir_buildroot)/output/images/rootfs.tar" ]; then \
 	    echo "\e[38;5;206m     / rootfs.tar does not exist, making Buildroot /\e[0m"; \
 	    $(MAKE) -C $(src_dir_buildroot) $(val_nul_mkfile_variables); \
 	    echo "\e[38;5;206m     / Saving hash of .config /\e[0m"; \
@@ -154,8 +154,8 @@ buildroot:
 	        shasum $(src_dir_buildroot)/.config | cut -d ' ' -f 1 > $(src_dir_conf)/hash_buildroot_conf.txt; \
 	    fi \
 	fi
-	@echo "\e[38;5;206m     / Extracting rootfs archive to '$(bin_dir_tmp)$(sys_dir_sys)/rootfs' //\e[0m"
-	$(val_nul_ttycmd)$(val_nul_superuser)tar xf $(src_dir_buildroot)/output/images/rootfs.tar -C $(bin_dir_tmp)$(sys_dir_sys)/rootfs $(val_nul_outcmd)
+	@echo "\e[38;5;206m     / Extracting rootfs archive to '$(bin_dir_tmp)' //\e[0m"
+	$(val_nul_ttycmd)$(val_nul_superuser)tar xf $(src_dir_buildroot)/output/images/rootfs.tar -C $(bin_dir_tmp) $(val_nul_outcmd)
 
 # --- Kernel --- #
 .PHONY: kernel
