@@ -1,2 +1,2 @@
-latest=
+latest=30
 # approx 30 - 22/6/2024 21:06
