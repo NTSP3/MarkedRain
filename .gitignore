@@ -16,6 +16,7 @@ bin/
 .kconfig.d
 .tmpconfig.h
 *.o
+dotconfig.busybox
 source/configs/hash_buildroot_conf.txt
 
 # gitignore of Buildroot
