@@ -1,9 +1,9 @@
 # Do not edit the order of the stuff here.
-# Do not edit the 'latest' variable name,
+# Do not edit the 'latest_next' variable name,
 # you can change its value though.
 #
 # 23-6-2024 21:22
 #
 
-latest=30
+latest_next=30
 approx 30 - 22/6/2024 21:06 [manual add]
