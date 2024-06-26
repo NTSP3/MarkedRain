@@ -34,7 +34,7 @@ fi
 
 # Check if the file exist
 if [ ! -f "$src_file" ]; then
-    error "The specified file doesn't exist." "src_file"
+    error "The specified file doesn't exist." "$src_file"
 fi
 
 # Look through the file for the variable
@@ -45,9 +45,9 @@ num_definitions=$(echo "$definition" | wc -l)
 
 # Check if the number is less than or greater than one
 if [ "$num_definitions" -eq 0 ] || [ -z "$definition" ]; then
-    error "No definitions with '${variable}' found." "src_file"
+    error "No definitions with '${variable}' found." "$src_file"
 elif [ "$num_definitions" -gt 1 ]; then
-    error "More than one definition for '${variable}'. Cannot continue." "src_file"
+    error "More than one definition for '${variable}'. Cannot continue." "$src_file"
 else
     # Extract the value after the first equal symbol
     definition_value=$(echo "$definition" | cut -d'=' -f2-)

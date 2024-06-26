@@ -37,7 +37,7 @@ fi
 
 # Check if the file exist
 if [ ! -f "$out_file" ]; then
-    error "The specified file doesn't exist." "out_file"
+    error "The specified file doesn't exist." "$out_file"
 fi
 
 # Call get_var.sh
@@ -45,7 +45,7 @@ current_number=$($me_dir/get_var.sh "$src_str" "$out_file")
 
 # Check if the variable contains only numbers
 if [[ "$current_number" =~ [^0-9] ]]; then
-    error "Returned value contains non-numeric characters." "number"
+    error "Returned value contains non-numeric characters." "current_number - $current_number"
 fi
 
 # Increment the value
