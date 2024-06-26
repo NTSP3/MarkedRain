@@ -1,0 +1,28 @@
+In source/scripts, create a new script that looks through a file which has all the folders to be created in the distro like this:
+
+    Sy/global
+    Sy/global/new_folder
+    Sy/new folder with spaces & symbols!
+    Sy/../superuser
+
+And ignoring any lines that start with "#", This should be at top:
+
+#
+# This file contains the folders to be created during
+# the making of MarkedRain Operating System. The format
+# is as follows:
+#
+#       Sy/<directory>
+#
+# where "directory" is the name of the dir you want to
+# create. "Sy" means the System folder. All entries
+# must begin with "Sy". It will get replaced with
+# whatever the system directory is (eg. "System").
+# If you want to create a directory on the root itself,
+# do it as "Sy/../<directory".
+#
+# Crap note: Comments must have '#' as the first character,
+# putting it anywhere else wouldn't make it a comment.
+#
+
+That script has the code to ignore lines starting with "#", and to replace "Sy" (DETECT IT AS THE FIRST TWO CHARS, IF IT ISN'T, SKIP THAT LINE!!!) with makefile's bin_dir_sys.
