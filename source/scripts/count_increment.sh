@@ -41,19 +41,19 @@ if [ ! -f "$out_file" ]; then
 fi
 
 # Call get_var.sh
-number=$($me_dir/get_var.sh "$src_str" "$out_file")
+current_number=$($me_dir/get_var.sh "$src_str" "$out_file")
 
 # Check if the variable contains only numbers
-if [[ "$number" =~ [^0-9] ]]; then
+if [[ "$current_number" =~ [^0-9] ]]; then
     error "Returned value contains non-numeric characters." "number"
 fi
 
 # Increment the value
-number=$((number + 1))
+new_number=$((current_number + 1))
 
-# Use sed to find the line starting with 'latest=' and replace its value
-sed -i "s/^latest=[0-9]*/latest=$number/" "$out_file"
+# Use sed to find the line starting with 'latest_next=' and replace its value
+sed -i "s/^$src_str=$current_number*/$src_str=$new_number/" "$out_file"
 
 # Use sed to put the os count information stuff
-sed -i "/^latest=$number/a\\
-$number - $compile_time" "$out_file"
+sed -i "/^$src_str=$new_number/a\\
+$current_number - $compile_time" "$out_file"
