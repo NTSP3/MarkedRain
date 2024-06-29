@@ -1,11 +1,7 @@
 #==--[ Makefile for MRainOS - Linux based ]--==#
-# ---[ Menuconfig interface setup ]--- # (idk what they do)
-VERSION = 0
-PATCHLEVEL = 0
-SUBLEVEL = 1
-EXTRAVERSION = bruh
+# ---[ Menuconfig interface setup ]--- #
 
-# begin added code by me - common var init for all struct:
+# begin:
 -include .config.mk#                           # Include .config.mk
 
 .PHONY: init
@@ -18,6 +14,7 @@ init:
 	    $(eval val_nul_ttycmd := )
     else
 	    @echo "\e[91m               !**        ShowCommand (bool_show_cmd) is false        **!               \e[0m"	
+		$(eval val_nul_ttycmd := @)
     endif
     ifeq ($(bool_show_cmd_out), y)
 	    @echo "\e[32m               !**  ShowAppOutput (bool_show_cmd_out) is set to true  **!               \e[0m"
@@ -27,6 +24,19 @@ init:
 	    $(eval val_nul_outcmd = > /dev/null)
 	    $(eval val_nul_mkfile_variables += --no-print-directory)
     endif
+	$(val_nul_ttycmd)if ! echo "$(EXTRAVERSION)" | grep -qE '^[0-9]+$$'; then \
+	    echo "  Variable 'EXTRAVERSION' expected numeric value, but its nothing like that."; \
+		echo ""; \
+	    echo "  Contents of the variable at this time: "; \
+	    echo "$(EXTRAVERSION)"; \
+	    false; \
+	fi
+
+VERSION = 0# Add as "release_major" in config.in
+PATCHLEVEL = 0# release_minor
+SUBLEVEL = 1# sublevel
+EXTRAVERSION = $(shell $(src_dir_scripts)/get_var.sh "latest_next" "$(src_dir_conf)/bcount.txt")# rename to buildnumber
+RELEASE_TAG = bruh# release_tag in config.in
 .DEFAULT_GOAL := all
 # end.
 
@@ -36,7 +46,7 @@ export
 HOSTCC  	= gcc
 include $(srctree)/make/Kbuild.include
 
-KERNELVERSION = $(VERSION).$(PATCHLEVEL).$(SUBLEVEL)-$(EXTRAVERSION)
+KERNELVERSION = $(VERSION).$(PATCHLEVEL).$(SUBLEVEL).$(EXTRAVERSION)-$(RELEASE_TAG)
 
 .PHONY: config
 config: init#                                  # Edited to use mk vars
@@ -47,7 +57,6 @@ config: init#                                  # Edited to use mk vars
 
 # ---[ Makefile required variable configuration ]--- #
 val_current_dir=$(shell pwd)#                  # Gets the current working directory
-val_nul_ttycmd=@#                              # Customizable variable used to show/hide commands being sent to the tty (@ is here to hide cmds being shown in 'make clean' and stuff)
 
 # +++[ Random shortners (no need to be changed) ]+++ #
 rsh_grub_conf=$(bin_dir_tmp)/boot/grub/grub.cfg
@@ -79,7 +88,7 @@ setvars: init
     ifeq ($(bool_use_sylin_exlin), y)
 	    @echo "\e[32m           (1) !** BootSyslinux (bool_use_sylin_exlin) is set to true **! (1)           \e[0m"
 	    @echo "\e[36m               !**          BootSyslinux: Calling CleanStart          **!               \e[0m"
-	    $(val_nul_ttycmd)$(MAKE) $(val_nul_ttyopt) $(val_nul_outopt) clean $(val_nul_mkfile_variables)
+	    $(val_nul_ttycmd)$(MAKE) $(val_nul_ttyopt) $(val_nul_outopt) cleancode $(val_nul_mkfile_variables)
 	    @echo "\e[32m    // Creating '$(bin_dir_tmp)' //\e[0m"
 	    $(val_nul_ttycmd)mkdir -p $(bin_dir_tmp)
 	    @echo "\e[36m               !**           BootSyslinux: Calling part one           **!               \e[0m"
@@ -94,7 +103,7 @@ setvars: init
 	    @echo "\e[91m           (1) !**    BootSyslinux (bool_use_sylin_exlin) is false    **! (1)           \e[0m"
         ifeq ($(bool_clean_start), y)
 	        @echo "\e[32m               !**    CleanStart (bool_clean_start) is set to true    **!               \e[0m"
-	        $(val_nul_ttycmd)$(MAKE) $(val_nul_ttyopt) $(val_nul_outopt) clean $(val_nul_mkfile_variables)
+	        $(val_nul_ttycmd)$(MAKE) $(val_nul_ttyopt) $(val_nul_outopt) cleancode $(val_nul_mkfile_variables)
 	        @echo "\e[36m               !**         CleanStart - Calling Autodirectory         **!               \e[0m"
 	        $(val_nul_ttycmd)$(MAKE) $(val_nul_ttyopt) $(val_nul_outopt) dirs $(val_nul_mkfile_variables)
         else
