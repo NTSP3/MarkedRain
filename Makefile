@@ -1,7 +1,10 @@
 #==--[ Makefile for MRainOS - Linux based ]--==#
-# ---[ Menuconfig interface setup ]--- #
+# ---[ Global ]--- #
 
-# begin:
+# ---[ Makefile required variable configuration ]--- #
+EXTRAVERSION=$(shell $(src_dir_scripts)/get_var.sh "latest_next" "$(src_dir_conf)/bcount.txt")
+val_current_dir=$(shell pwd)#                  # Gets the current working director
+
 -include .config.mk#                           # Include .config.mk
 
 .PHONY: init
@@ -14,7 +17,7 @@ init:
 	    $(eval val_nul_ttycmd := )
     else
 	    @echo "\e[91m               !**        ShowCommand (bool_show_cmd) is false        **!               \e[0m"	
-		$(eval val_nul_ttycmd := @)
+	    $(eval val_nul_ttycmd := @)
     endif
     ifeq ($(bool_show_cmd_out), y)
 	    @echo "\e[32m               !**  ShowAppOutput (bool_show_cmd_out) is set to true  **!               \e[0m"
@@ -24,21 +27,33 @@ init:
 	    $(eval val_nul_outcmd = > /dev/null)
 	    $(eval val_nul_mkfile_variables += --no-print-directory)
     endif
-	$(val_nul_ttycmd)if ! echo "$(EXTRAVERSION)" | grep -qE '^[0-9]+$$'; then \
-	    echo "  Variable 'EXTRAVERSION' expected numeric value, but its nothing like that."; \
-		echo ""; \
-	    echo "  Contents of the variable at this time: "; \
-	    echo "$(EXTRAVERSION)"; \
-	    false; \
-	fi
+	@echo "\e[36m               !**                 Checking variables                 **!               \e[0m"
+    ifeq ($(shell echo $(VERSION) | grep -Eq '^[0-9]+$$' && echo 1 || echo 0), 0)
+	    @echo "\e[91m  Variable 'VERSION' expected numeric value, but it's nothing like that."
+	    @echo "  Using value '0' instead - please verify config file using menuconfig.\e[0m"
+	    $(eval VERSION = 0)
+    endif
+    ifeq ($(shell echo $(PATCHLEVEL) | grep -Eq '^[0-9]+$$' && echo 1 || echo 0), 0)
+	    @echo "\e[91m  Variable 'PATCHLEVEL' expected numeric value, but it's nothing like that."
+	    @echo "  Using value '0' instead - please verify config file using menuconfig.\e[0m"
+	    $(eval PATCHLEVEL = 0)
+    endif
+    ifeq ($(shell echo $(SUBLEVEL) | grep -Eq '^[0-9]+$$' && echo 1 || echo 0), 0)
+	    @echo "\e[91m  Variable 'SUBLEVEL' expected numeric value, but it's nothing like that."
+	    @echo "  Using value '0' instead - please verify config file using menuconfig.\e[0m"
+	    $(eval SUBLEVEL = 0)
+    endif
+    ifeq ($(shell echo $(EXTRAVERSION) | grep -Eq '^[0-9]+$$' && echo 1 || echo 0), 0)
+	    @echo "\e[91m  Variable 'EXTRAVERSION' expected numeric value, but it's nothing like that."
+	    @echo "  Cannot continue - below is the contents of the variable at this time:\e[0m"
+		@echo "$(EXTRAVERSION)"
+		$(val_nul_ttycmd)false
+    endif
 
-VERSION = 0# Add as "release_major" in config.in
-PATCHLEVEL = 0# release_minor
-SUBLEVEL = 1# sublevel
-EXTRAVERSION = $(shell $(src_dir_scripts)/get_var.sh "latest_next" "$(src_dir_conf)/bcount.txt")# rename to buildnumber
-RELEASE_TAG = bruh# release_tag in config.in
+# Go to 'all' if nothing is specified
 .DEFAULT_GOAL := all
-# end.
+
+# ---[ Menuconfig interface setup ]--- #
 
 srctree		:= $(if $(KBUILD_SRC),$(KBUILD_SRC),$(CURDIR))
 export
@@ -54,9 +69,6 @@ config: init#                                  # Edited to use mk vars
 
 %config: init#                                 # Edited to use mk vars
 	$(MAKE) $(build)=make/kconfig $@ $(val_nul_mkfile_variables)
-
-# ---[ Makefile required variable configuration ]--- #
-val_current_dir=$(shell pwd)#                  # Gets the current working directory
 
 # +++[ Random shortners (no need to be changed) ]+++ #
 rsh_grub_conf=$(bin_dir_tmp)/boot/grub/grub.cfg
