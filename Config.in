@@ -320,8 +320,39 @@ menu "Operating System configuration"
             image. This value would also be used to determine the kernel's
             location from the grub or extlinux config file.
 
-    comment "Other configurations"
+    menu "System version information"
+        config VERSION
+            int "Major release number [VERSION]"
+            default 0
+            help
+                This variable contains the major version of the version string,
+                which looks like "<major>.<minor>.<sub-minor>.<count>-<tag>".
+                
+        config PATCHLEVEL
+            int "Minor release number [PATCHLEVEL]"
+            default 0
+            help
+                This variable contains the minor version of the version string,
+                which looks like "<major>.<minor>.<sub-minor>.<count>-<tag>".
 
+        config SUBLEVEL
+            int "Sub-minor release number [SUBLEVEL]"
+            default 1
+            help
+                This variable contains the sub-minor version of the version string,
+                which looks like "<major>.<minor>.<sub-minor>.<count>-<tag>".
+
+        comment "'count' is set by 'LATEST_NEXT' in bcount.txt"
+
+        config RELEASE_TAG
+            string "Version release tag"
+            default "bruh"
+            help
+                This variable contains the release 'tag' of the version string,
+                which looks like "<major>.<minor>.<sub-minor>.<count>-<tag>".
+    endmenu
+
+    comment "Other configurations"
 
 endmenu
 
