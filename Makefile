@@ -21,8 +21,10 @@ val_current_dir=$(shell pwd)#                  # Gets the current working direct
 -include .config.mk#                           # Include .config.mk
 
 # ---[ Global ]--- #
-.PHONY: init
-init:
+.PHONY: init init1 init2
+init: init1 init2
+
+init1:
 	@echo ""
 	@echo "$(col_INFO)               +++++++++++++++++ MRain Operating System +++++++++++++++++               $(col_NORMAL)"
     ifeq ($(bool_show_cmd), y)
@@ -41,6 +43,8 @@ init:
 	    $(eval val_nul_outcmd = > /dev/null)
 	    $(eval val_nul_mkfile_variables += --no-print-directory)
     endif
+
+init2:
 	@echo "$(col_INFO)               !**          Checking variable 'EXTRAVERSION'          **!               $(col_NORMAL)"
     ifeq ($(shell echo $(EXTRAVERSION) | grep -Eq '^[0-9]+$$' && echo 1 || echo 0), 0)
 	    @echo "$(col_FALSE)  Variable 'EXTRAVERSION' expected numeric value, but it's nothing like that."
@@ -64,10 +68,10 @@ include $(srctree)/make/Kbuild.include
 KERNELVERSION = $(VERSION).$(PATCHLEVEL).$(SUBLEVEL).$(EXTRAVERSION)-$(RELEASE_TAG)
 
 .PHONY: config
-config: init#                                  # Edited to use mk vars
+config: init 
 	$(MAKE) $(build)=make/kconfig $@ $(val_nul_mkfile_variables)
 
-%config: init#                                 # Edited to use mk vars
+%config: init
 	$(MAKE) $(build)=make/kconfig $@ $(val_nul_mkfile_variables)
 
 # +++[ Random shortners (no need to be changed) ]+++ #
@@ -238,7 +242,7 @@ runs: setvars run
 
 # --- Clean --- #
 .PHONY: clean cleancode
-clean: init cleancode
+clean: init1 cleancode
 
 cleancode:
 	@echo ""
@@ -252,7 +256,7 @@ cleancode:
 
 # --- Clean all stuff --- #
 .PHONY: cleanall
-cleanall: init
+cleanall: init1
 	@echo ""
 	@echo "$(col_FALSE)  WARNING: Doing 'cleanall' will run clean on ALL the source files,"
 	@echo "  which may make them take longer to compile.$(col_NORMAL)"
@@ -306,7 +310,7 @@ dev_use_sudo:
 	$(eval val_nul_superuser = sudo )
 	@echo "Makefile 'nothing to be done' msg fix" > /dev/null
 
-wipe: init clean
+wipe: init1 clean
 	$(val_nul_ttycmd)clear
 
 unused_commented_code:
