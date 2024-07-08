@@ -165,7 +165,7 @@ buildroot:
 	@echo "$(col_HEADING)    // Adding buildroot into the image //$(col_NORMAL)"
 	$(val_nul_ttycmd)if [ ! -f "$(src_dir_buildroot)/output/images/rootfs.tar" ]; then \
 	    echo "$(col_SUBINFO)     / rootfs.tar does not exist, making Buildroot /$(col_NORMAL)"; \
-	    $(MAKE) -C $(src_dir_buildroot) $(val_nul_mkfile_variables); \
+	    $(MAKE) -C $(src_dir_buildroot) $(val_nul_mkfile_variables) || exit 1; \
 	    echo "$(col_SUBINFO)     / Saving hash of .config /$(col_NORMAL)"; \
 	    shasum $(src_dir_buildroot)/.config | cut -d ' ' -f 1 > $(src_dir_conf)/hash_buildroot_conf.txt; \
 	else \
@@ -174,7 +174,7 @@ buildroot:
 	    tmp_sh_brnew=$$(shasum $(src_dir_buildroot)/.config | cut -d ' ' -f 1); \
 	    if [ "$$tmp_sh_brold" != "$$tmp_sh_brnew" ]; then \
 	        echo "$(col_SUBINFO)     / Hashes don't match, making Buildroot /$(col_NORMAL)"; \
-	        $(MAKE) -C $(src_dir_buildroot) $(val_nul_mkfile_variables); \
+	        $(MAKE) -C $(src_dir_buildroot) $(val_nul_mkfile_variables) || exit 1; \
 	        echo "$(col_SUBINFO)     / Saving hash of .config /$(col_NORMAL)"; \
 	        shasum $(src_dir_buildroot)/.config | cut -d ' ' -f 1 > $(src_dir_conf)/hash_buildroot_conf.txt; \
 	    fi \
@@ -264,9 +264,9 @@ cleanall: init1
 	@echo "$(col_SUBINFO)  Press "Y" and enter to continue, any other key will terminate.$(col_NORMAL)"
 	$(val_nul_ttycmd)read choice; \
 	if [ "$$choice" = "Y" ] || [ "$$choice" = "y" ]; then \
-	    $(MAKE) cleancode $(val_nul_mkfile_variables); \
+	    $(MAKE) cleancode $(val_nul_mkfile_variables) || exit 1; \
 	    echo "$(col_FALSE)    // Cleaning buildroot //$(col_NORMAL)"; \
-	    $(MAKE) -C $(src_dir_buildroot) clean $(val_nul_mkfile_variables); \
+	    $(MAKE) -C $(src_dir_buildroot) clean $(val_nul_mkfile_variables) || exit 1; \
 		echo ""; \
 	    echo "$(col_TRUE)  Done. Run 'make' to re-compile. Be prepared to wait a long time. $(col_NORMAL)"; \
 		echo ""; \
@@ -277,7 +277,7 @@ cleanall: init1
 
 # ---[ Developer testing stuff + more ]--- #
 # +++ Dev phony +++ #
-.PHONY: yo dev_iso_sylin_one dev_iso_sylin_two dev_setcmd_show dev_setcmd_show_out dev_use_sudo wipe
+.PHONY: yo dev_iso_sylin_one dev_iso_sylin_two dev_setcmd_show dev_setcmd_show_out dev_use_sudo dev_stop wipe
 # --- Stuff --- #
 yo:
 	@echo "yo the dir is $(val_current_dir)"
@@ -309,6 +309,9 @@ dev_setcmd_show_out:
 dev_use_sudo:
 	$(eval val_nul_superuser = sudo )
 	@echo "Makefile 'nothing to be done' msg fix" > /dev/null
+
+dev_stop:
+	false
 
 wipe: init1 clean
 	$(val_nul_ttycmd)clear
