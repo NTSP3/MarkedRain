@@ -168,6 +168,8 @@ buildroot:
 	    $(MAKE) -C $(src_dir_buildroot) $(val_nul_mkfile_variables) || exit 1; \
 	    echo "$(col_SUBINFO)     / Saving hash of .config /$(col_NORMAL)"; \
 	    shasum $(src_dir_buildroot)/.config | cut -d ' ' -f 1 > $(src_dir_conf)/hash_buildroot_conf.txt; \
+	    echo "$(col_SUBINFO)     / Invoking count updater /$(col_NORMAL)"; \
+	    $(src_dir_scripts)/count_increment.sh latest_next $(src_dir_conf)/bcount.txt; \
 	else \
 	    echo "$(col_SUBINFO)     / Comparing .config hash /$(col_NORMAL)"; \
 	    tmp_sh_brold=$$(cat $(src_dir_conf)/hash_buildroot_conf.txt); \
@@ -177,6 +179,8 @@ buildroot:
 	        $(MAKE) -C $(src_dir_buildroot) $(val_nul_mkfile_variables) || exit 1; \
 	        echo "$(col_SUBINFO)     / Saving hash of .config /$(col_NORMAL)"; \
 	        shasum $(src_dir_buildroot)/.config | cut -d ' ' -f 1 > $(src_dir_conf)/hash_buildroot_conf.txt; \
+	        echo "$(col_SUBINFO)     / Invoking count updater /$(col_NORMAL)"; \
+	        $(src_dir_scripts)/count_increment.sh latest_next $(src_dir_conf)/bcount.txt; \
 	    fi \
 	fi
 	@echo "$(col_SUBINFO)     / Extracting rootfs archive to '$(bin_dir_tmp)' //$(col_NORMAL)"
