@@ -6,8 +6,9 @@
 # MarkedRain | 16th of June, 2024 at 20:46 like someone cares
 #
 
-# Default bin directory
+# MarkedRain directories
 bin/
+builds/
 
 # make menuconfig tmp & usr cfg
 .config
