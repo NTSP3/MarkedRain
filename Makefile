@@ -7,18 +7,25 @@ SUBLEVEL=0
 EXTRAVERSION=$(shell $(src_dir_scripts)/get_var.sh "latest_next" "$(src_dir_conf)/bcount.txt")
 RELEASE_TAG=unknown
 #  --[ Escape sequence for colour values ]--  #
-col_INFO=\e[36m
-col_TRUE=\e[32m
-col_FALSE=\e[91m
-col_IMP=\e[1;30;41m
 col_HEADING=\e[95m
+col_INFO=\e[36m
 col_SUBINFO=\e[38;5;206m
 col_DONE=\e[92m
+col_TRUE=\e[32m
+col_FALSE=\e[91m
+col_ERROR=\e[1;91m
+# TODO: REPLACE ALL ERROR STATEMENTS WITHIN MKFILE AND OTHER SCRIPTS' ERROR COLOUR FROM col_FALSE to col_ERROR.
+col_IMP=\e[1;30;41m
 col_NORMAL=\e[0m
 #  --[ Others ]--  #
 val_current_dir=$(shell pwd)#                  # Gets the current working director
 #  --[ User's configuration (overrides vars with same name) ]--  #
 -include .config.mk#                           # Include .config.mk
+
+# ---[ Macros ]--- #
+define update_count
+    $(src_dir_scripts)/count_increment.sh latest_next $(src_dir_conf)/bcount.txt $(EXTRAVERSION) "$(col_SUBINFO)"
+endef
 
 # ---[ Global ]--- #
 .PHONY: init init1 init2
@@ -163,27 +170,23 @@ dirs:
 buildroot:
 	@echo ""
 	@echo "$(col_HEADING)    // Adding buildroot into the image //$(col_NORMAL)"
-	$(val_nul_ttycmd)if [ ! -f "$(src_dir_buildroot)/output/images/rootfs.tar" ]; then \
-	    echo "$(col_SUBINFO)     / rootfs.tar does not exist, making Buildroot /$(col_NORMAL)"; \
-	    $(MAKE) -C $(src_dir_buildroot) $(val_nul_mkfile_variables) || exit 1; \
-	    echo "$(col_SUBINFO)     / Saving hash of .config /$(col_NORMAL)"; \
-	    shasum $(src_dir_buildroot)/.config | cut -d ' ' -f 1 > $(src_dir_conf)/hash_buildroot_conf.txt; \
-	    echo "$(col_SUBINFO)     / Invoking count updater /$(col_NORMAL)"; \
-	    $(src_dir_scripts)/count_increment.sh latest_next $(src_dir_conf)/bcount.txt; \
-	else \
-	    echo "$(col_SUBINFO)     / Comparing .config hash /$(col_NORMAL)"; \
-	    tmp_sh_brold=$$(cat $(src_dir_conf)/hash_buildroot_conf.txt); \
-	    tmp_sh_brnew=$$(shasum $(src_dir_buildroot)/.config | cut -d ' ' -f 1); \
-	    if [ "$$tmp_sh_brold" != "$$tmp_sh_brnew" ]; then \
-	        echo "$(col_SUBINFO)     / Hashes don't match, making Buildroot /$(col_NORMAL)"; \
-	        $(MAKE) -C $(src_dir_buildroot) $(val_nul_mkfile_variables) || exit 1; \
-	        echo "$(col_SUBINFO)     / Saving hash of .config /$(col_NORMAL)"; \
-	        shasum $(src_dir_buildroot)/.config | cut -d ' ' -f 1 > $(src_dir_conf)/hash_buildroot_conf.txt; \
-	        echo "$(col_SUBINFO)     / Invoking count updater /$(col_NORMAL)"; \
-	        $(src_dir_scripts)/count_increment.sh latest_next $(src_dir_conf)/bcount.txt; \
-	    fi \
-	fi
-	@echo "$(col_SUBINFO)     / Extracting rootfs archive to '$(bin_dir_tmp)' //$(col_NORMAL)"
+    ifneq ($(shell [ -f "$(src_dir_buildroot)/output/images/rootfs.tar" ] && echo y), y)
+	    @echo "$(col_SUBINFO)     / rootfs.tar does not exist, making Buildroot /$(col_NORMAL)"
+	    $(MAKE) -C $(src_dir_buildroot) $(val_nul_mkfile_variables) || exit 1
+	    @echo "$(col_SUBINFO)     / Saving hash of .config /$(col_NORMAL)"
+	    shasum $(src_dir_buildroot)/.config | cut -d ' ' -f 1 > $(src_dir_conf)/hash_buildroot_conf.txt
+	    $(call update_count)
+    else
+	    @echo "$(col_SUBINFO)     / Comparing .config hash /$(col_NORMAL)"
+        ifneq ($(shell cat $(src_dir_conf)/hash_buildroot_conf.txt),$(shell shasum $(src_dir_buildroot)/.config | cut -d ' ' -f 1))
+	        @echo "$(col_SUBINFO)     / Hashes don't match, making Buildroot /$(col_NORMAL)"
+	        $(MAKE) -C $(src_dir_buildroot) $(val_nul_mkfile_variables) || exit 1
+	        @echo "$(col_SUBINFO)     / Saving hash of .config /$(col_NORMAL)"
+	        shasum $(src_dir_buildroot)/.config | cut -d ' ' -f 1 > $(src_dir_conf)/hash_buildroot_conf.txt
+	        $(call update_count)
+        endif
+    endif
+	@echo "$(col_SUBINFO)     / Extracting rootfs archive to '$(bin_dir_tmp)' /$(col_NORMAL)"
 	$(val_nul_ttycmd)$(val_nul_superuser)tar xf $(src_dir_buildroot)/output/images/rootfs.tar -C $(bin_dir_tmp) $(val_nul_outcmd)
 
 # --- Kernel --- #
