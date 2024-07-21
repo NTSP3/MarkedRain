@@ -2,7 +2,9 @@
 #
 # This shell script is used to increment a numeric value specified
 # in <argument-1> and also add the timestamp of the value in the
-# file specified by <argument-2>
+# file specified by <argument-2> if <argument-1>'s value is
+# equal to the value specified in <argument-3>. It also gets
+# col_SUBINFO from Makefile via <argument-4>.
 #
 # This file expects 'get_var.sh' to be in the same dir as this one is.
 #
@@ -10,29 +12,40 @@
 #
 
 # Colour codes
-error='\e[1;91m'
-default='\e[0m'
+col_info="\e[36m"
+col_subinfo="$4"
+col_error="\e[1;91m"
+col_normal="\e[0m"
 
 # Fancy output functions
+subinfo() {
+    echo -e "${col_subinfo}     / $1 / ${col_normal}"
+}
+
+info() {
+    echo -e "${col_info} ++ $1 ++${col_normal}"
+}
+
 error() {
-    echo -e "${me}: $2: ${error}$1${default}"
+    echo -e "${me}: $2: ${col_error}$1${col_normal}"
     exit 1
 }
 
 # Set variables
-me=$0
-src_str=$1
-out_file=$2
+me="$0"
+src_str="$1"
+out_file="$2"
+mkfile_EXTRAVERSION="$3"
 me_dir=$(dirname "$0")
 compile_time=$(date '+%Y-%m-%d %H:%M:%S')
 
 # Check if the variables are empty
 if [ -z "$src_str" ]; then
     error "Variable cannot be empty. Check the first argument." "src_str"
-else
-    if [ -z "$out_file" ]; then
-        error "Variable cannot be empty. Check the second argument." "out_file"
-    fi
+elif [ -z "$out_file" ]; then
+    error "Variable cannot be empty. Check the second argument." "out_file"
+elif ! [[ $mkfile_EXTRAVERSION =~ ^[0-9]+$ ]]; then
+    error "Value of the third argument contains non-numeric characters or is empty." "mkfile_EXTRAVERSION"
 fi
 
 # Check if the file exist
@@ -44,9 +57,18 @@ fi
 current_number=$($me_dir/get_var.sh "$src_str" "$out_file")
 
 # Check if the variable contains only numbers
-if [[ "$current_number" =~ [^0-9] ]]; then
+if ! [[ $current_number =~ ^[0-9]+$ ]]; then
     error "Returned value contains non-numeric characters." "current_number - $current_number"
 fi
+
+# Check if the argumented number is less than or equal to the number from latest_next
+if [ $current_number -gt $mkfile_EXTRAVERSION ]; then
+    info "Variable 'current_number' with value '$current_number' is greater than 'mkfile_EXTRAVERSION' with value '$mkfile_EXTRAVERSION', so not updating."
+    exit 0
+fi
+
+# Display what is happening
+subinfo "Invoking build number updater"
 
 # Increment the value
 new_number=$((current_number + 1))
