@@ -9,19 +9,19 @@
 #
 
 # Colour codes
-error='\e[1;91m'
-default='\e[0m'
+col_error="\e[1;91m"
+col_normal="\e[0m"
 
 # Fancy output functions
 error() {
-    echo -e "${me}: $2: ${error}$1${default}"
+    echo -e "${me}: $2: ${col_error}$1${col_normal}"
     exit 1
 }
 
 # Gather arguments
-me=$0
-variable=$1
-src_file=$2
+me="$0"
+variable="$1"
+src_file="$2"
 
 # Check if the variables are empty
 if [ -z "$src_file" ]; then
