@@ -6,52 +6,51 @@
 #
 # Part of the MRain scripts source code.
 #
-# Todo: Add this into makefile so the dirs can be created using menuconfig (else error when changing sys dir)
 
 # Colour codes
-info='\e[30;46m'
-subinfo='\e[36m'
-ok='\e[1;32m'
-error='\e[1;91m'
-default='\e[0m'
+col_heading="\e[30;46m"
+col_info="\e[36m"
+col_ok="\e[1;32m"
+col_error="\e[1;91m"
+col_normal="\e[0m"
 
 # Fancy output functions
-info() {
-    echo -e "${info}---[$1]---${default}"
+heading() {
+    echo -e "${col_heading}---[ $1 ]---${col_normal}"
 }
 
-subinfo() {
+info() {
     if [ "$2" = "wait" ]; then
-        echo -e -n "${subinfo}$1... ${default}"
+        echo -e -n "${col_info}$1... ${col_normal}"
     elif [ "$1" = "ok" ]; then
         if [ -z $2 ]; then
-            echo -e "${ok}OK${default}"
+            echo -e "${col_ok}OK${col_normal}"
         else
-            echo -e "${ok}OK: $2${default}"
+            echo -e "${col_ok}OK: $2${col_normal}"
         fi
     elif [ "$3" = "stop" ]; then
-        echo -e "${error}Fail${default}"
+        echo -e "${col_error}Fail${col_normal}"
         error "$1" "$2"
     else
-        error "Specify an argument to me!" "subinfo"
+        error "Specify an argument to me!" "info"
     fi
 }
 
 ok() {
-    echo -e "$1: ${ok}OK${default}"
+    echo -e "$1: ${col_ok}OK${col_normal}"
 }
 
 error() {
-    echo -e "$2: ${error}$1${default}"
+    echo -e "$2: ${col_error}$1${col_normal}"
     exit 1
 }
 
 # Gather arguments
-src_file=$1
-dmp_folder=$2
+src_file="$1"
+dmp_folder="$2"
 
 # Check if the variables are empty
-info "Checking arguments for nullified values"
+heading "Checking arguments for nullified values"
 if [ -z "$src_file" ]; then
     error "Variable cannot be empty. Check the first argument." "src_file"
 else
@@ -64,7 +63,7 @@ else
 fi
 
 # Check if the file & folder exist
-info "Checking for file & folder existence"
+heading "Checking for file & folder existence"
 if [ -f "$src_file" ]; then
     ok "src_file"
     if [ -d "$dmp_folder" ]; then
@@ -76,22 +75,22 @@ else
     error "The specified file doesn't exist." "src_file"
 fi
 
-# Gather info from the file
-subinfo "Gathering directories to create" "wait"
+# Gather heading from the file
+info "Gathering directories to create" "wait"
 lines=$(grep '^root' "$src_file")
-subinfo "ok"
+info "ok"
 
 # Replace 'root' with the bin directory
-subinfo "Replacing 'root' with the bin directory" "wait"
+info "Replacing 'root' with the bin directory" "wait"
 dirs=()
 while IFS= read -r line; do
     dir="${dmp_folder}${line:4}"
     dirs+=("$dir")
 done <<< "$lines"
-subinfo "ok"
+info "ok"
 
 # Start creating the directories
-info "Creating directories"
+heading "Creating directories"
 for dir in "${dirs[@]}"; do
     mkdir -p "$dir"
     ret=$?
