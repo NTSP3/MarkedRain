@@ -9,12 +9,13 @@
 
 # Colour codes
 col_info="\e[36m"
+col_false="\e[91m"
 col_error="\e[1;91m"
 col_normal="\e[0m"
 
 # Fancy output functions
 info() {
-    echo -e "${col_info} ++ $1 ++${col_normal}  ::  ${me}"
+    echo -e "${col_info} ++ $1 ++${col_normal}  ::  ${col_false}${me}${col_normal}"
 }
 
 error() {
