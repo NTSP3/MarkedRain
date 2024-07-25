@@ -30,7 +30,7 @@ define stop
 	@echo ""
 	@echo "$(col_IMP)Error:$(col_NORMAL)$(col_ERROR)$(1)$(col_NORMAL)"
 	@echo ""
-	$(val_nul_ttycmd)exit 1
+	$(val_nul_ttycmd)false
 endef
 
 define save_hash
@@ -63,11 +63,11 @@ ifeq ($(bool_use_sylin_exlin), y)#             # Export val_nul_superuser now be
 endif
 val_temp += \n$(col_INFO)               !**          Checking variable 'EXTRAVERSION'          **!               $(col_NORMAL)
 ifeq ($(shell echo $(EXTRAVERSION) | grep -Eq '^[0-9]+$$' && echo 1 || echo 0), 0)
-    val_temp += \n$(col_FALSE)  Variable 'EXTRAVERSION' expected numeric value, but it's nothing like that.
+    val_temp += \n\n$(col_FALSE)  Variable 'EXTRAVERSION' expected numeric value, but it's nothing like that.
     val_temp += \n  Contents of the variable at this time {
     val_temp += \n$(EXTRAVERSION)
     val_temp += \n  }
-    val_temp += \n  Using value '0' instead - make sure source script and/or bconfig.txt are correct.\n$(col_NORMAL)
+    val_temp += \n  Using value '0' instead - make sure bconfig.txt is correct.\n$(col_NORMAL)
     $(eval EXTRAVERSION = 0)
 endif
 
@@ -112,13 +112,12 @@ all: setvars
 .PHONY: setvars
 setvars:
 	@echo "$(val_temp)"
-	@if [ -f .config.mk ]; then \
-	    echo "$(col_TRUE)               !**              Configuration file found              **!               $(col_NORMAL)"; \
-	else \
-	    echo "$(col_FALSE)               !**           Configuration file isn't found           **!               $(col_NORMAL)"; \
-	    echo ".config.mk is not found. Run 'make menuconfig', save it & try again"; \
-		false; \
-	fi
+    ifeq ($(shell [ -f ".config.mk" ] && echo y), y)
+	    echo "$(col_TRUE)               !**              Configuration file found              **!               $(col_NORMAL)"
+    else
+	    echo "$(col_FALSE)               !**           Configuration file isn't found           **!               $(col_NORMAL)"
+	    $(call stop, .config.mk is not found. Run 'make menuconfig', save it & try again)
+    endif
     ifeq ($(bool_use_sylin_exlin), y)
 	    @echo "$(col_TRUE)           (1) !** BootSyslinux (bool_use_sylin_exlin) is set to true **! (1)           $(col_NORMAL)"
 	    @echo "$(col_INFO)               !**          BootSyslinux: Calling CleanStart          **!               $(col_NORMAL)"
