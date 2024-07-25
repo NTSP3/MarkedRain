@@ -337,7 +337,7 @@ menu "Operating System configuration"
 
         config SUBLEVEL
             int "Sub-minor release number [SUBLEVEL]"
-            default 1
+            default 2
             help
                 This variable contains the sub-minor version of the version string,
                 which looks like "<major>.<minor>.<sub-minor>.<count>-<tag>".
