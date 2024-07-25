@@ -14,9 +14,8 @@ col_DONE		:= \e[92m
 col_TRUE		:= \e[32m
 col_FALSE		:= \e[91m
 col_ERROR		:= \e[1;91m
-# TODO: REPLACE ALL ERROR STATEMENTS WITHIN MKFILE AND OTHER SCRIPTS' ERROR COLOUR FROM col_FALSE to col_ERROR.
-col_IMP			:=\e[1;37;41m
-col_NORMAL		:=\e[0m
+col_IMP			:= \e[1;37;41m
+col_NORMAL		:= \e[0m
 #  --[ Others ]--  #
 val_current_dir	:= $(shell pwd)#               # Gets the current working director
 val_temp		:=#                            # Temporary variable
