@@ -10,6 +10,9 @@
 bin/
 builds/
 
+# MarkedRain files
+source/configs/hashes.txt
+
 # make menuconfig tmp & usr cfg
 .config
 .config.mk
@@ -18,7 +21,6 @@ builds/
 .tmpconfig.h
 *.o
 dotconfig.busybox
-source/configs/hash_buildroot_conf.txt
 
 # gitignore of Buildroot
 source/buildroot/output
