@@ -346,7 +346,7 @@ menu "Operating System configuration"
 
         config RELEASE_TAG
             string "Version release tag"
-            default "bruh"
+            default "bruh2"
             help
                 This variable contains the release 'tag' of the version string,
                 which looks like "<major>.<minor>.<sub-minor>.<count>-<tag>".
