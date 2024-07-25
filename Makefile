@@ -4,8 +4,8 @@
 VERSION=0
 PATCHLEVEL=0
 SUBLEVEL=0
-EXTRAVERSION=$(shell $(src_dir_scripts)/get_var.sh "latest_next" "$(src_dir_conf)/bcount.txt")
-RELEASE_TAG=unknown
+EXTRAVERSION := $(shell $(src_dir_scripts)/get_var.sh "latest_next" "$(src_dir_conf)/bcount.txt")
+RELEASE_TAG := unknown
 #  --[ Escape sequence for colour values ]--  #
 col_HEADING=\e[95m
 col_INFO=\e[36m
@@ -15,16 +15,28 @@ col_TRUE=\e[32m
 col_FALSE=\e[91m
 col_ERROR=\e[1;91m
 # TODO: REPLACE ALL ERROR STATEMENTS WITHIN MKFILE AND OTHER SCRIPTS' ERROR COLOUR FROM col_FALSE to col_ERROR.
-col_IMP=\e[1;30;41m
+col_IMP=\e[1;37;41m
 col_NORMAL=\e[0m
 #  --[ Others ]--  #
-val_current_dir=$(shell pwd)#                  # Gets the current working director
+val_current_dir := $(shell pwd)#               # Gets the current working director
 #  --[ User's configuration (overrides vars with same name) ]--  #
 -include .config.mk#                           # Include .config.mk
 
 # ---[ Macros ]--- #
+define stop
+	@echo ""
+	@echo "$(col_IMP)Error:$(col_NORMAL)$(col_ERROR)$(1)$(col_NORMAL)"
+	@echo ""
+	$(val_nul_ttycmd)exit 1
+endef
+
+define save_hash
+	@echo "$(col_SUBINFO)     / Saving hash of$(2) as$(1)= /$(col_NORMAL)"
+	$(val_nul_ttycmd) $(src_dir_scripts)/set_var.sh $(1) `shasum $(2) | cut -d ' ' -f 1` $(src_dir_conf)/hashes.txt
+endef
+
 define update_count
-    $(src_dir_scripts)/count_increment.sh latest_next $(src_dir_conf)/bcount.txt $(EXTRAVERSION) "$(col_SUBINFO)"
+	$(val_nul_ttycmd)$(src_dir_scripts)/count_increment.sh latest_next $(src_dir_conf)/bcount.txt $(EXTRAVERSION) "$(col_SUBINFO)" $(val_nul_outcmd)
 endef
 
 # ---[ Global ]--- #
@@ -119,7 +131,7 @@ setvars: init
 	    @echo "$(col_TRUE)    // Updating superuser variable //$(col_NORMAL)"
 	    $(eval val_nul_superuseropt = dev_use_sudo)
 	    $(eval val_nul_superuser = sudo )
-	    @echo "$(IMP_NOTE)    !! From this point on, you may get more requests for admin privileges !!    $(col_NORMAL)"
+	    @echo "$(col_IMP)    !! From this point on, you may get more requests for admin privileges !!    $(col_NORMAL)"
 	    @echo "$(col_INFO)               !**        BootSyslinux - Calling Autodirectory        **!               $(col_NORMAL)"
 	    $(val_nul_ttycmd)$(MAKE) $(val_nul_ttyopt) $(val_nul_outopt) $(val_nul_superuseropt) dirs $(val_nul_mkfile_variables)
     else
@@ -173,16 +185,14 @@ buildroot:
     ifneq ($(shell [ -f "$(src_dir_buildroot)/output/images/rootfs.tar" ] && echo y), y)
 	    @echo "$(col_SUBINFO)     / rootfs.tar does not exist, making Buildroot /$(col_NORMAL)"
 	    $(MAKE) -C $(src_dir_buildroot) $(val_nul_mkfile_variables) || exit 1
-	    @echo "$(col_SUBINFO)     / Saving hash of .config /$(col_NORMAL)"
-	    shasum $(src_dir_buildroot)/.config | cut -d ' ' -f 1 > $(src_dir_conf)/hash_buildroot_conf.txt
+	    $(call save_hash, buildroot, $(src_dir_buildroot)/.config)
 	    $(call update_count)
     else
 	    @echo "$(col_SUBINFO)     / Comparing .config hash /$(col_NORMAL)"
-        ifneq ($(shell cat $(src_dir_conf)/hash_buildroot_conf.txt),$(shell shasum $(src_dir_buildroot)/.config | cut -d ' ' -f 1))
+        ifneq ($(shell $(src_dir_scripts)/get_var.sh buildroot $(src_dir_conf)/hashes.txt),$(shell shasum $(src_dir_buildroot)/.config | cut -d ' ' -f 1))
 	        @echo "$(col_SUBINFO)     / Hashes don't match, making Buildroot /$(col_NORMAL)"
 	        $(MAKE) -C $(src_dir_buildroot) $(val_nul_mkfile_variables) || exit 1
-	        @echo "$(col_SUBINFO)     / Saving hash of .config /$(col_NORMAL)"
-	        shasum $(src_dir_buildroot)/.config | cut -d ' ' -f 1 > $(src_dir_conf)/hash_buildroot_conf.txt
+	        $(call save_hash, buildroot, $(src_dir_buildroot)/.config)
 	        $(call update_count)
         endif
     endif
@@ -193,7 +203,18 @@ buildroot:
 .PHONY: kernel
 kernel:
 	@echo ""
-	@echo "$(col_HEADING)    // Copying linux as '$(bin_dir_tmp)$(sys_dir_linux)' //$(col_NORMAL)"
+	@echo "$(col_HEADING)    // Adding the linux kernel //$(col_NORMAL)"
+	@echo "$(col_SUBINFO)     / Checking if kernel exists /$(col_NORMAL)"
+    ifneq ($(shell [ -f "$(src_dir_linux)" ] && echo y), y)
+	    $(call stop, Kernel file doesn't exist in $(src_dir_linux). Ensure you gave the correct path to it by running menuconfig.)
+    else
+	    @echo "$(col_SUBINFO)     / Checking kernel hash /$(col_NORMAL)"
+        ifneq ($(shell $(src_dir_scripts)/get_var.sh kernel $(src_dir_conf)/hashes.txt), $(shell shasum $(src_dir_linux) | cut -d ' ' -f 1))
+	        $(call save_hash, kernel, $(src_dir_linux))
+	        $(call update_count)
+        endif
+    endif
+	@echo "$(col_SUBINFO)     / Copying kernel to '$(bin_dir_tmp)$(sys_dir_linux)' /$(col_NORMAL)"
 	$(val_nul_ttycmd)$(val_nul_superuser)cp $(src_dir_linux) $(bin_dir_tmp)$(sys_dir_linux) $(val_nul_outcmd)
 
 # --- Finalization --- #
