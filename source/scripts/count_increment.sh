@@ -14,6 +14,7 @@
 # Colour codes
 col_info="\e[36m"
 col_subinfo="$4"
+col_false="\e[91m"
 col_error="\e[1;91m"
 col_normal="\e[0m"
 
@@ -23,7 +24,7 @@ subinfo() {
 }
 
 info() {
-    echo -e "${col_info} ++ $1 ++${col_normal}"
+    echo -e "${col_info} ++ $1 ++${col_normal}  ::  ${col_false}${me}${col_normal}"
 }
 
 error() {
@@ -37,7 +38,7 @@ src_str="$1"
 out_file="$2"
 mkfile_EXTRAVERSION="$3"
 me_dir=$(dirname "$0")
-compile_time=$(date '+%Y-%m-%d %H:%M:%S')
+time=$(date '+%Y-%m-%d %H:%M:%S')
 
 # Check if the variables are empty
 if [ -z "$src_str" ]; then
@@ -53,7 +54,7 @@ if [ ! -f "$out_file" ]; then
     error "The specified file doesn't exist." "$out_file"
 fi
 
-# Call get_var.sh
+# Call get_var.sh to get the value of $src_str
 current_number=$($me_dir/get_var.sh "$src_str" "$out_file")
 
 # Check if the variable contains only numbers
@@ -61,7 +62,7 @@ if ! [[ $current_number =~ ^[0-9]+$ ]]; then
     error "Returned value contains non-numeric characters." "current_number - $current_number"
 fi
 
-# Check if the argumented number is less than or equal to the number from latest_next
+# Check if the number from latest_next is greater than the argumented number
 if [ $current_number -gt $mkfile_EXTRAVERSION ]; then
     info "Variable 'current_number' with value '$current_number' is greater than 'mkfile_EXTRAVERSION' with value '$mkfile_EXTRAVERSION', so not updating."
     exit 0
@@ -73,9 +74,9 @@ subinfo "Invoking build number updater"
 # Increment the value
 new_number=$((current_number + 1))
 
-# Use sed to find the line starting with 'latest_next=' and replace its value
-sed -i "s/^$src_str=$current_number*/$src_str=$new_number/" "$out_file"
+# Call set_var.sh to set the value of $src_str
+$me_dir/set_var.sh "$src_str" "$new_number" "$out_file"
 
 # Use sed to put the os count information stuff
 sed -i "/^$src_str=$new_number/a\\
-$current_number - $compile_time" "$out_file"
+$current_number - $time" "$out_file"
