@@ -41,11 +41,12 @@ ok() {
 }
 
 error() {
-    echo -e "$2: ${col_error}$1${col_normal}"
+    echo -e "${me}: $2: ${col_error}$1${col_normal}"
     exit 1
 }
 
 # Gather arguments
+me="$0"
 src_file="$1"
 dmp_folder="$2"
 
