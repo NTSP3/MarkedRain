@@ -112,9 +112,9 @@ all: setvars
 setvars:
 	@echo "$(val_temp)"
     ifeq ($(shell [ -f ".config.mk" ] && echo y), y)
-	    echo "$(col_TRUE)               !**              Configuration file found              **!               $(col_NORMAL)"
+	    @echo "$(col_TRUE)               !**              Configuration file found              **!               $(col_NORMAL)"
     else
-	    echo "$(col_FALSE)               !**           Configuration file isn't found           **!               $(col_NORMAL)"
+	    @echo "$(col_FALSE)               !**           Configuration file isn't found           **!               $(col_NORMAL)"
 	    $(call stop, .config.mk is not found. Run 'make menuconfig', save it & try again)
     endif
     ifeq ($(bool_use_sylin_exlin), y)
@@ -168,8 +168,8 @@ setvars:
 dirs:
 	@echo ""
 	@echo "$(col_TRUE)    // Creating directories //$(col_NORMAL)"
-	$(val_nul_ttycmd)$(val_nul_superuser)mkdir -p $(bin_dir_tmp)
-	$(val_nul_ttycmd)$(val_nul_superuser)$(src_dir_scripts)/mk_sys_dir.sh $(src_dir_conf)/dir.txt $(bin_dir_tmp) $(val_nul_outcmd)
+	$(val_nul_ttycmd)$(val_nul_superuser) mkdir -p $(bin_dir_tmp)
+	$(val_nul_ttycmd)$(val_nul_superuser) $(src_dir_scripts)/mk_sys_dir.sh $(src_dir_conf)/dir.txt $(bin_dir_tmp) $(val_nul_outcmd)
 	@echo ""
 
 # --- Buildroot --- #
@@ -192,7 +192,7 @@ buildroot:
         endif
     endif
 	@echo "$(col_SUBINFO)     / Extracting rootfs archive to '$(bin_dir_tmp)' /$(col_NORMAL)"
-	$(val_nul_ttycmd)$(val_nul_superuser)tar xf $(src_dir_buildroot)/output/images/rootfs.tar -C $(bin_dir_tmp) $(val_nul_outcmd)
+	$(val_nul_ttycmd)$(val_nul_superuser) tar xf $(src_dir_buildroot)/output/images/rootfs.tar -C $(bin_dir_tmp) $(val_nul_outcmd)
 
 # --- Kernel --- #
 .PHONY: kernel
@@ -210,7 +210,7 @@ kernel:
         endif
     endif
 	@echo "$(col_SUBINFO)     / Copying kernel to '$(bin_dir_tmp)$(sys_dir_linux)' /$(col_NORMAL)"
-	$(val_nul_ttycmd)$(val_nul_superuser)cp $(src_dir_linux) $(bin_dir_tmp)$(sys_dir_linux) $(val_nul_outcmd)
+	$(val_nul_ttycmd)$(val_nul_superuser) cp $(src_dir_linux) $(bin_dir_tmp)$(sys_dir_linux) $(val_nul_outcmd)
 
 # --- Finalization --- #
 .PHONY: final
@@ -218,27 +218,27 @@ final:
 	@echo ""
 	@echo "$(col_HEADING)    // Doing finalization procedures //$(col_NORMAL)"
 	@echo "$(col_SUBINFO)     / Grub boot config /$(col_NORMAL)"
-	$(val_nul_ttycmd)$(val_nul_superuser)bash -c 'echo default=$(val_grub-boot_default) > $(rsh_grub_conf)'
-	$(val_nul_ttycmd)$(val_nul_superuser)bash -c 'echo timeout=$(val_grub-boot_timeout) >> $(rsh_grub_conf)'
-	$(val_nul_ttycmd)$(val_nul_superuser)bash -c 'echo gfxpayload=$(val_grub-boot_resolution) >> $(rsh_grub_conf)'
-	$(val_nul_ttycmd)$(val_nul_superuser)bash -c 'echo >> $(rsh_grub_conf)'
-	$(val_nul_ttycmd)$(val_nul_superuser)bash -c 'echo menuentry \"$(val_grub-entry-one_name)\" { >> $(rsh_grub_conf)'
-	$(val_nul_ttycmd)$(val_nul_superuser)bash -c 'echo "    linux $(sys_dir_linux) root=$(val_grub-entry-one_li_root) $(val_grub-entry-one_li_params)" >> $(rsh_grub_conf)'
-	$(val_nul_ttycmd)$(val_nul_superuser)bash -c 'echo } >> $(rsh_grub_conf)'
-	$(val_nul_ttycmd)$(val_nul_superuser)bash -c 'echo "" >> $(rsh_grub_conf)'
+	$(val_nul_ttycmd)$(val_nul_superuser) bash -c 'echo default=$(val_grub-boot_default) > $(rsh_grub_conf)'
+	$(val_nul_ttycmd)$(val_nul_superuser) bash -c 'echo timeout=$(val_grub-boot_timeout) >> $(rsh_grub_conf)'
+	$(val_nul_ttycmd)$(val_nul_superuser) bash -c 'echo gfxpayload=$(val_grub-boot_resolution) >> $(rsh_grub_conf)'
+	$(val_nul_ttycmd)$(val_nul_superuser) bash -c 'echo >> $(rsh_grub_conf)'
+	$(val_nul_ttycmd)$(val_nul_superuser) bash -c 'echo menuentry \"$(val_grub-entry-one_name)\" { >> $(rsh_grub_conf)'
+	$(val_nul_ttycmd)$(val_nul_superuser) bash -c 'echo "    linux $(sys_dir_linux) root=$(val_grub-entry-one_li_root) $(val_grub-entry-one_li_params)" >> $(rsh_grub_conf)'
+	$(val_nul_ttycmd)$(val_nul_superuser) bash -c 'echo } >> $(rsh_grub_conf)'
+	$(val_nul_ttycmd)$(val_nul_superuser) bash -c 'echo "" >> $(rsh_grub_conf)'
 	@echo "$(col_SUBINFO)     / Syslinux config /$(col_NORMAL)"
-	$(val_nul_ttycmd)$(val_nul_superuser)bash -c 'echo "DEFAULT $(val_grub-boot_default)" > $(rsh_sylin_conf)'
-	$(val_nul_ttycmd)$(val_nul_superuser)bash -c 'echo "PROMPT 1" >> $(rsh_sylin_conf)'
+	$(val_nul_ttycmd)$(val_nul_superuser) bash -c 'echo "DEFAULT $(val_grub-boot_default)" > $(rsh_sylin_conf)'
+	$(val_nul_ttycmd)$(val_nul_superuser) bash -c 'echo "PROMPT 1" >> $(rsh_sylin_conf)'
 	$(val_nul_ttycmd)if [ $(val_grub-boot_timeout) -gt 0 ]; then \
-	    $(val_nul_superuser)bash -c 'echo "TIMEOUT $(val_grub-boot_timeout)0" >> $(rsh_sylin_conf)'; \
+	    $(val_nul_superuser) bash -c 'echo "TIMEOUT $(val_grub-boot_timeout)0" >> $(rsh_sylin_conf)'; \
 	else \
-	    $(val_nul_superuser)bash -c 'echo "TIMEOUT 01" >> $(rsh_sylin_conf)'; \
+	    $(val_nul_superuser) bash -c 'echo "TIMEOUT 01" >> $(rsh_sylin_conf)'; \
 	fi
-	$(val_nul_ttycmd)$(val_nul_superuser)bash -c 'echo "" >> $(rsh_sylin_conf)'
-	$(val_nul_ttycmd)$(val_nul_superuser)bash -c 'echo "LABEL $(val_grub-boot_default)" >> $(rsh_sylin_conf)'
-	$(val_nul_ttycmd)$(val_nul_superuser)bash -c 'echo "    MENU LABEL $(val_grub-entry-one_name)" >> $(rsh_sylin_conf)'
-	$(val_nul_ttycmd)$(val_nul_superuser)bash -c 'echo "    KERNEL $(sys_dir_linux)" >> $(rsh_sylin_conf)'
-	$(val_nul_ttycmd)$(val_nul_superuser)bash -c 'echo "    APPEND root=$(val_grub-entry-one_li_root) $(val_grub-entry-one_li_params) vga=$(val_sylin-entry-one_li_vga_mode)" >> $(rsh_sylin_conf)'
+	$(val_nul_ttycmd)$(val_nul_superuser) bash -c 'echo "" >> $(rsh_sylin_conf)'
+	$(val_nul_ttycmd)$(val_nul_superuser) bash -c 'echo "LABEL $(val_grub-boot_default)" >> $(rsh_sylin_conf)'
+	$(val_nul_ttycmd)$(val_nul_superuser) bash -c 'echo "    MENU LABEL $(val_grub-entry-one_name)" >> $(rsh_sylin_conf)'
+	$(val_nul_ttycmd)$(val_nul_superuser) bash -c 'echo "    KERNEL $(sys_dir_linux)" >> $(rsh_sylin_conf)'
+	$(val_nul_ttycmd)$(val_nul_superuser) bash -c 'echo "    APPEND root=$(val_grub-entry-one_li_root) $(val_grub-entry-one_li_params) vga=$(val_sylin-entry-one_li_vga_mode)" >> $(rsh_sylin_conf)'
 
 # --- Clean Temporary Directory --- #
 .PHONY: rm_tmp
