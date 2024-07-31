@@ -21,6 +21,22 @@ menu "Makefile customizations"
             Enable it so you can see what the stuff called by make
             are doing.
 
+    config bool_do_timeout
+        bool "Wait if another image already exist in the build directory"
+        default y
+        help
+            Set this option to true if you want Make to wait a few
+            seconds specified in val_timeout_num if a file with
+            the same location provided in bin_dir_iso already exists.
+            Set this to false to compile without waiting.
+
+    config val_timeout_num
+        int "Seconds to waste time"
+        depends on bool_do_timeout
+        default "10"
+        help
+            Timer value for bool_do_timeout
+
     config val_common_struct
         string "Common sections in Makefile to be run"
         default "buildroot kernel final"
