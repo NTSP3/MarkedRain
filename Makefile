@@ -55,7 +55,9 @@ ifeq ($(bool_show_cmd_out), y)
 else
     val_temp += \n$(col_FALSE)               !**     ShowAppOutput (bool_show_cmd_out) is false     **!               $(col_NORMAL)
     export val_nul_outcmd = > /dev/null
-    export val_mkfile_variables += --no-print-directory
+    ifeq ($(findstring --no-print-directory,$(MAKEFLAGS)), )
+        MAKEFLAGS += --no-print-directory
+    endif
 endif
 ifeq ($(bool_use_sylin_exlin), y)#             # Export val_nul_superuser now because we can't do it later
     export val_nul_superuser = sudo
@@ -69,26 +71,28 @@ ifeq ($(shell echo $(EXTRAVERSION) | grep -Eq '^[0-9]+$$' && echo 1 || echo 0), 
     val_temp += \n  Using value '0' instead - make sure bconfig.txt is correct.\n$(col_NORMAL)
     $(eval EXTRAVERSION = 0)
 endif
+val_nul_conf-yn := $(firstword $(MAKECMDGOALS))
+ifneq ($(and $(val_nul_conf-yn), $(filter %config,$(val_nul_conf-yn)), $(val_nul_conf-yn)), )
+    val_temp += \n$(col_INFO)               !**              Preparing config manager              **!               $(col_NORMAL)
+    export srctree := $(if $(KBUILD_SRC),$(KBUILD_SRC),$(CURDIR))
+    export HOSTCC = gcc
+    include $(srctree)/make/Kbuild.include
+endif
 
 # Go to 'all' if nothing is specified #
 .DEFAULT_GOAL := all
 
 # ---[ Menuconfig interface setup ]--- #
-srctree			:= $(if $(KBUILD_SRC),$(KBUILD_SRC),$(CURDIR))
-export
-HOSTCC = gcc
-include $(srctree)/make/Kbuild.include
-
 KERNELVERSION	:= $(VERSION).$(PATCHLEVEL).$(SUBLEVEL).$(EXTRAVERSION)-$(RELEASE_TAG)
 
 .PHONY: config
 config:
 	@echo "$(val_temp)"
-	$(MAKE) $(build)=make/kconfig $@ $(val_mkfile_variables)
+	$(val_nul_ttycmd)$(MAKE) $(build)=make/kconfig $@
 
 %config:
 	@echo "$(val_temp)"
-	$(MAKE) $(build)=make/kconfig $@ $(val_mkfile_variables)
+	$(val_nul_ttycmd)$(MAKE) $(build)=make/kconfig $@
 
 # +++[ Random shortners (no need to be changed) ]+++ #
 rsh_grub_conf	:= $(bin_dir_tmp)/boot/grub/grub.cfg
@@ -120,45 +124,45 @@ setvars:
     ifeq ($(bool_use_sylin_exlin), y)
 	    @echo "$(col_TRUE)           (1) !** BootSyslinux (bool_use_sylin_exlin) is set to true **! (1)           $(col_NORMAL)"
 	    @echo "$(col_INFO)               !**          BootSyslinux: Calling CleanStart          **!               $(col_NORMAL)"
-	    $(val_nul_ttycmd)$(MAKE) cleancode $(val_mkfile_variables)
+	    $(val_nul_ttycmd)$(MAKE) cleancode
 	    @echo "$(col_TRUE)    // Creating '$(bin_dir_tmp)' //$(col_NORMAL)"
 	    $(val_nul_ttycmd)mkdir -p $(bin_dir_tmp)
 	    @echo "$(col_INFO)               !**           BootSyslinux: Calling part one           **!               $(col_NORMAL)"
-	    $(val_nul_ttycmd)$(MAKE) dev_iso_sylin_one $(val_mkfile_variables)
+	    $(val_nul_ttycmd)$(MAKE) dev_iso_sylin_one
 	    @echo "$(col_INFO)    // Superuser variable likely already exported //$(col_NORMAL)"
 	    @echo "$(col_IMP)    !! From this point on, you may get more requests for admin privileges !!    $(col_NORMAL)"
 	    @echo "$(col_INFO)               !**        BootSyslinux - Calling Autodirectory        **!               $(col_NORMAL)"
-	    $(val_nul_ttycmd)$(MAKE) dirs $(val_mkfile_variables)
+	    $(val_nul_ttycmd)$(MAKE) dirs
     else
 	    @echo "$(col_FALSE)           (1) !**    BootSyslinux (bool_use_sylin_exlin) is false    **! (1)           $(col_NORMAL)"
         ifeq ($(bool_clean_start), y)
 	        @echo "$(col_TRUE)               !**    CleanStart (bool_clean_start) is set to true    **!               $(col_NORMAL)"
-	        $(val_nul_ttycmd)$(MAKE) cleancode $(val_mkfile_variables)
+	        $(val_nul_ttycmd)$(MAKE) cleancode
 	        @echo "$(col_INFO)               !**         CleanStart - Calling Autodirectory         **!               $(col_NORMAL)"
-	        $(val_nul_ttycmd)$(MAKE) dirs $(val_mkfile_variables)
+	        $(val_nul_ttycmd)$(MAKE) dirs
         else
 	        @echo "$(col_FALSE)               !**       CleanStart (bool_clean_start) is false       **!               $(col_NORMAL)"
             ifeq ($(bool_auto_dir), y)
 	            @echo "$(col_TRUE)               !**    Autodirectory (bool_auto_dir) is set to true    **!               $(col_NORMAL)"
-	            $(val_nul_ttycmd)$(MAKE) dirs $(val_mkfile_variables)
+	            $(val_nul_ttycmd)$(MAKE) dirs
             else
 	            @echo "$(col_FALSE)               !**       Autodirectory (bool_auto_dir) is false       **!               $(col_NORMAL)"
             endif
         endif
     endif
 	@echo "$(col_INFO)               !**        Executing common structural sections        **!               $(col_NORMAL)"
-	$(val_nul_ttycmd)$(MAKE) $(val_common_struct) $(val_mkfile_variables)
+	$(val_nul_ttycmd)$(MAKE) $(val_common_struct)
     ifeq ($(bool_use_sylin_exlin), y)
 	    @echo "$(col_TRUE)           (2) !** BootSyslinux (bool_use_sylin_exlin) is set to true **! (2)           $(col_NORMAL)"
-	    $(val_nul_ttycmd)$(MAKE) dev_iso_sylin_two $(val_mkfile_variables)
+	    $(val_nul_ttycmd)$(MAKE) dev_iso_sylin_two
     else
 	    @echo "$(col_FALSE)           (2) !**    BootSyslinux (bool_use_sylin_exlin) is false    **! (2)           $(col_NORMAL)"
 	    @echo "$(col_INFO)               !**           Executing Makefile to use grub           **!               $(col_NORMAL)"
-	    $(val_nul_ttycmd)$(MAKE) iso $(val_mkfile_variables)
+	    $(val_nul_ttycmd)$(MAKE) iso
     endif
     ifeq ($(bool_del_tmp_dir), y)
 	    @echo "$(col_TRUE)               !**RemoveTmpDirectory (bool_del_tmp_dir) is set to true**!               $(col_NORMAL)"
-	    $(val_nul_ttycmd)$(MAKE) rm_tmp $(val_mkfile_variables)
+	    $(val_nul_ttycmd)$(MAKE) rm_tmp
     else
 	    @echo "$(col_FALSE)               !**   RemoveTmpDirectory (bool_del_tmp_dir) is false   **!               $(col_NORMAL)"
     endif
@@ -179,14 +183,14 @@ buildroot:
 	@echo "$(col_HEADING)    // Adding buildroot into the image //$(col_NORMAL)"
     ifneq ($(shell [ -f "$(src_dir_buildroot)/output/images/rootfs.tar" ] && echo y), y)
 	    @echo "$(col_SUBINFO)     / rootfs.tar does not exist, making Buildroot /$(col_NORMAL)"
-	    $(MAKE) -C $(src_dir_buildroot) $(val_mkfile_variables) || exit 1
+	    $(val_nul_ttycmd)$(MAKE) -C $(src_dir_buildroot) || exit 1
 	    $(call save_hash, buildroot, $(src_dir_buildroot)/.config)
 	    $(call update_count)
     else
 	    @echo "$(col_SUBINFO)     / Comparing .config hash /$(col_NORMAL)"
         ifneq ($(shell $(src_dir_scripts)/get_var.sh buildroot $(src_dir_conf)/hashes.txt),$(shell shasum $(src_dir_buildroot)/.config | cut -d ' ' -f 1))
 	        @echo "$(col_SUBINFO)     / Hashes don't match, making Buildroot /$(col_NORMAL)"
-	        $(MAKE) -C $(src_dir_buildroot) $(val_mkfile_variables) || exit 1
+	        $(val_nul_ttycmd)$(MAKE) -C $(src_dir_buildroot) $(val_nul_outcmd) || exit 1
 	        $(call save_hash, buildroot, $(src_dir_buildroot)/.config)
 	        $(call update_count)
         endif
@@ -267,7 +271,7 @@ runs: setvars run
 .PHONY: clean cleancode
 clean:
 	@echo "$(val_temp)"
-	$(val_nul_ttycmd)$(MAKE) cleancode $(val_mkfile_variables)
+	$(val_nul_ttycmd)$(MAKE) cleancode
 
 cleancode:
 	@echo ""
@@ -290,9 +294,9 @@ cleanall:
 	@echo "$(col_SUBINFO)  Press "Y" and enter to continue, any other key will terminate.$(col_NORMAL)"
 	$(val_nul_ttycmd)read choice; \
 	if [ "$$choice" = "Y" ] || [ "$$choice" = "y" ]; then \
-	    $(MAKE) cleancode $(val_mkfile_variables) || exit 1; \
+	    $(MAKE) cleancode || exit 1; \
 	    echo "$(col_FALSE)    // Cleaning buildroot //$(col_NORMAL)"; \
-	    $(MAKE) -C $(src_dir_buildroot) clean $(val_mkfile_variables) || exit 1; \
+	    $(MAKE) -C $(src_dir_buildroot) clean || exit 1; \
 		echo ""; \
 	    echo "$(col_TRUE)  Done. Run 'make' to re-compile. Be prepared to wait a long time. $(col_NORMAL)"; \
 		echo ""; \
