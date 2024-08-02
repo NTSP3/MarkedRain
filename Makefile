@@ -123,25 +123,27 @@ setvars:
 	    @echo -e "$(col_FALSE)               !**           Configuration file isn't found           **!               $(col_NORMAL)"
 	    $(call stop, .config.mk is not found. Run 'make menuconfig', save it & try again)
     endif
-    ifeq ($(bool_do_timeout), y)
-	    @echo -e "$(col_TRUE)               !**   Wait a minute (bool_do_timeout) is set to true   **!               $(col_NORMAL)"
-	    @echo -e ""
-	    @echo -e "$(col_INFO) The file specified in 'bin_dir_iso' is $(bin_dir_iso), which is a file that already exists."
-	    @echo -e " Some grace time has been given for you, if you need to save the current file for whatever purpose."
-	    @echo -e " Press $(col_NORMAL)$(col_ERROR)CTRL-C$(col_NORMAL)$(col_INFO) to cancel NOW. Pressing literally any other key will skip this countdown."
-	    @echo -e ""
-	    @echo -e " You can turn this off by setting 'bool_do_timeout' to false, or you can set 'val_timeout_num'"
-		@echo -e " to a lower number, if you find this annoying (which it probably is, but I want it)."
-	    @echo -e ""
-	    $(val_nul_ttycmd)for i in $$(seq $(val_timeout_num) -1 1); do \
-	        echo -en "\r$(col_INFO) You have $(col_NORMAL)$(col_ERROR)$$i$(col_NORMAL)$(col_INFO) seconds left $(col_NORMAL)"; \
-	        if ( read -n 1 -t 1 key </dev/tty 2>/dev/null ); then \
-	            break; \
-	        fi; \
-	    done
-	    @echo -e ""
-    else
-	    @echo -e "$(col_FALSE)               !**      Wait a minute (bool_do_timeout) is false      **!               $(col_NORMAL)"
+    ifeq ($(shell [ -f "$(bin_dir_iso)" ] && echo y), y)
+        ifeq ($(bool_do_timeout), y)
+	        @echo -e "$(col_TRUE)               !**   Wait a minute (bool_do_timeout) is set to true   **!               $(col_NORMAL)"
+	        @echo -e ""
+	        @echo -e "$(col_INFO) The file specified in 'bin_dir_iso' is $(bin_dir_iso), which is a file that already exists."
+	        @echo -e " Some grace time has been given for you, if you need to save the current file for whatever purpose."
+	        @echo -e " Press $(col_NORMAL)$(col_ERROR)CTRL-C$(col_NORMAL)$(col_INFO) to cancel NOW. Pressing literally any other key will skip this countdown."
+	        @echo -e ""
+	        @echo -e " You can turn this off by setting 'bool_do_timeout' to false, or you can set 'val_timeout_num'"
+		    @echo -e " to a lower number, if you find this annoying (which it probably is, but I want it)."
+	        @echo -e ""
+	        $(val_nul_ttycmd)for i in $$(seq $(val_timeout_num) -1 1); do \
+	            echo -en "\r$(col_INFO) You have $(col_NORMAL)$(col_ERROR)$$i$(col_NORMAL)$(col_INFO) seconds left $(col_NORMAL)"; \
+	            if ( read -n 1 -t 1 key </dev/tty 2>/dev/null ); then \
+	                break; \
+	            fi; \
+	        done
+	        @echo -e ""
+        else
+	        @echo -e "$(col_FALSE)               !**      Wait a minute (bool_do_timeout) is false      **!               $(col_NORMAL)"
+        endif
     endif
     ifeq ($(bool_use_sylin_exlin), y)
 	    @echo -e "$(col_TRUE)           (1) !** BootSyslinux (bool_use_sylin_exlin) is set to true **! (1)           $(col_NORMAL)"
