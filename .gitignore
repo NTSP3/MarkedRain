@@ -20,6 +20,7 @@ builds/
 .tmpconfig.h
 *.o
 dotconfig.busybox
+include/
 
 # gitignore of Buildroot
 source/buildroot/output
