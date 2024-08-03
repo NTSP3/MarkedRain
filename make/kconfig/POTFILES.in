@@ -1,5 +1,0 @@
-make/kconfig/mconf.c
-make/kconfig/conf.c
-make/kconfig/confdata.c
-make/kconfig/gconf.c
-make/kconfig/qconf.cc

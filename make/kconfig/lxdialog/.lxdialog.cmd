@@ -1,1 +1,0 @@
-cmd_make/kconfig/lxdialog/lxdialog := gcc  -o make/kconfig/lxdialog/lxdialog make/kconfig/lxdialog/checklist.o make/kconfig/lxdialog/menubox.o make/kconfig/lxdialog/textbox.o make/kconfig/lxdialog/yesno.o make/kconfig/lxdialog/inputbox.o make/kconfig/lxdialog/util.o make/kconfig/lxdialog/lxdialog.o make/kconfig/lxdialog/msgbox.o -lncursesw -ltinfo 
