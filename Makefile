@@ -50,7 +50,7 @@ ifeq ($(bool_show_cmd), y)
     export val_nul_ttycmd :=
 else
     val_temp += \n$(col_FALSE)               !**        ShowCommand (bool_show_cmd) is false        **!               $(col_NORMAL)
-    export val_nul_ttycmd := @
+    export val_nul_ttycmd ?= @
 endif
 ifeq ($(bool_show_cmd_out), y)
     val_temp += \n$(col_TRUE)               !**  ShowAppOutput (bool_show_cmd_out) is set to true  **!               $(col_NORMAL)
@@ -88,13 +88,17 @@ endif
 KERNELVERSION	:= $(VERSION).$(PATCHLEVEL).$(SUBLEVEL).$(EXTRAVERSION)-$(RELEASE_TAG)
 
 .PHONY: config
-config:
+config: scripts_basic
 	@echo -e "$(val_temp)"
 	$(val_nul_ttycmd)$(MAKE) $(build)=make/kconfig $@
 
-%config:
+%config: scripts_basic
 	@echo -e "$(val_temp)"
 	$(val_nul_ttycmd)$(MAKE) $(build)=make/kconfig $@
+
+PHONY += scripts_basic
+scripts_basic:
+	$(Q)$(MAKE) $(build)=make/basic
 
 # +++[ Random shortners (no need to be changed) ]+++ #
 rsh_grub_conf	:= $(bin_dir_tmp)/boot/grub/grub.cfg
