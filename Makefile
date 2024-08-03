@@ -31,26 +31,26 @@ define stop
 	@echo -e ""
 	@echo -e "$(col_IMP)Error:$(col_NORMAL)$(col_ERROR)$(1)$(col_NORMAL)"
 	@echo -e ""
-	$(val_nul_ttycmd)false
+	$(Q)false
 endef
 
 define save_hash
 	@echo -e "$(col_SUBINFO)     / Saving hash of$(2) as$(1)= /$(col_NORMAL)"
-	$(val_nul_ttycmd)$(src_dir_scripts)/set_var.sh $(1) `shasum $(2) | cut -d ' ' -f 1` $(src_dir_conf)/hashes.txt
+	$(Q)$(src_dir_scripts)/set_var.sh $(1) `shasum $(2) | cut -d ' ' -f 1` $(src_dir_conf)/hashes.txt
 endef
 
 define update_count
-	$(val_nul_ttycmd)$(src_dir_scripts)/count_increment.sh latest_next $(src_dir_conf)/bcount.txt $(EXTRAVERSION) "$(col_SUBINFO)" $(val_nul_outcmd)
+	$(Q)$(src_dir_scripts)/count_increment.sh latest_next $(src_dir_conf)/bcount.txt $(EXTRAVERSION) "$(col_SUBINFO)" $(val_nul_outcmd)
 endef
 
 # ---[ Global ]--- #
 val_temp := \n$(col_INFO)               +++++++++++++++++ MRain Operating System +++++++++++++++++               $(col_NORMAL)
 ifeq ($(bool_show_cmd), y)
     val_temp += \n$(col_TRUE)               !**     ShowCommand (bool_show_cmd) is set to true     **!               $(col_NORMAL)
-    export val_nul_ttycmd :=
+    export Q :=
 else
     val_temp += \n$(col_FALSE)               !**        ShowCommand (bool_show_cmd) is false        **!               $(col_NORMAL)
-    export val_nul_ttycmd ?= @
+    export Q ?= @
 endif
 ifeq ($(bool_show_cmd_out), y)
     val_temp += \n$(col_TRUE)               !**  ShowAppOutput (bool_show_cmd_out) is set to true  **!               $(col_NORMAL)
@@ -90,11 +90,11 @@ KERNELVERSION	:= $(VERSION).$(PATCHLEVEL).$(SUBLEVEL).$(EXTRAVERSION)-$(RELEASE_
 .PHONY: config
 config: scripts_basic
 	@echo -e "$(val_temp)"
-	$(val_nul_ttycmd)$(MAKE) $(build)=make/kconfig $@
+	$(Q)$(MAKE) $(build)=make/kconfig $@
 
 %config: scripts_basic
 	@echo -e "$(val_temp)"
-	$(val_nul_ttycmd)$(MAKE) $(build)=make/kconfig $@
+	$(Q)$(MAKE) $(build)=make/kconfig $@
 
 PHONY += scripts_basic
 scripts_basic:
@@ -138,7 +138,7 @@ setvars:
 	        @echo -e " You can turn this off by setting 'bool_do_timeout' to false, or you can set 'val_timeout_num'"
 		    @echo -e " to a lower number, if you find this annoying (which it probably is, but I want it)."
 	        @echo -e ""
-	        $(val_nul_ttycmd)for i in $$(seq $(val_timeout_num) -1 1); do \
+	        $(Q)for i in $$(seq $(val_timeout_num) -1 1); do \
 	            echo -en "\r$(col_INFO) You have $(col_NORMAL)$(col_ERROR)$$i$(col_NORMAL)$(col_INFO) seconds left $(col_NORMAL)"; \
 	            if ( read -n 1 -t 1 key </dev/tty 2>/dev/null ); then \
 	                break; \
@@ -152,45 +152,45 @@ setvars:
     ifeq ($(bool_use_sylin_exlin), y)
 	    @echo -e "$(col_TRUE)           (1) !** BootSyslinux (bool_use_sylin_exlin) is set to true **! (1)           $(col_NORMAL)"
 	    @echo -e "$(col_INFO)               !**          BootSyslinux: Calling CleanStart          **!               $(col_NORMAL)"
-	    $(val_nul_ttycmd)$(MAKE) cleancode
+	    $(Q)$(MAKE) cleancode
 	    @echo -e "$(col_TRUE)    // Creating '$(bin_dir_tmp)' //$(col_NORMAL)"
-	    $(val_nul_ttycmd)mkdir -p $(bin_dir_tmp)
+	    $(Q)mkdir -p $(bin_dir_tmp)
 	    @echo -e "$(col_INFO)               !**           BootSyslinux: Calling part one           **!               $(col_NORMAL)"
-	    $(val_nul_ttycmd)$(MAKE) dev_iso_sylin_one
+	    $(Q)$(MAKE) dev_iso_sylin_one
 	    @echo -e "$(col_INFO)    // Superuser variable likely already exported //$(col_NORMAL)"
 	    @echo -e "$(col_IMP)    !! From this point on, you may get more requests for admin privileges !!    $(col_NORMAL)"
 	    @echo -e "$(col_INFO)               !**        BootSyslinux - Calling Autodirectory        **!               $(col_NORMAL)"
-	    $(val_nul_ttycmd)$(MAKE) dirs
+	    $(Q)$(MAKE) dirs
     else
 	    @echo -e "$(col_FALSE)           (1) !**    BootSyslinux (bool_use_sylin_exlin) is false    **! (1)           $(col_NORMAL)"
         ifeq ($(bool_clean_start), y)
 	        @echo -e "$(col_TRUE)               !**    CleanStart (bool_clean_start) is set to true    **!               $(col_NORMAL)"
-	        $(val_nul_ttycmd)$(MAKE) cleancode
+	        $(Q)$(MAKE) cleancode
 	        @echo -e "$(col_INFO)               !**         CleanStart - Calling Autodirectory         **!               $(col_NORMAL)"
-	        $(val_nul_ttycmd)$(MAKE) dirs
+	        $(Q)$(MAKE) dirs
         else
 	        @echo -e "$(col_FALSE)               !**       CleanStart (bool_clean_start) is false       **!               $(col_NORMAL)"
             ifeq ($(bool_auto_dir), y)
 	            @echo -e "$(col_TRUE)               !**    Autodirectory (bool_auto_dir) is set to true    **!               $(col_NORMAL)"
-	            $(val_nul_ttycmd)$(MAKE) dirs
+	            $(Q)$(MAKE) dirs
             else
 	            @echo -e "$(col_FALSE)               !**       Autodirectory (bool_auto_dir) is false       **!               $(col_NORMAL)"
             endif
         endif
     endif
 	@echo -e "$(col_INFO)               !**        Executing common structural sections        **!               $(col_NORMAL)"
-	$(val_nul_ttycmd)$(MAKE) $(val_common_struct)
+	$(Q)$(MAKE) $(val_common_struct)
     ifeq ($(bool_use_sylin_exlin), y)
 	    @echo -e "$(col_TRUE)           (2) !** BootSyslinux (bool_use_sylin_exlin) is set to true **! (2)           $(col_NORMAL)"
-	    $(val_nul_ttycmd)$(MAKE) dev_iso_sylin_two
+	    $(Q)$(MAKE) dev_iso_sylin_two
     else
 	    @echo -e "$(col_FALSE)           (2) !**    BootSyslinux (bool_use_sylin_exlin) is false    **! (2)           $(col_NORMAL)"
 	    @echo -e "$(col_INFO)               !**           Executing Makefile to use grub           **!               $(col_NORMAL)"
-	    $(val_nul_ttycmd)$(MAKE) iso
+	    $(Q)$(MAKE) iso
     endif
     ifeq ($(bool_del_tmp_dir), y)
 	    @echo -e "$(col_TRUE)               !**RemoveTmpDirectory (bool_del_tmp_dir) is set to true**!               $(col_NORMAL)"
-	    $(val_nul_ttycmd)$(MAKE) rm_tmp
+	    $(Q)$(MAKE) rm_tmp
     else
 	    @echo -e "$(col_FALSE)               !**   RemoveTmpDirectory (bool_del_tmp_dir) is false   **!               $(col_NORMAL)"
     endif
@@ -200,8 +200,8 @@ setvars:
 dirs:
 	@echo -e ""
 	@echo -e "$(col_TRUE)    // Creating directories //$(col_NORMAL)"
-	$(val_nul_ttycmd)$(val_nul_superuser) mkdir -p $(bin_dir_tmp)
-	$(val_nul_ttycmd)$(val_nul_superuser) $(src_dir_scripts)/mk_sys_dir.sh $(src_dir_conf)/dir.txt $(bin_dir_tmp) $(val_nul_outcmd)
+	$(Q)$(val_nul_superuser) mkdir -p $(bin_dir_tmp)
+	$(Q)$(val_nul_superuser) $(src_dir_scripts)/mk_sys_dir.sh $(src_dir_conf)/dir.txt $(bin_dir_tmp) $(val_nul_outcmd)
 	@echo -e ""
 
 # --- Buildroot --- #
@@ -211,20 +211,20 @@ buildroot:
 	@echo -e "$(col_HEADING)    // Adding buildroot into the image //$(col_NORMAL)"
     ifneq ($(shell [ -f "$(src_dir_buildroot)/output/images/rootfs.tar" ] && echo y), y)
 	    @echo -e "$(col_SUBINFO)     / rootfs.tar does not exist, making Buildroot /$(col_NORMAL)"
-	    $(val_nul_ttycmd)$(MAKE) -C $(src_dir_buildroot) || exit 1
+	    $(Q)$(MAKE) -C $(src_dir_buildroot) || exit 1
 	    $(call save_hash, buildroot, $(src_dir_buildroot)/.config)
 	    $(call update_count)
     else
 	    @echo -e "$(col_SUBINFO)     / Comparing .config hash /$(col_NORMAL)"
         ifneq ($(shell $(src_dir_scripts)/get_var.sh buildroot $(src_dir_conf)/hashes.txt),$(shell shasum $(src_dir_buildroot)/.config | cut -d ' ' -f 1))
 	        @echo -e "$(col_SUBINFO)     / Hashes don't match, making Buildroot /$(col_NORMAL)"
-	        $(val_nul_ttycmd)$(MAKE) -C $(src_dir_buildroot) $(val_nul_outcmd) || exit 1
+	        $(Q)$(MAKE) -C $(src_dir_buildroot) $(val_nul_outcmd) || exit 1
 	        $(call save_hash, buildroot, $(src_dir_buildroot)/.config)
 	        $(call update_count)
         endif
     endif
 	@echo -e "$(col_SUBINFO)     / Extracting rootfs archive to '$(bin_dir_tmp)' /$(col_NORMAL)"
-	$(val_nul_ttycmd)$(val_nul_superuser) tar xf $(src_dir_buildroot)/output/images/rootfs.tar -C $(bin_dir_tmp) $(val_nul_outcmd)
+	$(Q)$(val_nul_superuser) tar xf $(src_dir_buildroot)/output/images/rootfs.tar -C $(bin_dir_tmp) $(val_nul_outcmd)
 
 # --- Kernel --- #
 .PHONY: kernel
@@ -242,7 +242,7 @@ kernel:
         endif
     endif
 	@echo -e "$(col_SUBINFO)     / Copying kernel to '$(bin_dir_tmp)$(sys_dir_linux)' /$(col_NORMAL)"
-	$(val_nul_ttycmd)$(val_nul_superuser) cp $(src_dir_linux) $(bin_dir_tmp)$(sys_dir_linux) $(val_nul_outcmd)
+	$(Q)$(val_nul_superuser) cp $(src_dir_linux) $(bin_dir_tmp)$(sys_dir_linux) $(val_nul_outcmd)
 
 # --- Finalization --- #
 .PHONY: final
@@ -250,48 +250,48 @@ final:
 	@echo -e ""
 	@echo -e "$(col_HEADING)    // Doing finalization procedures //$(col_NORMAL)"
 	@echo -e "$(col_SUBINFO)     / Grub boot config /$(col_NORMAL)"
-	$(val_nul_ttycmd)$(val_nul_superuser) bash -c 'echo default=$(val_grub-boot_default) > $(rsh_grub_conf)'
-	$(val_nul_ttycmd)$(val_nul_superuser) bash -c 'echo timeout=$(val_grub-boot_timeout) >> $(rsh_grub_conf)'
-	$(val_nul_ttycmd)$(val_nul_superuser) bash -c 'echo gfxpayload=$(val_grub-boot_resolution) >> $(rsh_grub_conf)'
-	$(val_nul_ttycmd)$(val_nul_superuser) bash -c 'echo >> $(rsh_grub_conf)'
-	$(val_nul_ttycmd)$(val_nul_superuser) bash -c 'echo menuentry \"$(val_grub-entry-one_name)\" { >> $(rsh_grub_conf)'
-	$(val_nul_ttycmd)$(val_nul_superuser) bash -c 'echo "    linux $(sys_dir_linux) root=$(val_grub-entry-one_li_root) $(val_grub-entry-one_li_params)" >> $(rsh_grub_conf)'
-	$(val_nul_ttycmd)$(val_nul_superuser) bash -c 'echo } >> $(rsh_grub_conf)'
-	$(val_nul_ttycmd)$(val_nul_superuser) bash -c 'echo "" >> $(rsh_grub_conf)'
+	$(Q)$(val_nul_superuser) bash -c 'echo default=$(val_grub-boot_default) > $(rsh_grub_conf)'
+	$(Q)$(val_nul_superuser) bash -c 'echo timeout=$(val_grub-boot_timeout) >> $(rsh_grub_conf)'
+	$(Q)$(val_nul_superuser) bash -c 'echo gfxpayload=$(val_grub-boot_resolution) >> $(rsh_grub_conf)'
+	$(Q)$(val_nul_superuser) bash -c 'echo >> $(rsh_grub_conf)'
+	$(Q)$(val_nul_superuser) bash -c 'echo menuentry \"$(val_grub-entry-one_name)\" { >> $(rsh_grub_conf)'
+	$(Q)$(val_nul_superuser) bash -c 'echo "    linux $(sys_dir_linux) root=$(val_grub-entry-one_li_root) $(val_grub-entry-one_li_params)" >> $(rsh_grub_conf)'
+	$(Q)$(val_nul_superuser) bash -c 'echo } >> $(rsh_grub_conf)'
+	$(Q)$(val_nul_superuser) bash -c 'echo "" >> $(rsh_grub_conf)'
 	@echo -e "$(col_SUBINFO)     / Syslinux config /$(col_NORMAL)"
-	$(val_nul_ttycmd)$(val_nul_superuser) bash -c 'echo "DEFAULT $(val_grub-boot_default)" > $(rsh_sylin_conf)'
-	$(val_nul_ttycmd)$(val_nul_superuser) bash -c 'echo "PROMPT 1" >> $(rsh_sylin_conf)'
-	$(val_nul_ttycmd)if [ $(val_grub-boot_timeout) -gt 0 ]; then \
+	$(Q)$(val_nul_superuser) bash -c 'echo "DEFAULT $(val_grub-boot_default)" > $(rsh_sylin_conf)'
+	$(Q)$(val_nul_superuser) bash -c 'echo "PROMPT 1" >> $(rsh_sylin_conf)'
+	$(Q)if [ $(val_grub-boot_timeout) -gt 0 ]; then \
 	    $(val_nul_superuser) bash -c 'echo "TIMEOUT $(val_grub-boot_timeout)0" >> $(rsh_sylin_conf)'; \
 	else \
 	    $(val_nul_superuser) bash -c 'echo "TIMEOUT 01" >> $(rsh_sylin_conf)'; \
 	fi
-	$(val_nul_ttycmd)$(val_nul_superuser) bash -c 'echo "" >> $(rsh_sylin_conf)'
-	$(val_nul_ttycmd)$(val_nul_superuser) bash -c 'echo "LABEL $(val_grub-boot_default)" >> $(rsh_sylin_conf)'
-	$(val_nul_ttycmd)$(val_nul_superuser) bash -c 'echo "    MENU LABEL $(val_grub-entry-one_name)" >> $(rsh_sylin_conf)'
-	$(val_nul_ttycmd)$(val_nul_superuser) bash -c 'echo "    KERNEL $(sys_dir_linux)" >> $(rsh_sylin_conf)'
-	$(val_nul_ttycmd)$(val_nul_superuser) bash -c 'echo "    APPEND root=$(val_grub-entry-one_li_root) $(val_grub-entry-one_li_params) vga=$(val_sylin-entry-one_li_vga_mode)" >> $(rsh_sylin_conf)'
+	$(Q)$(val_nul_superuser) bash -c 'echo "" >> $(rsh_sylin_conf)'
+	$(Q)$(val_nul_superuser) bash -c 'echo "LABEL $(val_grub-boot_default)" >> $(rsh_sylin_conf)'
+	$(Q)$(val_nul_superuser) bash -c 'echo "    MENU LABEL $(val_grub-entry-one_name)" >> $(rsh_sylin_conf)'
+	$(Q)$(val_nul_superuser) bash -c 'echo "    KERNEL $(sys_dir_linux)" >> $(rsh_sylin_conf)'
+	$(Q)$(val_nul_superuser) bash -c 'echo "    APPEND root=$(val_grub-entry-one_li_root) $(val_grub-entry-one_li_params) vga=$(val_sylin-entry-one_li_vga_mode)" >> $(rsh_sylin_conf)'
 
 # --- Clean Temporary Directory --- #
 .PHONY: rm_tmp
 rm_tmp:
 	@echo -e ""
 	@echo -e "$(col_FALSE)    // Cleaning temporary files //$(col_NORMAL)"
-	$(val_nul_ttycmd)rm -rf $(bin_dir_tmp)
+	$(Q)rm -rf $(bin_dir_tmp)
 
 # --- GRUB --- #
 .PHONY: iso
 iso:
 	@echo -e ""
 	@echo -e "$(col_HEADING)    // Creating new disc image with GRUB //$(col_NORMAL)"
-	$(val_nul_ttycmd)grub-mkrescue -o $(bin_dir_iso) $(bin_dir_tmp) $(val_nul_outcmd)
+	$(Q)grub-mkrescue -o $(bin_dir_iso) $(bin_dir_tmp) $(val_nul_outcmd)
 
 # --- Run --- #
 .PHONY: run runs
 run:
 	@echo -e ""
 	@echo -e "$(col_INFO)    // Now running '$(bin_dir_iso)' using '$(util_vm)' //$(col_NORMAL)"
-	$(val_nul_ttycmd)$(util_vm) $(util_vm_params) $(bin_dir_iso) $(val_nul_outcmd)
+	$(Q)$(util_vm) $(util_vm_params) $(bin_dir_iso) $(val_nul_outcmd)
 
 runs: setvars run
 
@@ -299,16 +299,16 @@ runs: setvars run
 .PHONY: clean cleancode
 clean:
 	@echo -e "$(val_temp)"
-	$(val_nul_ttycmd)$(MAKE) cleancode
+	$(Q)$(MAKE) cleancode
 
 cleancode:
 	@echo -e ""
-	$(val_nul_ttycmd)if mountpoint -q "$(bin_dir_tmp)"; then \
+	$(Q)if mountpoint -q "$(bin_dir_tmp)"; then \
 		echo -e "$(col_FALSE)    // Unmounting '$(bin_dir_tmp)' (May ask for superuser access) //$(col_NORMAL)"; \
 		sudo umount "$(bin_dir_tmp)" $(val_nul_outcmd); \
 	fi
 	@echo -e "$(col_FALSE)    // Deleting directories and image //$(col_NORMAL)"
-	$(val_nul_ttycmd)rm -rf $(bin_dir_tmp) $(bin_dir_iso) $(bin_dir)
+	$(Q)rm -rf $(bin_dir_tmp) $(bin_dir_iso) $(bin_dir)
 	@echo -e ""
 
 # --- Clean all stuff --- #
@@ -320,7 +320,7 @@ cleanall:
 	@echo -e "  which may make them take longer to compile.$(col_NORMAL)"
 	@echo -e ""
 	@echo -e "$(col_SUBINFO)  Press "Y" and enter to continue, any other key will terminate.$(col_NORMAL)"
-	$(val_nul_ttycmd)read choice; \
+	$(Q)read choice; \
 	if [ "$$choice" = "Y" ] || [ "$$choice" = "y" ]; then \
 	    $(MAKE) cleancode || exit 1; \
 	    echo -e "$(col_FALSE)    // Cleaning buildroot //$(col_NORMAL)"; \
@@ -344,20 +344,20 @@ dev_iso_sylin_one:
 	@echo -e ""
 	@echo -e "$(col_HEADING)    // Creating new disc image with syslinux as bootloader //$(col_NORMAL)"
 	@echo -e "$(col_SUBINFO)     / Creating an empty file ($(val_dev_iso_size)MB) /$(col_NORMAL)"
-	$(val_nul_ttycmd)truncate -s $(val_dev_iso_size)M $(bin_dir_iso) $(val_nul_outcmd)
+	$(Q)truncate -s $(val_dev_iso_size)M $(bin_dir_iso) $(val_nul_outcmd)
 	@echo -e "$(col_SUBINFO)     / Creating an ext4 filesystem /$(col_NORMAL)"
-	$(val_nul_ttycmd)mkfs.ext4 $(bin_dir_iso) $(val_nul_outcmd)
+	$(Q)mkfs.ext4 $(bin_dir_iso) $(val_nul_outcmd)
 	@echo -e "$(col_SUBINFO)     / Mounting iso image to '$(bin_dir_tmp)' (May ask for superuser access) /$(col_NORMAL)"
-	$(val_nul_ttycmd)sudo mount $(bin_dir_iso) $(bin_dir_tmp) $(val_nul_outcmd)
+	$(Q)sudo mount $(bin_dir_iso) $(bin_dir_tmp) $(val_nul_outcmd)
 
 dev_iso_sylin_two:
 	@echo -e "$(col_SUBINFO)     / Installing syslinux (May ask for superuser access) /$(col_NORMAL)"
-	$(val_nul_ttycmd)sudo extlinux --install $(bin_dir_tmp) $(val_nul_outcmd)
+	$(Q)sudo extlinux --install $(bin_dir_tmp) $(val_nul_outcmd)
 	@echo -e "$(col_SUBINFO)     / Unmounting '$(bin_dir_tmp)' (May ask for superuser access) /$(col_NORMAL)"
-	$(val_nul_ttycmd)sudo umount $(bin_dir_tmp) $(val_nul_outcmd)
+	$(Q)sudo umount $(bin_dir_tmp) $(val_nul_outcmd)
 
 dev_stop:
 	false
 
 wipe: clean
-	$(val_nul_ttycmd)clear
+	$(Q)clear
