@@ -3,6 +3,7 @@
 mainmenu "MarkedRain Configuration"
 
 menu "Makefile customizations"
+
     config bool_show_cmd
         bool "Display all commands being sent to the terminal"
         default n
@@ -33,20 +34,14 @@ menu "Makefile customizations"
     config val_timeout_num
         int "Seconds to waste time"
         depends on bool_do_timeout
-        default "10"
+        default "20"
         help
             Timer value for bool_do_timeout
 
-    config val_common_struct
-        string "Common sections in Makefile to be run"
-        default "buildroot kernel final"
-        help
-            Write the names of sections in the Makefile that you
-            want to execute always. Do not edit unless you know
-            what you are doing.
 endmenu
 
 menu "Source configuration"
+
     config src_dir
         string "Project's source directory"
         default "source"
@@ -66,7 +61,7 @@ menu "Source configuration"
             code for various buildroot utilites.
 
     config src_dir_linux
-        string "Linux kernel directory (bzImage file]"
+        string "Linux kernel directory (bzImage file)"
         default "$[src_dir]/kernel/bzImage"
         help
             The linux kernel directory contains the kernel
@@ -89,31 +84,9 @@ menu "Source configuration"
             The scripting directory has scripts that are
             used while making the operating system.
 
-    config bool_clean_start
-        bool "Wipe MRain output directory before compiling"
-        default n
-        help
-            Runs 'rm -rf' on the output directory, usually "bin/".
-            It deletes all previous files located in the output
-            directory of MRain, not on its source programs. Stuff
-            like "output/" in "source/buildroot" will not be
-            deleted. May take longer for the next make compilation
-            due to the deleting process, but it ensures there's no
-            leftovers from previous compilations.
-
 endmenu
 
 menu "Destination configuration"
-    config bool_auto_dir
-        bool "Remake directory structure before compiling"
-        default y
-        depends on !bool_clean_start
-        help
-            Creates the output directories specified before any
-            sort of building. Usually the output directory is
-            "bin/". This folder is made using "mkdir -p" so it
-            doesn't error out if it exists. This feature is
-            recommended to keep turned on.
 
     config bin_dir
         string "Main output directory"
@@ -373,6 +346,7 @@ menu "Operating System configuration"
 endmenu
 
 menu "Utilities"
+
     config util_vm
         string "Virtualization software"
         default "qemu-system-x86_64"
@@ -400,4 +374,5 @@ menu "Utilities"
             to build the bootloader used by Syslinux. By default,
             the image filesystem is Ext4, so the application used
             is extlinux.
+
 endmenu
