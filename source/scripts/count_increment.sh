@@ -68,6 +68,14 @@ if [ $current_number -gt $mkfile_EXTRAVERSION ]; then
     exit 0
 fi
 
+echo -ne " ${col_info} Build description ${col_normal}[${col_false}NULL = Cancel${col_normal}] : "
+read desc
+
+if [ -z $desc ]; then
+    info "Cancelled"
+    exit 0
+fi
+
 # Display what is happening
 subinfo "Invoking build number updater"
 
@@ -79,4 +87,4 @@ $me_dir/set_var.sh "$src_str" "$new_number" "$out_file"
 
 # Use sed to put the os count information stuff
 sed -i "/^$src_str=$new_number/a\\
-$current_number - $time" "$out_file"
+$current_number - $time : $desc" "$out_file"
