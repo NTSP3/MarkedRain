@@ -16,6 +16,7 @@ col_FALSE		:= \e[91m
 col_ERROR		:= \e[1;91m
 col_IMP			:= \e[1;37;41m
 col_NORMAL		:= \e[0m
+export col_HEADING col_INFO col_SUBINFO col_DONE col_TRUE col_FALSE col_ERROR col_IMP col_NORMAL
 #  --[ Command shell ]-- #
 SHELL := /bin/bash
 #  --[ Others ]--  #
@@ -52,14 +53,10 @@ ifeq ($(bool_show_cmd_out), y)
     val_temp += \n$(col_TRUE)               !**  ShowAppOutput (bool_show_cmd_out) is set to true  **!               $(col_NORMAL)
 else
     val_temp += \n$(col_FALSE)               !**     ShowAppOutput (bool_show_cmd_out) is false     **!               $(col_NORMAL)
-    export val_nul_outcmd = > /dev/null
+    export OUT = > /dev/null
     ifeq ($(findstring --no-print-directory,$(MAKEFLAGS)), )
         MAKEFLAGS += --no-print-directory
     endif
-endif
-ifeq ($(bool_use_sylin_exlin), y)#             # Export val_nul_superuser now because we can't do it later
-    val_temp += \n\n$(col_INFO)    // Exporting superuser variable //$(col_NORMAL)\n
-    export val_nul_superuser = sudo
 endif
 val_temp += \n$(col_INFO)               !**          Checking variable 'EXTRAVERSION'          **!               $(col_NORMAL)
 ifeq ($(shell echo $(EXTRAVERSION) | grep -Eq '^[0-9]+$$' && echo 1 || echo 0), 0)
@@ -70,21 +67,24 @@ ifeq ($(shell echo $(EXTRAVERSION) | grep -Eq '^[0-9]+$$' && echo 1 || echo 0), 
     val_temp += \n  Using value '0' instead - make sure bconfig.txt is correct.\n$(col_NORMAL)
     $(eval EXTRAVERSION = 0)
 endif
-val_nul_conf-yn := $(firstword $(MAKECMDGOALS))
-ifneq ($(and $(val_nul_conf-yn), $(filter %config,$(val_nul_conf-yn)), $(val_nul_conf-yn)), )
+val_conf-yn := $(firstword $(MAKECMDGOALS))
+ifneq ($(and $(val_conf-yn), $(filter %config,$(val_conf-yn)), $(val_conf-yn)), )
     val_temp += \n$(col_INFO)               !**              Preparing config manager              **!               $(col_NORMAL)
     export srctree := $(if $(KBUILD_SRC),$(KBUILD_SRC),$(CURDIR))
     export HOSTCC = gcc
     include $(srctree)/make/Kbuild.include
+else ifeq ($(bool_use_sylin_exlin), y)#        # Export val_superuser now because we can't do it later
+    val_temp += \n\n$(col_INFO)    // Exporting superuser variable //$(col_NORMAL)\n
+    export val_superuser = sudo
 endif
 
 # Go to 'all' if nothing is specified #
 .DEFAULT_GOAL := all
 
 # ---[ Menuconfig interface setup ]--- #
-KERNELVERSION	:= $(VERSION).$(PATCHLEVEL).$(SUBLEVEL).$(EXTRAVERSION)-$(RELEASE_TAG)
+export FINALVERSION	:= $(VERSION).$(PATCHLEVEL).$(SUBLEVEL).$(EXTRAVERSION)-$(RELEASE_TAG)
 
-.PHONY: config
+.PHONY: config %config scripts_basic
 config: scripts_basic
 	@echo -e "$(val_temp)"
 	$(Q)$(MAKE) $(build)=make/kconfig $@
@@ -93,7 +93,6 @@ config: scripts_basic
 	@echo -e "$(val_temp)"
 	$(Q)$(MAKE) $(build)=make/kconfig $@
 
-PHONY += scripts_basic
 scripts_basic:
 	$(Q)$(MAKE) $(build)=make/basic
 
@@ -154,11 +153,11 @@ setvars:
 	    @echo -e ""
 	    @echo -e "$(col_HEADING)    // Creating new disc image with syslinux as bootloader //$(col_NORMAL)"
 	    @echo -e "$(col_SUBINFO)     / Creating an empty file ($(val_dev_iso_size)MB) /$(col_NORMAL)"
-	    $(Q)truncate -s $(val_dev_iso_size)M $(bin_dir_iso) $(val_nul_outcmd)
+	    $(Q)truncate -s $(val_dev_iso_size)M $(bin_dir_iso) $(OUT)
 	    @echo -e "$(col_SUBINFO)     / Creating an ext4 filesystem /$(col_NORMAL)"
-	    $(Q)mkfs.ext4 $(bin_dir_iso) $(val_nul_outcmd)
+	    $(Q)mkfs.ext4 $(bin_dir_iso) $(OUT)
 	    @echo -e "$(col_SUBINFO)     / Mounting iso image to '$(bin_dir_tmp)' (May ask for superuser access) /$(col_NORMAL)"
-	    $(Q)sudo mount $(bin_dir_iso) $(bin_dir_tmp) $(val_nul_outcmd)
+	    $(Q)sudo mount $(bin_dir_iso) $(bin_dir_tmp) $(OUT)
 	    @echo -e "$(col_IMP)    !! From this point on, you may get more requests for admin privileges !!    $(col_NORMAL)"
     else
 	    @echo -e "$(col_FALSE)               !**    BootSyslinux (bool_use_sylin_exlin) is false    **!               $(col_NORMAL)"
@@ -166,8 +165,8 @@ setvars:
 #  -- Directories --  #
 	@echo -e ""
 	@echo -e "$(col_TRUE)    // Creating directories //$(col_NORMAL)"
-	$(Q)$(val_nul_superuser) mkdir -p "$(bin_dir_tmp)"
-	$(Q)$(val_nul_superuser) "$(src_dir_scripts)/mk_sys_dir.sh" "$(src_dir_conf)/dir.txt" "$(bin_dir_tmp)" $(val_nul_outcmd)
+	$(Q)$(val_superuser) mkdir -p "$(bin_dir_tmp)"
+	$(Q)$(val_superuser) "$(src_dir_scripts)/mk_sys_dir.sh" "$(src_dir_conf)/dir.txt" "$(bin_dir_tmp)" $(OUT)
 	@echo -e ""
 #  -- Buildroot --  #
 	@echo -e ""
@@ -176,18 +175,18 @@ setvars:
 	    @echo -e "$(col_SUBINFO)     / rootfs.tar does not exist, making Buildroot /$(col_NORMAL)"
 	    $(Q)$(MAKE) -C $(src_dir_buildroot) || exit 1
 	    $(call save_hash, buildroot, $(src_dir_buildroot)/.config)
-	    $(eval val_nul_do_update_count := y)
+	    $(eval val_do_update_count := y)
     else
 	    @echo -e "$(col_SUBINFO)     / Comparing .config hash /$(col_NORMAL)"
         ifneq ($(shell $(src_dir_scripts)/get_var.sh buildroot $(src_dir_conf)/hashes.txt),$(shell shasum $(src_dir_buildroot)/.config | cut -d ' ' -f 1))
 	        @echo -e "$(col_SUBINFO)     / Hashes don't match, making Buildroot /$(col_NORMAL)"
-	        $(Q)$(MAKE) -C $(src_dir_buildroot) $(val_nul_outcmd) || exit 1
+	        $(Q)$(MAKE) -C $(src_dir_buildroot) $(OUT) || exit 1
 	        $(call save_hash, buildroot, $(src_dir_buildroot)/.config)
-	        $(eval val_nul_do_update_count := y)
+	        $(eval val_do_update_count := y)
         endif
     endif
 	@echo -e "$(col_SUBINFO)     / Extracting rootfs archive to '$(bin_dir_tmp)' /$(col_NORMAL)"
-	$(Q)$(val_nul_superuser) tar xf $(src_dir_buildroot)/output/images/rootfs.tar -C $(bin_dir_tmp) $(val_nul_outcmd)
+	$(Q)$(val_superuser) tar xf $(src_dir_buildroot)/output/images/rootfs.tar -C $(bin_dir_tmp) $(OUT)
 #  -- Kernel --  #
 	@echo -e ""
 	@echo -e "$(col_HEADING)    // Adding the linux kernel //$(col_NORMAL)"
@@ -198,11 +197,11 @@ setvars:
 	    @echo -e "$(col_SUBINFO)     / Checking kernel hash /$(col_NORMAL)"
         ifneq ($(shell $(src_dir_scripts)/get_var.sh kernel $(src_dir_conf)/hashes.txt), $(shell shasum $(src_dir_linux) | cut -d ' ' -f 1))
 	        $(call save_hash, kernel, $(src_dir_linux))
-	        $(eval val_nul_do_update_count := y)
+	        $(eval val_do_update_count := y)
         endif
     endif
 	@echo -e "$(col_SUBINFO)     / Copying kernel to '$(bin_dir_tmp)$(sys_dir_linux)' /$(col_NORMAL)"
-	$(Q)$(val_nul_superuser) cp $(src_dir_linux) $(bin_dir_tmp)$(sys_dir_linux) $(val_nul_outcmd)
+	$(Q)$(val_superuser) cp $(src_dir_linux) $(bin_dir_tmp)$(sys_dir_linux) $(OUT)
 #  -- Finalization --  #
 	@echo -e ""
 	@echo -e "$(col_HEADING)    // Doing finalization procedures //$(col_NORMAL)"
@@ -215,37 +214,37 @@ setvars:
 	\n\
 	menuentry \"$(val_grub-entry-one_name)\" { \n\
 	    linux $(sys_dir_linux) root=$(val_grub-entry-one_li_root) $(val_grub-entry-one_li_params) \n\
-	}" | $(val_nul_superuser) tee $(rsh_grub_conf) $(val_nul_outcmd)
+	}" | $(val_superuser) tee $(rsh_grub_conf) $(OUT)
 #   - Syslinux conf -   #
 	@echo -e "$(col_SUBINFO)     / Syslinux config /$(col_NORMAL)"
 	$(Q)echo -e "\
 	DEFAULT $(val_grub-boot_default) \n\
 	PROMPT 1" \
-	| $(val_nul_superuser) tee $(rsh_sylin_conf) $(val_nul_outcmd)
+	| $(val_superuser) tee $(rsh_sylin_conf) $(OUT)
 	$(Q)if [ $(val_grub-boot_timeout) -gt 0 ]; then \
-	    $(val_nul_superuser) bash -c 'echo "TIMEOUT $(val_grub-boot_timeout)0" >> $(rsh_sylin_conf)'; \
+	    $(val_superuser) bash -c 'echo "TIMEOUT $(val_grub-boot_timeout)0" >> $(rsh_sylin_conf)'; \
 	else \
-	    $(val_nul_superuser) bash -c 'echo "TIMEOUT 01" >> $(rsh_sylin_conf)'; \
+	    $(val_superuser) bash -c 'echo "TIMEOUT 01" >> $(rsh_sylin_conf)'; \
 	fi
 	$(Q)echo -e "\
 	LABEL $(val_grub-boot_default) \n\
 	    MENU LABEL $(val_grub-entry-one_name) \n\
 	    KERNEL $(sys_dir_linux) \n\
 	    APPEND root=$(val_grub-entry-one_li_root) $(val_grub-entry-one_li_params) vga=$(val_sylin-entry-one_li_vga_mode)" \
-	| $(val_nul_superuser) tee $(rsh_sylin_conf) $(val_nul_outcmd)
+	| $(val_superuser) tee -a $(rsh_sylin_conf) $(OUT)
     ifeq ($(bool_use_sylin_exlin), y)
 	    @echo -e "$(col_TRUE)           (2) !** BootSyslinux (bool_use_sylin_exlin) is set to true **! (2)           $(col_NORMAL)"
 	    @echo -e "$(col_SUBINFO)     / Installing syslinux (May ask for superuser access) /$(col_NORMAL)"
-	    $(Q)sudo extlinux --install $(bin_dir_tmp) $(val_nul_outcmd)
+	    $(Q)sudo extlinux --install $(bin_dir_tmp) $(OUT)
 	    @echo -e "$(col_SUBINFO)     / Unmounting '$(bin_dir_tmp)' (May ask for superuser access) /$(col_NORMAL)"
-	    $(Q)sudo umount $(bin_dir_tmp) $(val_nul_outcmd)
+	    $(Q)sudo umount $(bin_dir_tmp) $(OUT)
     else
 	    @echo -e "$(col_INFO)               !**             Making iso image with GRUB             **!               $(col_NORMAL)"
 	    @echo -e ""
 	    @echo -e "$(col_HEADING)    // Creating new disc image with GRUB //$(col_NORMAL)"
-	    $(Q)grub-mkrescue -o $(bin_dir_iso) $(bin_dir_tmp) $(val_nul_outcmd)
+	    $(Q)grub-mkrescue -o $(bin_dir_iso) $(bin_dir_tmp) $(OUT)
     endif
-    ifeq ($(val_nul_do_update_count), y)
+    ifeq ($(val_do_update_count), y)
 	    echo $(Q)"$(src_dir_scripts)/count_increment.sh" "latest_next" "$(src_dir_conf)/bcount.txt" "$(EXTRAVERSION)"" "$(col_SUBINFO)"
     endif
 	    @echo -e ""
@@ -257,7 +256,7 @@ setvars:
 run:
 	@echo -e ""
 	@echo -e "$(col_INFO)    // Now running '$(bin_dir_iso)' using '$(util_vm)' //$(col_NORMAL)"
-	$(Q)$(util_vm) $(util_vm_params) $(bin_dir_iso) $(val_nul_outcmd)
+	$(Q)$(util_vm) $(util_vm_params) $(bin_dir_iso) $(OUT)
 
 runs: setvars run
 
@@ -271,7 +270,7 @@ define cleancode
 	@echo -e ""
 	$(Q)if mountpoint -q "$(bin_dir_tmp)"; then \
 		echo -e "$(col_FALSE)    // Unmounting '$(bin_dir_tmp)' (May ask for superuser access) //$(col_NORMAL)"; \
-		sudo umount "$(bin_dir_tmp)" $(val_nul_outcmd); \
+		sudo umount "$(bin_dir_tmp)" $(OUT); \
 	fi
 	@echo -e "$(col_FALSE)    // Deleting directories and image //$(col_NORMAL)"
 	$(Q)rm -rf $(bin_dir_tmp) $(bin_dir_iso) $(bin_dir)
@@ -292,7 +291,7 @@ cleanall:
 	    @echo -e ""; \
 	    $(Q)if mountpoint -q "$(bin_dir_tmp)"; then \
 	        echo -e "$(col_FALSE)    // Unmounting '$(bin_dir_tmp)' (May ask for superuser access) //$(col_NORMAL)"; \
-	        sudo umount "$(bin_dir_tmp)" $(val_nul_outcmd); \
+	        sudo umount "$(bin_dir_tmp)" $(OUT); \
 	    fi; \
 	    @echo -e "$(col_FALSE)    // Deleting directories and image //$(col_NORMAL)"; \
 	    $(Q)rm -rf $(bin_dir_tmp) $(bin_dir_iso) $(bin_dir); \
