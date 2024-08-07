@@ -1,0 +1,4 @@
+What you are doing:
+
+-Make sure scripts get their colors
+-Replace random shortners
