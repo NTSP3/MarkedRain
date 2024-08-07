@@ -37,7 +37,7 @@ endef
 
 define save_hash
 	@echo -e "$(col_SUBINFO)     / Saving hash of$(2) as$(1)= /$(col_NORMAL)"
-	$(Q)$(src_dir_scripts)/set_var.sh $(1) `shasum $(2) | cut -d ' ' -f 1` $(src_dir_conf)/hashes.txt
+	$(Q)$(src_dir_scripts)/set_var.sh$(1) `shasum$(2) | cut -d ' ' -f 1` $(src_dir_conf)/hashes.txt
 endef
 
 # ---[ Global ]--- #
@@ -244,12 +244,12 @@ setvars:
 	    @echo -e "$(col_HEADING)    // Creating new disc image with GRUB //$(col_NORMAL)"
 	    $(Q)grub-mkrescue -o $(bin_dir_iso) $(bin_dir_tmp) $(OUT)
     endif
-    ifeq ($(val_do_update_count), y)
-	    echo $(Q)"$(src_dir_scripts)/count_increment.sh" "latest_next" "$(src_dir_conf)/bcount.txt" "$(EXTRAVERSION)"" "$(col_SUBINFO)"
-    endif
-	    @echo -e ""
-	    @echo -e "$(col_FALSE)    // Cleaning temporary files //$(col_NORMAL)"
-	    $(Q)rm -rf $(bin_dir_tmp)
+	$(Q)if [ "$(val_do_update_count)" = "y" ]; then \
+		"$(src_dir_scripts)/count_increment.sh" "latest_next" "$(src_dir_conf)/bcount.txt"; \
+	fi
+	@echo -e ""
+	@echo -e "$(col_FALSE)    // Cleaning temporary files //$(col_NORMAL)"
+	$(Q)rm -rf $(bin_dir_tmp)
 
 # --- Run --- #
 .PHONY: run runs
