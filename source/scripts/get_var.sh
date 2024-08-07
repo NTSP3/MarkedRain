@@ -8,10 +8,6 @@
 # Derivative of get_sys_dir.sh
 #
 
-# Colour codes
-col_error="\e[1;91m"
-col_normal="\e[0m"
-
 # Fancy output functions
 error() {
     echo -e "${me}: $2: ${col_error}$1${col_normal}"
