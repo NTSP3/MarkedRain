@@ -12,15 +12,15 @@
 
 # Fancy output functions
 subinfo() {
-    echo -e "${col_subinfo}     / $1 / ${col_normal}"
+    echo -e "${col_SUBINFO}     / $1 / ${col_NORMAL}"
 }
 
 info() {
-    echo -e "${col_info} ++ $1 ++${col_normal}  ::  ${col_false}${me}${col_normal}"
+    echo -e "${col_INFO} ++ $1 ++${col_NORMAL}  ::  ${col_FALSE}${me}${col_NORMAL}"
 }
 
 error() {
-    echo -e "${me}: $2: ${col_error}$1${col_normal}"
+    echo -e "${me}: $2: ${col_ERROR}$1${col_NORMAL}"
     exit 1
 }
 
@@ -36,8 +36,6 @@ if [ -z "$src_str" ]; then
     error "Variable cannot be empty. Check the first argument." "src_str"
 elif [ -z "$out_file" ]; then
     error "Variable cannot be empty. Check the second argument." "out_file"
-elif ! [[ $mkfile_EXTRAVERSION =~ ^[0-9]+$ ]]; then
-    error "Value of the third argument contains non-numeric characters or is empty." "mkfile_EXTRAVERSION"
 fi
 
 # Check if the file exist
@@ -53,15 +51,17 @@ if ! [[ $current_number =~ ^[0-9]+$ ]]; then
     error "Returned value contains non-numeric characters." "current_number - $current_number"
 fi
 
-echo -ne " ${col_info} Build description ${col_normal}[${col_false}NULL = Cancel${col_normal}] : "
+echo ""
+echo -ne " ${col_INFO} Build description ${col_NORMAL}[${col_FALSE}NULL = Cancel${col_NORMAL}] : "
 read desc
 
-if [ -z $desc ]; then
+if [ -z "$desc" ]; then
     info "Cancelled"
     exit 0
 fi
 
 # Display what is happening
+echo ""
 subinfo "Invoking build number updater"
 
 # Increment the value
