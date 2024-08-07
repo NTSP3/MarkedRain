@@ -1,6 +1,6 @@
 # Configuration file for MarkedRain 
 
-mainmenu "MarkedRain Configuration"
+mainmenu "MarkedRain $(FINALVERSION) Configuration"
 
 menu "Makefile customizations"
 
