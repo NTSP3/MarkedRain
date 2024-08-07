@@ -2,21 +2,13 @@
 #
 # This shell script is used to increment a numeric value specified
 # in <argument-1> and also add the timestamp of the value in the
-# file specified by <argument-2> if <argument-1>'s value is
-# equal to the value specified in <argument-3>. It also gets
-# col_SUBINFO from Makefile via <argument-4>.
+# file specified by <argument-2>. It also asks for the build's
+# description.
 #
 # This file expects 'get_var.sh' to be in the same dir as this one is.
 #
 # Part of the MRain scripts source code.
 #
-
-# Colour codes
-col_info="\e[36m"
-col_subinfo="$4"
-col_false="\e[91m"
-col_error="\e[1;91m"
-col_normal="\e[0m"
 
 # Fancy output functions
 subinfo() {
@@ -36,7 +28,6 @@ error() {
 me="$0"
 src_str="$1"
 out_file="$2"
-mkfile_EXTRAVERSION="$3"
 me_dir=$(dirname "$0")
 time=$(date '+%Y-%m-%d %H:%M:%S')
 
@@ -60,12 +51,6 @@ current_number=$($me_dir/get_var.sh "$src_str" "$out_file")
 # Check if the variable contains only numbers
 if ! [[ $current_number =~ ^[0-9]+$ ]]; then
     error "Returned value contains non-numeric characters." "current_number - $current_number"
-fi
-
-# Check if the number from latest_next is greater than the argumented number
-if [ $current_number -gt $mkfile_EXTRAVERSION ]; then
-    info "Variable 'current_number' with value '$current_number' is greater than 'mkfile_EXTRAVERSION' with value '$mkfile_EXTRAVERSION', so not updating."
-    exit 0
 fi
 
 echo -ne " ${col_info} Build description ${col_normal}[${col_false}NULL = Cancel${col_normal}] : "
