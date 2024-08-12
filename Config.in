@@ -40,6 +40,15 @@ menu "Makefile customizations"
             the same location provided in bin_dir_iso already exists.
             Set this to false to compile without waiting.
 
+    config bool_use_old_headings
+        bool "Use legacy style for headings"
+        default n
+        help
+            Set this option to true if you want to replace the
+            newer style of showing headings as "---[]---"
+            with the older style "// //" (Does not have old
+            versions for newer features, like "  -[]-  ").
+
     config val_timeout_num
         int "Seconds to waste time"
         depends on bool_do_timeout

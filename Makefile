@@ -98,21 +98,39 @@ define false
 	fi
 endef
 
-define heading
-	@if [ "$(1)" = " imp" ]; then \
-	    echo -e "$(col_IMP) !!$(2) !! $(col_NORMAL)"; \
-	elif [ "$(1)" = " main" ]; then \
-	    echo -e "$(col_HEADING)---[$(2) ]---$(col_NORMAL)"; \
-	elif [ "$(1)" = " sub" ]; then \
-	    echo -e "$(col_SUBHEADING) --+$(2) +-- $(col_NORMAL)"; \
-	elif [ "$(1)" = " sub2" ]; then \
-	    echo -e "$(col_INFOHEADING)  -+$(2) +-  $(col_NORMAL)"; \
-	elif [ "$(1)" = " info" ]; then \
-	    echo -e "$(col_INFOHEADING) ++$(2) ++ $(col_NORMAL)"; \
-	else \
-	    $(subst @echo, echo, $(call warn, Definition \"$(0)\" doesn't know what '$(1)' means.)); \
-	fi
-endef
+ifeq ($(bool_use_old_headings), y)
+    define heading
+	    @if [ "$(1)" = " imp" ]; then \
+	        echo -e "\e[1;37;41m    !!$(2) !!    \e[0m"; \
+	    elif [ "$(1)" = " main" ]; then \
+	        echo -e "\e[95m    //$(2) //\e[0m"; \
+	    elif [ "$(1)" = " sub" ]; then \
+	        echo -e "\e[38;5;206m     /$(2) /\e[0m"; \
+	    elif [ "$(1)" = " sub2" ]; then \
+	        echo -e "$(col_INFOHEADING)  -+$(2) +-  $(col_NORMAL)"; \
+	    elif [ "$(1)" = " info" ]; then \
+	        echo -e "\e[36m    //$(2) \e[36m//\e[0m"; \
+	    else \
+	        $(subst @echo, echo, $(call warn, Definition \"$(0)\" doesn't know what '$(1)' means.)); \
+	    fi
+    endef
+else
+    define heading
+	    @if [ "$(1)" = " imp" ]; then \
+	        echo -e "$(col_IMP) !!$(2) !! $(col_NORMAL)"; \
+	    elif [ "$(1)" = " main" ]; then \
+	        echo -e "$(col_HEADING)---[$(2) ]---$(col_NORMAL)"; \
+	    elif [ "$(1)" = " sub" ]; then \
+	        echo -e "$(col_SUBHEADING) --+$(2) +-- $(col_NORMAL)"; \
+	    elif [ "$(1)" = " sub2" ]; then \
+	        echo -e "$(col_INFOHEADING)  -+$(2) +-  $(col_NORMAL)"; \
+	    elif [ "$(1)" = " info" ]; then \
+	        echo -e "$(col_INFOHEADING) ++$(2) $(col_INFOHEADING)++ $(col_NORMAL)"; \
+	    else \
+	        $(subst @echo, echo, $(call warn, Definition \"$(0)\" doesn't know what '$(1)' means.)); \
+	    fi
+    endef
+endif
 
 # ---[ Global ]--- #
 $(info $(shell echo -e "$(col_INFO)               +++++++++++++++++ MRain Operating System +++++++++++++++++               $(col_NORMAL)"))
@@ -225,7 +243,7 @@ main:
     endif
 	$(call cleancode)
 #  -- Directories --  #
-	$(call heading, info,$(col_TRUE) Creating image directory$(col_INFOHEADING))
+	$(call heading, info,$(col_TRUE) Creating image directory)
 	$(Q) mkdir -p "$(bin_dir_tmp)"
 #  -- Syslinux check 1 --  #
     ifeq ($(bool_use_sylin_exlin), y)
@@ -242,7 +260,7 @@ main:
     else
 	    $(call false, BootSyslinux, bool_use_sylin_exlin)
     endif
-	$(call heading, info,$(col_TRUE) Creating system directories$(col_INFOHEADING))
+	$(call heading, info,$(col_TRUE) Creating system directories)
 	$(Q)$(val_superuser) "$(src_dir_scripts)/mk_sys_dir.sh" "$(src_dir_conf)/dir.txt" "$(bin_dir_tmp)" $(OUT)
 #  -- Buildroot --  #
 	@echo -e ""
@@ -327,7 +345,7 @@ main:
 		"$(src_dir_scripts)/count_increment.sh" "latest_next" "$(src_dir_conf)/bcount.txt"; \
 	fi
 	@echo -e ""
-	$(call heading, info,$(col_FALSE) Cleaning temporary files$(col_INFOHEADING))
+	$(call heading, info,$(col_FALSE) Cleaning temporary files)
 	$(Q)rm -rf $(bin_dir_tmp)
 
 # --- Run --- #
@@ -351,10 +369,10 @@ clean:
 
 define cleancode
 	$(Q)if mountpoint -q "$(bin_dir_tmp)"; then \
-	    $(subst @if, if, $(call heading, info,$(col_FALSE) Unmounting '$(bin_dir_tmp)'$(col_INFOHEADING))); \
+	    $(subst @if, if, $(call heading, info,$(col_FALSE) Unmounting '$(bin_dir_tmp)')); \
 		sudo umount "$(bin_dir_tmp)" $(OUT); \
 	fi; \
-	$(subst @if, if, $(call heading, info,$(col_FALSE) Deleting directories and image$(col_INFOHEADING))); \
+	$(subst @if, if, $(call heading, info,$(col_FALSE) Deleting directories and image)); \
 	rm -rf $(bin_dir_tmp) $(bin_dir_iso) $(bin_dir)
 endef
 
@@ -368,7 +386,7 @@ cleanall:
 	$(Q)read choice; \
 	if [ "$$choice" = "Y" ] || [ "$$choice" = "y" ]; then \
 	    $(subst @if, if, $(call cleancode)); \
-	    $(subst @if, if, $(call heading, info, $(col_FALSE)Cleaning buildroot$(col_INFOHEADING))); \
+	    $(subst @if, if, $(call heading, info, $(col_FALSE)Cleaning buildroot)); \
 	    $(MAKE) -C $(src_dir_buildroot) clean || exit 1; \
 	    echo -e ""; \
 	    $(subst @echo, echo, $(call ok,  Done. Run 'make' to re-compile. Be prepared to wait a long time.  )); \
