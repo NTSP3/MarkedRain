@@ -127,7 +127,13 @@ ifeq ($(bool_show_cmd_out), y)
     $(info $(shell $(subst @val_temp, val_temp, $(call true, ShowAppOutput, bool_show_cmd_out))))
 else
     $(info $(shell $(subst @val_temp, val_temp, $(call false, ShowAppOutput, bool_show_cmd_out))))
-    export OUT = > /dev/null
+    ifeq ($(bool_show_cmd_out_err), y)
+        $(info $(shell $(subst @val_temp, val_temp, $(call true, ShowAppErrors, bool_show_cmd_out_err))))
+        export OUT = > /dev/null
+    else
+        $(info $(shell $(subst @val_temp, val_temp, $(call false, ShowAppErrors, bool_show_cmd_out_err))))
+        export OUT = > /dev/null 2>&1
+    endif
     ifeq ($(findstring --no-print-directory,$(MAKEFLAGS)), )
         MAKEFLAGS += --no-print-directory
     endif
@@ -219,28 +225,23 @@ main:
     endif
 	$(call cleancode)
 #  -- Directories --  #
-	@echo -e ""
 	$(call heading, info,$(col_TRUE) Creating image directory$(col_INFOHEADING))
 	$(Q) mkdir -p "$(bin_dir_tmp)"
-	@echo -e ""
 #  -- Syslinux check 1 --  #
     ifeq ($(bool_use_sylin_exlin), y)
 	    $(call true, BootSyslinux, bool_use_sylin_exlin)
 	    $(Q)mkdir -p $(bin_dir_tmp)
-	    @echo -e ""
 	    $(call heading, main, Creating new disc image with syslinux as bootloader)
 	    $(call heading, sub, Creating an empty file ($(val_dev_iso_size)MB))
 	    $(Q)truncate -s $(val_dev_iso_size)M $(bin_dir_iso) $(OUT)
 	    $(call heading, sub, Creating an ext4 filesystem)
 	    $(Q)mkfs.ext4 $(bin_dir_iso) $(OUT)
-	    @echo ""
 	    $(call heading, imp, From this point onward you may receive more requests for admin privileges)
 	    $(call heading, sub, Mounting iso image to '$(bin_dir_tmp)')
 	    $(Q)sudo mount $(bin_dir_iso) $(bin_dir_tmp) $(OUT)
     else
 	    $(call false, BootSyslinux, bool_use_sylin_exlin)
     endif
-	@echo ""
 	$(call heading, info,$(col_TRUE) Creating system directories$(col_INFOHEADING))
 	$(Q)$(val_superuser) "$(src_dir_scripts)/mk_sys_dir.sh" "$(src_dir_conf)/dir.txt" "$(bin_dir_tmp)" $(OUT)
 #  -- Buildroot --  #
@@ -332,9 +333,14 @@ main:
 # --- Run --- #
 .PHONY: run runs
 run:
+    ifeq ($(shell [ -f "$(bin_dir_iso)" ] && echo y), y)
+	    @echo -e ""
+	    $(call ok,    // Now running '$(bin_dir_iso)' using '$(util_vm)' //    )
+	    $(Q)$(util_vm) $(util_vm_params) $(OUT)
+    else
+	    $(call stop, Supplied file '$(bin_dir_iso)' doesn't exist. Make sure you ran 'make' and check if the file specified in bin_dir_iso is correct.)
+    endif
 	@echo -e ""
-	$(call ok,    // Now running '$(bin_dir_iso)' using '$(util_vm)' //    )
-	$(Q)$(util_vm) $(util_vm_params) $(OUT)
 
 runs: main run
 
@@ -344,14 +350,12 @@ clean:
 	$(call cleancode)
 
 define cleancode
-	@echo -e ""
 	$(Q)if mountpoint -q "$(bin_dir_tmp)"; then \
 	    $(subst @if, if, $(call heading, info,$(col_FALSE) Unmounting '$(bin_dir_tmp)'$(col_INFOHEADING))); \
 		sudo umount "$(bin_dir_tmp)" $(OUT); \
-	fi
-	$(call heading, info,$(col_FALSE) Deleting directories and image$(col_INFOHEADING))
-	$(Q)rm -rf $(bin_dir_tmp) $(bin_dir_iso) $(bin_dir)
-	@echo -e ""
+	fi; \
+	$(subst @if, if, $(call heading, info,$(col_FALSE) Deleting directories and image$(col_INFOHEADING))); \
+	rm -rf $(bin_dir_tmp) $(bin_dir_iso) $(bin_dir)
 endef
 
 # --- Clean all stuff --- #
@@ -363,12 +367,7 @@ cleanall:
 	@echo -e "$(col_INFO)  Press "Y" and enter to continue, any other key will terminate.$(col_NORMAL)"
 	$(Q)read choice; \
 	if [ "$$choice" = "Y" ] || [ "$$choice" = "y" ]; then \
-	    if mountpoint -q "$(bin_dir_tmp)"; then \
-	        $(subst @if, if, $(call heading, info,$(col_FALSE) Unmounting '$(bin_dir_tmp)'$(col_INFOHEADING))); \
-	        sudo umount "$(bin_dir_tmp)" $(OUT); \
-	    fi; \
-	    $(subst @if, if, $(call heading, info,$(col_FALSE) Deleting directories and image$(col_INFOHEADING))); \
-	    rm -rf $(bin_dir_tmp) $(bin_dir_iso) $(bin_dir); \
+	    $(subst @if, if, $(call cleancode)); \
 	    $(subst @if, if, $(call heading, info, $(col_FALSE)Cleaning buildroot$(col_INFOHEADING))); \
 	    $(MAKE) -C $(src_dir_buildroot) clean || exit 1; \
 	    echo -e ""; \
