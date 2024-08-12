@@ -193,13 +193,6 @@ config:
 	$(Q)$(MAKE) $(build)=make/basic
 	$(Q)$(MAKE) $(build)=make/kconfig $@
 
-# +++[ Random shortners (no need to be changed) ]+++ #
-rsh_grub_conf	:= $(bin_dir_tmp)/boot/grub/grub.cfg
-rsh_sylin_conf	:= $(bin_dir_tmp)/boot/syslinux/syslinux.cfg
-rsh_exlin_conf	:= $(bin_dir_tmp)/boot/extlinux/syslinux.cfg
-rsh_env_conf	:= $(src_dir_conf)/$(src_name_envconf)
-rsh_get_script	:= $(src_dir_scripts)/$(src_name_script_get)
-
 # --- Default --- #
 .PHONY: all
 all: main
@@ -308,24 +301,24 @@ main:
 	\n\
 	menuentry \"$(val_grub-entry-one_name)\" { \n\
 	    linux $(sys_dir_linux) root=$(val_grub-entry-one_li_root) $(val_grub-entry-one_li_params) \n\
-	}" | $(val_superuser) tee $(rsh_grub_conf) $(OUT)
+	}" | $(val_superuser) tee $(bin_dir_tmp)/boot/grub/grub.cfg $(OUT)
 #   - Syslinux conf -   #
 	$(call heading, sub, Syslinux config)
 	$(Q)echo -e "\
 	DEFAULT $(val_grub-boot_default) \n\
 	PROMPT 1" \
-	| $(val_superuser) tee $(rsh_sylin_conf) $(OUT)
+	| $(val_superuser) tee $(bin_dir_tmp)/boot/syslinux/syslinux.cfg $(OUT)
 	$(Q)if [ $(val_grub-boot_timeout) -gt 0 ]; then \
-	    $(val_superuser) bash -c 'echo "TIMEOUT $(val_grub-boot_timeout)0" >> $(rsh_sylin_conf)'; \
+	    $(val_superuser) bash -c 'echo "TIMEOUT $(val_grub-boot_timeout)0" >> $(bin_dir_tmp)/boot/syslinux/syslinux.cfg'; \
 	else \
-	    $(val_superuser) bash -c 'echo "TIMEOUT 01" >> $(rsh_sylin_conf)'; \
+	    $(val_superuser) bash -c 'echo "TIMEOUT 01" >> $(bin_dir_tmp)/boot/syslinux/syslinux.cfg'; \
 	fi
 	$(Q)echo -e "\
 	LABEL $(val_grub-boot_default) \n\
 	    MENU LABEL $(val_grub-entry-one_name) \n\
 	    KERNEL $(sys_dir_linux) \n\
 	    APPEND root=$(val_grub-entry-one_li_root) $(val_grub-entry-one_li_params) vga=$(val_sylin-entry-one_li_vga_mode)" \
-	| $(val_superuser) tee -a $(rsh_sylin_conf) $(OUT)
+	| $(val_superuser) tee -a $(bin_dir_tmp)/boot/syslinux/syslinux.cfg $(OUT)
 #  -- Installing bootloaders --  #
 #   - Syslinux -   #
     ifeq ($(bool_use_sylin_exlin), y)
