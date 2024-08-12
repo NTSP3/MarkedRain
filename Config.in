@@ -14,13 +14,22 @@ menu "Makefile customizations"
             a more verbose building process.
 
     config bool_show_cmd_out
-        bool "Display all outputs of commands"
+        bool "Display normal output of commands"
         default y
         help
-            Removes "> /dev/null" from the end of all commands,
-            making the output not redirect to void & showing them.
+            If not checked, this adds "> /dev/null" to the end of all
+            commands, making the output redirect to void & showing them.
             Enable it so you can see what the stuff called by make
             are doing.
+
+    config bool_show_cmd_out_err
+        bool "Display important messages of commands"
+        default y
+        depends on !bool_show_cmd_out
+        help
+            If not checked, this adds "> /dev/null 2>&1" to the end of all
+            commands, hiding every possible output of a command, including
+            error messages. Enable it so you can see these important messages.
 
     config bool_do_timeout
         bool "Wait if another image already exist in the build directory"
