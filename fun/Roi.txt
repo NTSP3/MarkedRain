@@ -4,4 +4,6 @@ What you are doing:
 -Add new option in menuconfig to use "//" instaed of "--[]" (code in oledmakkeeeee.mk)
 -Make sure scripts get their colors
 -Replace random shortners
--Fix the issue with Syslinux's resolution codes
+
+FINISHED
+Last one moved to todo app
