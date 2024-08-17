@@ -7,19 +7,13 @@
 # Part of the MRain scripts source code.
 #
 
-# Colour codes
-col_info="\e[36m"
-col_false="\e[91m"
-col_error="\e[1;91m"
-col_normal="\e[0m"
-
 # Fancy output functions
 info() {
-    echo -e "${col_info} ++ $1 ++${col_normal}  ::  ${col_false}${me}${col_normal}"
+    echo -e "${col_INFO} ++ $1 ++${col_NORMAL}  ::  ${col_FALSE}${me}${col_NORMAL}"
 }
 
 error() {
-    echo -e "${me}: $2: ${col_error}$1${col_normal}"
+    echo -e "${me}: $2: ${col_ERROR}$1${col_NORMAL}"
     exit 1
 }
 
