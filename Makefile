@@ -38,12 +38,12 @@ endef
 
 #  --[ Exceptional message printers ]--  #
 define stop
-	@echo -e "\n$(col_IMP)STOP:$(col_NORMAL)$(col_ERROR)$(1)$(col_NORMAL)\n"
+	@echo -e "\n$(col_IMP)STOP:$(col_NORMAL)$(col_ERROR) $(strip $(1))$(col_NORMAL)\n" >&2
 	$(Q)false
 endef
 
 define warn
-	@echo -e "$(col_ERROR)  Warning:$(col_NORMAL)$(col_FALSE)$(1)$(col_NORMAL)"
+	@echo -e "$(col_ERROR)  Warning:$(col_NORMAL)$(col_FALSE)$(strip $(1))$(col_NORMAL)" >&2
 endef
 
 define ok
@@ -52,8 +52,8 @@ endef
 
 #  --[ Common message printers ]--  #
 define stat
-	@val_temp="$(1)"; \
-	val_temp=$${val_temp#"$${val_temp%%[![:space:]]*}"}; \
+	@echo -n; \
+	val_temp='$(strip $(1))'; \
 	val_temp2=$${#val_temp}; \
 	if [ $$val_temp2 -gt 52 ] || [ $$((val_temp2 % 2)) -ne 0 ]; then \
 	    $(subst @echo, echo, $(call warn, Total length of characters ($$val_temp2) supplied to definition \"$(0)\" is greater than 52 or is not even.)); \
@@ -65,11 +65,10 @@ define stat
 endef
 
 define true
-	@val_temp="$(1)"; \
-	val_temp=$${val_temp#"$${val_temp%%[![:space:]]*}"}; \
+	@echo -n; \
+	val_temp='$(strip $(1))'; \
 	val_temp2=$${#val_temp}; \
-	val_temp3="$(2)"; \
-	val_temp3=$${val_temp3#"$${val_temp3%%[![:space:]]*}"}; \
+	val_temp3='$(strip $(2))'; \
 	val_temp4=$${#val_temp3}; \
 	val_temp2=$$((val_temp2 + val_temp4)); \
 	if [ $$val_temp2 -gt 34 ] || [ $$((val_temp2 % 2)) -ne 0 ]; then \
@@ -82,11 +81,10 @@ define true
 endef
 
 define false
-	@val_temp="$(1)"; \
-	val_temp=$${val_temp#"$${val_temp%%[![:space:]]*}"}; \
+	@echo -n; \
+	val_temp='$(strip $(1))'; \
 	val_temp2=$${#val_temp}; \
-	val_temp3="$(2)"; \
-	val_temp3=$${val_temp3#"$${val_temp3%%[![:space:]]*}"}; \
+	val_temp3='$(strip $(2))'; \
 	val_temp4=$${#val_temp3}; \
 	val_temp2=$$((val_temp2 + val_temp4)); \
 	if [ $$val_temp2 -gt 40 ] || [ $$((val_temp2 % 2)) -ne 0 ]; then \
@@ -99,57 +97,64 @@ define false
 endef
 
 ifeq ($(bool_use_old_headings), y)
-    define heading
-	    @if [ "$(1)" = " imp" ]; then \
-	        echo -e "\e[1;37;41m    !!$(2) !!    \e[0m"; \
-	    elif [ "$(1)" = " main" ]; then \
-	        echo -e "\e[95m    //$(2) //\e[0m"; \
-	    elif [ "$(1)" = " sub" ]; then \
-	        echo -e "\e[38;5;206m     /$(2) /\e[0m"; \
-	    elif [ "$(1)" = " sub2" ]; then \
-	        echo -e "$(col_INFOHEADING)  -+$(2) +-  $(col_NORMAL)"; \
-	    elif [ "$(1)" = " info" ]; then \
-	        echo -e "\e[36m    //$(2) \e[36m//\e[0m"; \
+    define script_heading
+	    if [ "<type>" = "imp" ]; then \
+	        echo -e "\e[1;37;41m    !! <message> !!    \e[0m"; \
+	    elif [ "<type>" = "main" ]; then \
+	        echo -e "\e[95m    // <message> //\e[0m"; \
+	    elif [ "<type>" = "sub" ]; then \
+	        echo -e "\e[38;5;206m     / <message> /\e[0m"; \
+	    elif [ "<type>" = "sub2" ]; then \
+	        echo -e "$(col_INFOHEADING)  -+ <message> +-  $(col_NORMAL)"; \
+	    elif [ "<type>" = "info" ]; then \
+	        echo -e "\e[36m    // <message>\e[36m //\e[0m"; \
 	    else \
-	        $(subst @echo, echo, $(call warn, Definition \"$(0)\" doesn't know what '$(1)' means.)); \
+	        $(subst @echo, echo, $(call warn, Definition \"script_heading\" doesn't know what '<type>' means.)); \
 	    fi
     endef
 else
-    define heading
-	    @if [ "$(1)" = " imp" ]; then \
-	        echo -e "$(col_IMP) !!$(2) !! $(col_NORMAL)"; \
-	    elif [ "$(1)" = " main" ]; then \
-	        echo -e "$(col_HEADING)---[$(2) ]---$(col_NORMAL)"; \
-	    elif [ "$(1)" = " sub" ]; then \
-	        echo -e "$(col_SUBHEADING) --+$(2) +-- $(col_NORMAL)"; \
-	    elif [ "$(1)" = " sub2" ]; then \
-	        echo -e "$(col_INFOHEADING)  -+$(2) +-  $(col_NORMAL)"; \
-	    elif [ "$(1)" = " info" ]; then \
-	        echo -e "$(col_INFOHEADING) ++$(2) $(col_INFOHEADING)++ $(col_NORMAL)"; \
+    define script_heading
+	    if [ "<type>" = "imp" ]; then \
+	        echo -e "$(col_IMP) !! <message> !! $(col_NORMAL)"; \
+	    elif [ "<type>" = "main" ]; then \
+	        echo -e "$(col_HEADING)---[ <message> ]---$(col_NORMAL)"; \
+	    elif [ "<type>" = "sub" ]; then \
+	        echo -e "$(col_SUBHEADING) --+ <message> +-- $(col_NORMAL)"; \
+	    elif [ "<type>" = "sub2" ]; then \
+	        echo -e "$(col_INFOHEADING)  -+ <message> +-  $(col_NORMAL)"; \
+	    elif [ "<type>" = "info" ]; then \
+	        echo -e "$(col_INFOHEADING) ++ <message>$(col_INFOHEADING) ++ $(col_NORMAL)"; \
 	    else \
-	        $(subst @echo, echo, $(call warn, Definition \"$(0)\" doesn't know what '$(1)' means.)); \
+	        $(subst @echo, echo, $(call warn, Definition \"script_heading\" doesn't know what '<type>' means.)); \
 	    fi
     endef
 endif
+# For scripts
+export script_heading
+# Normal
+define heading
+	@echo -n; \
+	$(subst script_heading,$(0),$(subst <message>,$(strip $(2)),$(subst <type>,$(strip $(1)),$(call script_heading))))
+endef
 
 # ---[ Global ]--- #
 $(info $(shell echo -e "$(col_INFO)               +++++++++++++++++ MRain Operating System +++++++++++++++++               $(col_NORMAL)"))
 ifeq ($(bool_show_cmd), y)
-    $(info $(shell $(subst @val_temp, val_temp, $(call true, ShowCommand, bool_show_cmd))))
+    $(info $(shell $(subst @echo, echo, $(call true, ShowCommand, bool_show_cmd))))
     export Q :=
 else
-    $(info $(shell $(subst @val_temp, val_temp, $(call false, ShowCommand, bool_show_cmd))))
+    $(info $(shell $(subst @echo, echo, $(call false, ShowCommand, bool_show_cmd))))
     export Q ?= @
 endif
 ifeq ($(bool_show_cmd_out), y)
-    $(info $(shell $(subst @val_temp, val_temp, $(call true, ShowAppOutput, bool_show_cmd_out))))
+    $(info $(shell $(subst @echo, echo, $(call true, ShowAppOutput, bool_show_cmd_out))))
 else
-    $(info $(shell $(subst @val_temp, val_temp, $(call false, ShowAppOutput, bool_show_cmd_out))))
+    $(info $(shell $(subst @echo, echo, $(call false, ShowAppOutput, bool_show_cmd_out))))
     ifeq ($(bool_show_cmd_out_err), y)
-        $(info $(shell $(subst @val_temp, val_temp, $(call true, ShowAppErrors, bool_show_cmd_out_err))))
+        $(info $(shell $(subst @echo, echo, $(call true, ShowAppErrors, bool_show_cmd_out_err))))
         export OUT = > /dev/null
     else
-        $(info $(shell $(subst @val_temp, val_temp, $(call false, ShowAppErrors, bool_show_cmd_out_err))))
+        $(info $(shell $(subst @echo, echo, $(call false, ShowAppErrors, bool_show_cmd_out_err))))
         export OUT = > /dev/null 2>&1
     endif
     ifeq ($(findstring --no-print-directory,$(MAKEFLAGS)), )
@@ -157,7 +162,7 @@ else
     endif
 endif
 ifeq ($(or $(findstring run,$(val_target)),$(findstring clean,$(val_target)),$(findstring wipe,$(val_target))),)
-    $(info $(shell $(subst @val_temp, val_temp, $(call stat, Checking variable 'EXTRAVERSION'))))
+    $(info $(shell $(subst @echo, echo, $(call stat, Checking variable 'EXTRAVERSION'))))
     ifeq ($(shell echo $(EXTRAVERSION) | grep -Eq '^[0-9]+$$' && echo 1 || echo 0), 0)
         $(info )
         $(info $(shell $(subst @echo, echo, $(call warn, Variable 'EXTRAVERSION' is not a numeric value.))))
@@ -169,15 +174,15 @@ ifeq ($(or $(findstring run,$(val_target)),$(findstring clean,$(val_target)),$(f
         $(eval EXTRAVERSION = 0)
     endif
     ifneq ($(and $(val_target), $(filter %config,$(val_target)), $(val_target)), )
-        $(info $(shell $(subst @val_temp, val_temp, $(call stat, Preparing config manager))))
+        $(info $(shell $(subst @echo, echo, $(call stat, Preparing config manager))))
         export srctree := $(if $(KBUILD_SRC),$(KBUILD_SRC),$(CURDIR))
         export HOSTCC = gcc
         include $(srctree)/make/Kbuild.include
     else ifeq ($(bool_use_sylin_exlin), y)#        # Export val_superuser now because we can't do it later
-        $(info $(shell $(subst @if, if, $(call heading, info, Exporting superuser variable))))
+        $(info $(shell $(subst @echo, echo, $(call heading, info, Exporting superuser variable))))
         export val_superuser = sudo
     endif
-    $(info $(shell $(subst @if, if, $(call heading, info, Exporting MRain System version))))
+    $(info $(shell $(subst @echo, echo, $(call heading, info, Exporting MRain System version))))
     export FINALVERSION := $(VERSION).$(PATCHLEVEL).$(SUBLEVEL).$(EXTRAVERSION)-$(RELEASE_TAG)
 endif
 # Go to 'all' if nothing is specified #
@@ -236,7 +241,7 @@ main:
     endif
 	$(call cleancode)
 #  -- Directories --  #
-	$(call heading, info,$(col_TRUE) Creating image directory)
+	$(call heading, info, $(col_TRUE)Creating image directory)
 	$(Q) mkdir -p "$(bin_dir_tmp)"
 #  -- Syslinux check 1 --  #
     ifeq ($(bool_use_sylin_exlin), y)
@@ -253,8 +258,8 @@ main:
     else
 	    $(call false, BootSyslinux, bool_use_sylin_exlin)
     endif
-	$(call heading, info,$(col_TRUE) Creating system directories)
-	$(Q)$(val_superuser) "$(src_dir_scripts)/mk_sys_dir.sh" "$(src_dir_conf)/dir.txt" "$(bin_dir_tmp)" $(OUT)
+	$(call heading, main, Creating system directories)
+	$(Q)$(val_superuser) "$(src_dir_scripts)/mk_sys_dir.sh" "$(src_dir_conf)/dir.txt" "$(bin_dir_tmp)"
 #  -- Buildroot --  #
 	@echo -e ""
 	$(call heading, main, Adding buildroot into the image)
@@ -338,7 +343,7 @@ main:
 		"$(src_dir_scripts)/count_increment.sh" "latest_next" "$(src_dir_conf)/bcount.txt"; \
 	fi
 	@echo -e ""
-	$(call heading, info,$(col_FALSE) Cleaning temporary files)
+	$(call heading, info, $(col_FALSE)Cleaning temporary files)
 	$(Q)rm -rf $(bin_dir_tmp)
 
 # --- Run --- #
@@ -362,10 +367,10 @@ clean:
 
 define cleancode
 	$(Q)if mountpoint -q "$(bin_dir_tmp)"; then \
-	    $(subst @if, if, $(call heading, info,$(col_FALSE) Unmounting '$(bin_dir_tmp)')); \
+	    $(subst @echo, echo, $(call heading, info, $(col_FALSE)Unmounting '$(bin_dir_tmp)')); \
 		sudo umount "$(bin_dir_tmp)" $(OUT); \
 	fi; \
-	$(subst @if, if, $(call heading, info,$(col_FALSE) Deleting directories and image)); \
+	$(subst @echo, echo, $(call heading, info, $(col_FALSE)Deleting directories and image)); \
 	rm -rf $(bin_dir_tmp) $(bin_dir_iso) $(bin_dir)
 endef
 
@@ -379,7 +384,7 @@ cleanall:
 	$(Q)read choice; \
 	if [ "$$choice" = "Y" ] || [ "$$choice" = "y" ]; then \
 	    $(subst @if, if, $(call cleancode)); \
-	    $(subst @if, if, $(call heading, info, $(col_FALSE)Cleaning buildroot)); \
+	    $(subst @echo, echo, $(call heading, info, $(col_FALSE)Cleaning buildroot)); \
 	    $(MAKE) -C $(src_dir_buildroot) clean || exit 1; \
 	    echo -e ""; \
 	    $(subst @echo, echo, $(call ok,  Done. Run 'make' to re-compile. Be prepared to wait a long time.  )); \
