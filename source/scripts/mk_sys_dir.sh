@@ -7,29 +7,24 @@
 # Part of the MRain scripts source code.
 #
 
-# Colour codes
-col_heading="\e[30;46m"
-col_info="\e[36m"
-col_ok="\e[1;32m"
-col_error="\e[1;91m"
-col_normal="\e[0m"
-
 # Fancy output functions
 heading() {
-    echo -e "${col_heading}---[ $1 ]---${col_normal}"
+    val_temp=${script_heading//<type>/$1}
+    val_temp=${val_temp//<message>/$2}
+    eval "${val_temp}"
 }
 
 info() {
     if [ "$2" = "wait" ]; then
-        echo -e -n "${col_info}$1... ${col_normal}"
+        eval echo -en "${col_INFO}$1... ${col_NORMAL}" ${OUT}
     elif [ "$1" = "ok" ]; then
         if [ -z $2 ]; then
-            echo -e "${col_ok}OK${col_normal}"
+            eval echo -e "${col_DONE}OK${col_NORMAL}" ${OUT}
         else
-            echo -e "${col_ok}OK: $2${col_normal}"
+            eval echo -e "${col_DONE}OK: $2${col_NORMAL}" ${OUT}
         fi
     elif [ "$3" = "stop" ]; then
-        echo -e "${col_error}Fail${col_normal}"
+        eval echo -e "${col_ERROR}Fail${col_NORMAL}" ${OUT}
         error "$1" "$2"
     else
         error "Specify an argument to me!" "info"
@@ -37,11 +32,11 @@ info() {
 }
 
 ok() {
-    echo -e "$1: ${col_ok}OK${col_normal}"
+    eval echo -e "$1: ${col_DONE}OK${col_NORMAL}" ${OUT}
 }
 
 error() {
-    echo -e "${me}: $2: ${col_error}$1${col_normal}"
+    echo -e "${me}: $2: ${col_ERROR}$1${col_NORMAL}" >&2
     exit 1
 }
 
@@ -51,7 +46,7 @@ src_file="$1"
 dmp_folder="$2"
 
 # Check if the variables are empty
-heading "Checking arguments for nullified values"
+heading "sub" "Checking arguments for nullified values"
 if [ -z "$src_file" ]; then
     error "Variable cannot be empty. Check the first argument." "src_file"
 else
@@ -64,7 +59,7 @@ else
 fi
 
 # Check if the file & folder exist
-heading "Checking for file & folder existence"
+heading "sub" "Checking for file & folder existence"
 if [ -f "$src_file" ]; then
     ok "src_file"
     if [ -d "$dmp_folder" ]; then
@@ -91,7 +86,7 @@ done <<< "$lines"
 info "ok"
 
 # Start creating the directories
-heading "Creating directories"
+heading "sub" "Creating directories"
 for dir in "${dirs[@]}"; do
     mkdir -p "$dir"
     ret=$?
