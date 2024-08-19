@@ -1,12 +1,12 @@
 #==--[ Makefile for MRainOS - Linux based ]--==#
 # ---[ Makefile variable configuration ]--- #
-#  --[ Version info ]-- #
+#  --[ Default version info ]-- #
 VERSION			:= 0
 PATCHLEVEL		:= 0
 SUBLEVEL		:= 0
 # Extraversion is declared after "-include .config.mk" so it can get values of src_dir_(conf & scripts)
 RELEASE_TAG		:= unknown
-#  --[ Escape sequence for colour values ]--  #
+#  --[ Default escape sequence for colour values ]--  #
 col_HEADING		:= \e[1;37;45m
 col_SUBHEADING	:= \e[1;35;40m
 col_INFOHEADING	:= \e[37;44m
