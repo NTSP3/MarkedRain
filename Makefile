@@ -43,7 +43,7 @@ define stop
 endef
 
 define warn
-	@echo -e "$(col_ERROR)  Warning:$(col_NORMAL)$(col_FALSE)$(strip $(1))$(col_NORMAL)" >&2
+	@echo -e "$(col_ERROR)  Warning:$(col_NORMAL)$(col_FALSE) $(strip $(1))$(col_NORMAL)" >&2
 endef
 
 define ok
@@ -211,6 +211,9 @@ all: main
 # --- Heart of compilation --- #
 .PHONY: main
 main:
+    ifneq ($(shell [ -f ".config" ] && echo y), y)
+	    $(call warn, .config file is not found. Settings in menuconfig may not reflect the current settings.)
+    endif
     ifeq ($(shell [ -f ".config.mk" ] && echo y), y)
 	    @echo -e "$(col_TRUE)               !**              Configuration file found              **!               $(col_NORMAL)"
     else
