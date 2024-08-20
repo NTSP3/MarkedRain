@@ -342,7 +342,7 @@ main:
 	    $(Q)grub-mkrescue -o $(bin_dir_iso) $(bin_dir_tmp) $(OUT)
     endif
 # Makefile's 'ifeq' conditions ain't working here for some reason
-	$(Q)if [ "$(val_do_update_count)" = "y" ]; then \
+	$(Q)if [ "$(val_do_update_count)" = "y" ] || [ "$(update)" = "true" ]; then \
 		"$(src_dir_scripts)/count_increment.sh" "latest_next" "$(src_dir_conf)/bcount.txt"; \
 	fi
 	@echo -e ""
