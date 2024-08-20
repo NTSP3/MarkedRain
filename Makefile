@@ -309,7 +309,8 @@ main:
 	\n\
 	menuentry \"$(val_grub-entry-one_name)\" { \n\
 	    linux $(sys_dir_linux) root=$(val_grub-entry-one_li_root) $(val_grub-entry-one_li_params) \n\
-	}" | $(val_superuser) tee $(bin_dir_tmp)/boot/grub/grub.cfg $(OUT)
+	}"\
+	| $(val_superuser) tee $(bin_dir_tmp)/boot/grub/grub.cfg $(OUT)
 #   - Syslinux conf -   #
 	$(call heading, sub, Syslinux config)
 	$(Q)echo -e "\
