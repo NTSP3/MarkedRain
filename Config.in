@@ -363,6 +363,15 @@ menu "Operating System configuration"
             image. This value would also be used to determine the kernel's
             location from the grub or extlinux config file.
 
+    config bool_include_aliases
+        bool "Include convenient commands"
+        default y
+        help
+            Enable this option to include convenient command aliases
+            such as 'del' for 'rm', 'ren' for renaming files,
+            'ls --color' for colored directory listings, and others.
+
+
     menu "System version information"
         config VERSION
             int "Major release number [VERSION]"
