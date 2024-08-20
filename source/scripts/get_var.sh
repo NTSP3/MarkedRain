@@ -10,7 +10,7 @@
 
 # Fancy output functions
 error() {
-    echo -e "${me}: $2: ${col_ERROR}$1${col_NORMAL}"
+    eval echo -e "${me}: $2: ${col_ERROR}$1${col_NORMAL}"
     exit 1
 }
 

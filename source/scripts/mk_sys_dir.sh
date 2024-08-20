@@ -36,7 +36,7 @@ ok() {
 }
 
 error() {
-    echo -e "${me}: $2: ${col_ERROR}$1${col_NORMAL}" >&2
+    eval echo -e "${me}: $2: ${col_ERROR}$1${col_NORMAL}" >&2
     exit 1
 }
 

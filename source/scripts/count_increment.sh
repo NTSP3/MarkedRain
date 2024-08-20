@@ -12,15 +12,15 @@
 
 # Fancy output functions
 subinfo() {
-    echo -e "${col_SUBINFO}     / $1 / ${col_NORMAL}"
+    eval echo -e "${col_SUBINFO}     / $1 / ${col_NORMAL}"
 }
 
 info() {
-    echo -e "${col_INFO} ++ $1 ++${col_NORMAL}  ::  ${col_FALSE}${me}${col_NORMAL}"
+    eval echo -e "${col_INFO} ++ $1 ++${col_NORMAL}  ::  ${col_FALSE}${me}${col_NORMAL}"
 }
 
 error() {
-    echo -e "${me}: $2: ${col_ERROR}$1${col_NORMAL}"
+    eval echo -e "${me}: $2: ${col_ERROR}$1${col_NORMAL}"
     exit 1
 }
 
@@ -52,7 +52,7 @@ if ! [[ $current_number =~ ^[0-9]+$ ]]; then
 fi
 
 echo ""
-echo -ne " ${col_INFO} Build description ${col_NORMAL}[${col_FALSE}NULL = Cancel${col_NORMAL}] : "
+eval echo -ne " ${col_INFO} Build description ${col_NORMAL}[${col_FALSE}NULL = Cancel${col_NORMAL}] : "
 read desc
 
 if [ -z "$desc" ]; then
