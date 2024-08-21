@@ -30,6 +30,16 @@ menu "Makefile customizations"
             commands, hiding every possible output of a command, including
             error messages. Enable it so you can see these important messages.
 
+    config val_unmain_sect
+        string "Targets to exclude from global code"
+        default "run clean cleanall wipe"
+        help
+            Specify targets that will skip over the global variable
+            declarations and exportings. This is a space-separated list of
+            target names. If a target in this list is detected in MAKECMDGOALS,
+            'global' will not execute code other than bool_show_cmd and
+            bool_show_cmd_out.
+
     config bool_do_timeout
         bool "Wait if another image already exist in the build directory"
         default y
