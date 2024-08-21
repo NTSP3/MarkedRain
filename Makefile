@@ -21,7 +21,7 @@ export col_HEADING col_SUBHEADING col_INFOHEADING col_INFO col_TRUE col_FALSE co
 #  --[ Command shell ]-- #
 SHELL := /bin/bash
 #  --[ Others ]--  #
-val_target		:= $(firstword $(MAKECMDGOALS))# Gets the target that the user invoked
+val_target		:= $(MAKECMDGOALS)#            # Gets the target that the user invoked
 val_current_dir	:= $(shell pwd)#               # Gets the current working director
 val_temp		:=#                            # Temporary variable
 #  --[ User's configuration (overrides vars with same name) ]--  #
@@ -161,7 +161,7 @@ else
         MAKEFLAGS += --no-print-directory
     endif
 endif
-ifeq ($(or $(findstring run,$(val_target)),$(findstring clean,$(val_target)),$(findstring wipe,$(val_target))),)
+ifeq ($(filter $(val_target),$(val_unmain_sect)),)
     $(info $(shell $(subst @echo, echo, $(call stat, Checking variable 'EXTRAVERSION'))))
     ifeq ($(shell echo $(EXTRAVERSION) | grep -Eq '^[0-9]+$$' && echo 1 || echo 0), 0)
         $(info )
@@ -262,7 +262,7 @@ main:
 	    $(call false, BootSyslinux, bool_use_sylin_exlin)
     endif
 	$(call heading, main, Creating system directories)
-	$(Q)$(val_superuser) "$(src_dir_scripts)/mk_sys_dir.sh" "$(src_dir_conf)/dir.txt" "$(bin_dir_tmp)"
+	$(Q)"$(src_dir_scripts)/mk_sys_dir.sh" "$(src_dir_conf)/dir.txt" "$(bin_dir_tmp)"
 #  -- Buildroot --  #
 	@echo -e ""
 	$(call heading, main, Adding buildroot into the image)
