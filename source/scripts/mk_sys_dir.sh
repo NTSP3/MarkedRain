@@ -88,7 +88,7 @@ info "ok"
 # Start creating the directories
 heading "sub" "Creating directories"
 for dir in "${dirs[@]}"; do
-    eval ${val_superuser} mkdir -p "$dir"
+    eval ${val_superuser} mkdir -p "\"$dir\""
     ret=$?
     if [ ${ret} -eq 0 ]; then
         ok "$dir"
