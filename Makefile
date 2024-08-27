@@ -418,7 +418,7 @@ main:
 	alias pause='read' \n\
 	alias rd='rm -ri' \n\
 	alias vdir='vdir --color=auto' "\
-	| $(val_superuser) tee "$(bin_dir_tmp)/boot/grub/grub.cfg" $(OUT)
+	| $(val_superuser) tee -a "$(bin_dir_tmp)$(sys_dir_newroot_etc)/profile" $(OUT)
 #   - GNU/Grub conf -   #
 	$(call heading, sub, Grub boot config)
 	$(Q)echo -e "\
