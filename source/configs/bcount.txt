@@ -5,7 +5,8 @@
 # 23-6-2024 21:22
 #
 
-latest_next=49
+latest_next=50
+49 - 2024-08-27 21:31:40 : Added convenient aliases
 48 - 2024-08-27 17:10:16 : preinit mount test
 47 - 2024-08-26 15:42:04 : preinit test 5
 46 - 2024-08-26 15:36:43 : preinit binary test 4
