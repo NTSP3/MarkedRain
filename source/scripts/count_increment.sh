@@ -11,16 +11,18 @@
 #
 
 # Fancy output functions
-subinfo() {
-    eval echo -e "${col_SUBINFO}     / $1 / ${col_NORMAL}"
+heading() {
+    val_temp=${script_heading//<type>/$1}
+    val_temp=${val_temp//<message>/$2}
+    eval ${val_temp} >&2
 }
 
 info() {
-    eval echo -e "${col_INFO} ++ $1 ++${col_NORMAL}  ::  ${col_FALSE}${me}${col_NORMAL}"
+    eval 'echo -e "${col_INFO} ++ $1 ++${col_NORMAL}  ::  ${col_FALSE}${me}${col_NORMAL}"'
 }
 
 error() {
-    eval echo -e "${me}: $2: ${col_ERROR}$1${col_NORMAL}"
+    eval 'echo -e "${me}: $2: ${col_ERROR}$1${col_NORMAL}"'
     exit 1
 }
 
@@ -52,7 +54,7 @@ if ! [[ $current_number =~ ^[0-9]+$ ]]; then
 fi
 
 echo ""
-eval echo -ne " ${col_INFO} Build description ${col_NORMAL}[${col_FALSE}NULL = Cancel${col_NORMAL}] : "
+eval echo -ne " ${col_INFO} Build description ${col_NORMAL}[${col_FALSE}NULL = Cancel${col_NORMAL}] : " >&2
 read desc
 
 if [ -z "$desc" ]; then
@@ -62,13 +64,13 @@ fi
 
 # Display what is happening
 echo ""
-subinfo "Invoking build number updater"
+heading "info" "Invoking build number updater"
 
 # Increment the value
 new_number=$((current_number + 1))
 
 # Call set_var.sh to set the value of $src_str
-$me_dir/set_var.sh "$src_str" "$new_number" "$out_file"
+"${me_dir}/set_var.sh" "$src_str" "$new_number" "$out_file"
 
 # Use sed to put the os count information stuff
 sed -i "/^$src_str=$new_number/a\\
