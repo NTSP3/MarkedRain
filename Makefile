@@ -19,7 +19,7 @@ col_IMP			:= \e[1;37;41m
 col_NORMAL		:= \e[0m
 export col_HEADING col_SUBHEADING col_INFOHEADING col_INFO col_TRUE col_FALSE col_DONE col_ERROR col_IMP col_NORMAL
 #  --[ Command shell ]-- #
-SHELL := /bin/bash
+SHELL			:= /bin/bash
 #  --[ Others ]--  #
 val_target		:= $(MAKECMDGOALS)#            # Gets the target that the user invoked
 val_current_dir	:= $(shell pwd)#               # Gets the current working director
@@ -27,13 +27,13 @@ val_temp		:=#                            # Temporary variable
 #  --[ User's configuration (overrides vars with same name) ]--  #
 -include .config.mk#                           # Include .config.mk
 # Extraversion is here - read the comment in its previous location #
-EXTRAVERSION	:= $(shell $(src_dir_scripts)/get_var.sh "latest_next" "$(src_dir_conf)/bcount.txt")
+EXTRAVERSION	:= $(shell "$(src_dir_scripts)/get_var.sh" "latest_next" "$(src_dir_conf)/bcount.txt")
 
 # ---[ Macros ]--- #
 #  --[ Workers party ]--  #
 define save_hash
-	@echo -e "$(col_SUBINFO)     / Saving hash of$(2) as$(1)= /$(col_NORMAL)"
-	$(Q)$(src_dir_scripts)/set_var.sh$(1) `shasum$(2) | cut -d ' ' -f 1` $(src_dir_conf)/hashes.txt
+	@$(call heading, info, Saving hash of$(2) as$(1)=)
+	$(Q)"$(src_dir_scripts)/set_var.sh"$(1) `shasum$(2) | cut -d ' ' -f 1` "$(src_dir_conf)/hashes.txt"
 endef
 
 #  --[ Exceptional message printers ]--  #
@@ -105,7 +105,7 @@ ifeq ($(bool_use_old_headings), y)
 	    elif [ "<type>" = "sub" ]; then \
 	        echo -e "\e[38;5;206m     / <message> /\e[0m"; \
 	    elif [ "<type>" = "sub2" ]; then \
-	        echo -e "$(col_INFOHEADING)  -+ <message> +-  $(col_NORMAL)"; \
+	        echo -e "$(col_SUBHEADING)  -+ <message> +-  $(col_NORMAL)"; \
 	    elif [ "<type>" = "info" ]; then \
 	        echo -e "\e[36m    // <message>\e[36m //\e[0m"; \
 	    else \
@@ -121,7 +121,7 @@ else
 	    elif [ "<type>" = "sub" ]; then \
 	        echo -e "$(col_SUBHEADING) --+ <message> +-- $(col_NORMAL)"; \
 	    elif [ "<type>" = "sub2" ]; then \
-	        echo -e "$(col_INFOHEADING)  -+ <message> +-  $(col_NORMAL)"; \
+	        echo -e "$(col_SUBHEADING)  -+ <message> +-  $(col_NORMAL)"; \
 	    elif [ "<type>" = "info" ]; then \
 	        echo -e "$(col_INFOHEADING) ++ <message>$(col_INFOHEADING) ++ $(col_NORMAL)"; \
 	    else \
@@ -163,13 +163,12 @@ else
 endif
 ifeq ($(filter $(val_target),$(val_unmain_sect)),)
     $(info $(shell $(subst @echo, echo, $(call stat, Checking variable 'EXTRAVERSION'))))
-    ifeq ($(shell echo $(EXTRAVERSION) | grep -Eq '^[0-9]+$$' && echo 1 || echo 0), 0)
+    ifeq ($(shell echo "$(EXTRAVERSION)" | grep -Eq '^[0-9]+$$' && echo 1 || echo 0), 0)
         $(info )
         $(info $(shell $(subst @echo, echo, $(call warn, Variable 'EXTRAVERSION' is not a numeric value.))))
-        $(info +          Contents of the variable at this time {)
-        # } - for vscode syntax color fix
+        $(info + Contents of the variable at this time:)
         $(info + $(EXTRAVERSION))
-        $(info +          })
+        $(info )
         $(info $(shell $(subst @echo, echo, $(call warn, Using value '0' instead - make sure bconfig.txt is correct.))))
         $(eval EXTRAVERSION = 0)
     endif
@@ -245,19 +244,18 @@ main:
 	$(call cleancode)
 #  -- Directories --  #
 	$(call heading, info, $(col_TRUE)Creating image directory)
-	$(Q) mkdir -p "$(bin_dir_tmp)"
+	$(Q) mkdir -p "$(bin_dir)" "$(bin_dir_tmp)"
 #  -- Syslinux check 1 --  #
     ifeq ($(bool_use_sylin_exlin), y)
 	    $(call true, BootSyslinux, bool_use_sylin_exlin)
-	    $(Q)mkdir -p $(bin_dir_tmp)
 	    $(call heading, main, Creating new disc image with syslinux as bootloader)
 	    $(call heading, sub, Creating an empty file ($(val_dev_iso_size)MB))
-	    $(Q)truncate -s $(val_dev_iso_size)M $(bin_dir_iso) $(OUT)
+	    $(Q)truncate -s $(val_dev_iso_size)M "$(bin_dir_iso)" $(OUT)
 	    $(call heading, sub, Creating an ext4 filesystem)
-	    $(Q)mkfs.ext4 $(bin_dir_iso) $(OUT)
+	    $(Q)mkfs.ext4 "$(bin_dir_iso)" $(OUT)
 	    $(call heading, imp, From this point onward you may receive more requests for admin privileges)
 	    $(call heading, sub, Mounting iso image to '$(bin_dir_tmp)')
-	    $(Q)sudo mount $(bin_dir_iso) $(bin_dir_tmp) $(OUT)
+	    $(Q)sudo mount "$(bin_dir_iso)" "$(bin_dir_tmp)" $(OUT)
     else
 	    $(call false, BootSyslinux, bool_use_sylin_exlin)
     endif
@@ -268,20 +266,99 @@ main:
 	$(call heading, main, Adding buildroot into the image)
     ifneq ($(shell [ -f "$(src_dir_buildroot)/output/images/rootfs.tar" ] && echo y), y)
 	    $(call heading, sub, rootfs.tar does not exist, making Buildroot)
-	    $(Q)$(MAKE) -C $(src_dir_buildroot) || exit 1
-	    $(call save_hash, buildroot, $(src_dir_buildroot)/.config)
+	    $(Q)$(MAKE) -C "$(src_dir_buildroot)" || exit 1
+	    $(call save_hash, buildroot, "$(src_dir_buildroot)/.config")
 	    $(eval val_do_update_count := y)
     else
 	    $(call heading, sub, Comparing .config hash)
-        ifneq ($(shell $(src_dir_scripts)/get_var.sh buildroot $(src_dir_conf)/hashes.txt),$(shell shasum $(src_dir_buildroot)/.config | cut -d ' ' -f 1))
-	        $(call heading, sub, Hashes don't match, making Buildroot)
-	        $(Q)$(MAKE) -C $(src_dir_buildroot) $(OUT) || exit 1
-	        $(call save_hash, buildroot, $(src_dir_buildroot)/.config)
+        ifneq ($(shell "$(src_dir_scripts)/get_var.sh" "buildroot" "$(src_dir_conf)/hashes.txt"),$(shell shasum "$(src_dir_buildroot)/.config" | cut -d ' ' -f 1))
+	        $(call heading, sub, Hashes didn't match; making Buildroot)
+	        $(Q)$(MAKE) -C "$(src_dir_buildroot)" $(OUT) || exit 1
+	        $(call save_hash, buildroot, "$(src_dir_buildroot)/.config")
 	        $(eval val_do_update_count := y)
         endif
     endif
-	$(call heading, sub, Extracting rootfs archive to '$(bin_dir_tmp)')
-	$(Q)$(val_superuser) tar xf $(src_dir_buildroot)/output/images/rootfs.tar -C $(bin_dir_tmp) $(OUT)
+    ifeq ($(bool_move_root), y)
+	    $(call heading, sub, Extracting root.fs/etc as '$(bin_dir_tmp)$(sys_dir_newroot_etc)')
+	    $(Q)$(val_superuser) tar xf "$(src_dir_buildroot)/output/images/rootfs.tar" -C "$(bin_dir_tmp)$(sys_dir_newroot_etc)" ./etc/ --strip-components=2
+	    $(call heading, sub, Extracting root.fs/opt as '$(bin_dir_tmp)$(sys_dir_newroot_opt)')
+	    $(Q)$(val_superuser) tar xf "$(src_dir_buildroot)/output/images/rootfs.tar" -C "$(bin_dir_tmp)$(sys_dir_newroot_opt)" ./opt/ --strip-components=2
+	    $(call heading, sub, Extracting root.fs/usr/bin as '$(bin_dir_tmp)$(sys_dir_newroot_bin)')
+	    $(Q)$(val_superuser) tar xf "$(src_dir_buildroot)/output/images/rootfs.tar" -C "$(bin_dir_tmp)$(sys_dir_newroot_bin)" ./usr/bin/ --strip-components=3
+	    $(call heading, sub, Extracting root.fs/usr/lib as '$(bin_dir_tmp)$(sys_dir_newroot_lib)')
+	    $(Q)$(val_superuser) tar xf "$(src_dir_buildroot)/output/images/rootfs.tar" -C "$(bin_dir_tmp)$(sys_dir_newroot_lib)" ./usr/lib/ --strip-components=3
+	    $(call heading, sub, Extracting root.fs/usr/libexec as '$(bin_dir_tmp)$(sys_dir_newroot_libexec)')
+	    $(Q)$(val_superuser) tar xf "$(src_dir_buildroot)/output/images/rootfs.tar" -C "$(bin_dir_tmp)$(sys_dir_newroot_libexec)" ./usr/libexec/ --strip-components=3
+	    $(call heading, sub, Extracting root.fs/usr/share as '$(bin_dir_tmp)$(sys_dir_newroot_share)')
+	    $(Q)$(val_superuser) tar xf "$(src_dir_buildroot)/output/images/rootfs.tar" -C "$(bin_dir_tmp)$(sys_dir_newroot_share)" ./usr/share/ --strip-components=3
+	    $(call heading, sub, Extracting root.fs/usr/sbin as '$(bin_dir_tmp)$(sys_dir_newroot_sbin)')
+	    $(Q)$(val_superuser) tar xf "$(src_dir_buildroot)/output/images/rootfs.tar" -C "$(bin_dir_tmp)$(sys_dir_newroot_sbin)" ./usr/sbin/ --strip-components=3
+	    $(call heading, sub, Extracting root.fs/var as '$(bin_dir_tmp)$(sys_dir_newroot_var)')
+	    $(Q)$(val_superuser) tar xf "$(src_dir_buildroot)/output/images/rootfs.tar" -C "$(bin_dir_tmp)$(sys_dir_newroot_var)" ./var/ --strip-components=2
+	    @echo ""
+	    $(call heading, main, Adding the preinit binary & configuration)
+	    $(call heading, sub, Comparing preinit hash)
+        ifeq ($(shell [ ! -f "$(src_dir_preinit)/preinit" ] || [ "$$(shasum "$(src_dir_preinit)/preinit.c" | cut -d ' ' -f 1)" != "$$($(src_dir_scripts)/get_var.sh preinit "$(src_dir_conf)/hashes.txt")" ] && echo y),y)
+	        $(call heading, sub2, Binary doesn't exist or hash didn't match; compiling preinit)
+	        $(Q)$(CC) -static -o "$(src_dir_preinit)/preinit" "$(src_dir_preinit)/preinit.c"
+	        $(call save_hash, preinit, "$(src_dir_preinit)/preinit.c")
+	        $(eval val_do_update_count := y)
+        endif
+	    $(call heading, sub, Copying preinit as '$(bin_dir_tmp)$(sys_dir_preinit)')
+	    $(Q)$(val_superuser) cp "$(src_dir_preinit)/preinit" "$(bin_dir_tmp)$(sys_dir_preinit)" $(OUT)
+	    $(call heading, sub, Expanding val_grub-entry-one_li_params to include preinit)
+	    $(eval val_grub-entry-one_li_params := $(val_grub-entry-one_li_params) init=$(sys_dir_preinit))
+	    $(call heading, sub, Shifting variables with sys_dir_newroot_ right to one side)
+	    $(foreach var, $(filter sys_dir_newroot_%, $(.VARIABLES)), \
+	        $(eval override $(var) := $(shell echo $($(var)) | cut -c 2-)))
+	    $(call heading, sub, Creating .preinit config file)
+	    $(Q)echo -e "\
+	    create \"bin\" \n\
+	    mount \"$(sys_dir_newroot_bin)\" as \"bin\" \n\
+	    create \"dev\" \n\
+	    create \"proc\" \n\
+	    link \"$(sys_dir_newroot_tmp)\" as \"tmp\" \n\
+	    link \"proc/self/fd\" as \"dev/fd\" \n\
+	    link \"tmp/log\" as \"dev/log\" \n\
+	    link \"proc/self/fd/2\" as \"dev/stderr\" \n\
+	    link \"proc/self/fd/0\" as \"dev/stdin\" \n\
+	    link \"proc/self/fd/1\" as \"dev/stdout\" \n\
+	    create \"etc\" \n\
+	    mount \"$(sys_dir_newroot_etc)\" as \"etc\" \n\
+	    create \"lib\" \n\
+	    mount \"$(sys_dir_newroot_lib)\" as \"lib\" \n\
+	    create \"lib64\" \n\
+	    mount \"$(sys_dir_newroot_lib)\" as \"lib64\" \n\
+	    create \"media\" \n\
+	    create \"mnt\" \n\
+	    create \"opt\" \n\
+	    mount \"$(sys_dir_newroot_opt)\" as \"opt\" \n\
+	    create \"root\" \n\
+	    mount \"$(sys_dir_newroot_root)\" as \"root\" \n\
+	    create \"run\" \n\
+	    create \"sbin\" \n\
+	    mount \"$(sys_dir_newroot_sbin)\" as \"sbin\" \n\
+	    create \"sys\" \n\
+	    create \"usr\" \n\
+	    create \"usr/bin\" \n\
+	    mount \"$(sys_dir_newroot_bin)\" as \"usr/bin\" \n\
+	    create \"usr/lib\" \n\
+	    mount \"$(sys_dir_newroot_lib)\" as \"usr/lib\" \n\
+	    create \"usr/lib64\" \n\
+	    mount \"$(sys_dir_newroot_lib)\" as \"usr/lib64\" \n\
+	    create \"usr/libexec\" \n\
+	    mount \"$(sys_dir_newroot_libexec)\" as \"usr/libexec\" \n\
+	    create \"usr/sbin\" \n\
+	    mount \"$(sys_dir_newroot_sbin)\" as \"usr/sbin\" \n\
+	    create \"usr/share\" \n\
+	    mount \"$(sys_dir_newroot_share)\" as \"usr/share\" \n\
+	    create \"var\" \n\
+	    mount \"$(sys_dir_newroot_var)\" as \"var\" "\
+	    | $(val_superuser) tee "$(bin_dir_tmp)/.preinit" $(OUT)
+    else
+	    $(call heading, sub, Extracting rootfs archive to '$(bin_dir_tmp)')
+	    $(Q)$(val_superuser) tar xf "$(src_dir_buildroot)/output/images/rootfs.tar" -C "$(bin_dir_tmp)" $(OUT)
+    endif
 #  -- Kernel --  #
 	@echo -e ""
 	$(call heading, main, Adding the linux kernel)
@@ -290,13 +367,13 @@ main:
 	    $(call stop, Kernel file doesn't exist in $(src_dir_linux). Ensure you gave the correct path to it by running menuconfig.)
     else
 	    $(call heading, sub, Checking kernel hash)
-        ifneq ($(shell $(src_dir_scripts)/get_var.sh kernel $(src_dir_conf)/hashes.txt), $(shell shasum $(src_dir_linux) | cut -d ' ' -f 1))
-	        $(call save_hash, kernel, $(src_dir_linux))
+        ifneq ($(shell "$(src_dir_scripts)/get_var.sh" "kernel" "$(src_dir_conf)/hashes.txt"), $(shell shasum "$(src_dir_linux)" | cut -d ' ' -f 1))
+	        $(call save_hash, kernel, "$(src_dir_linux)")
 	        $(eval val_do_update_count := y)
         endif
     endif
-	$(call heading, sub, Copying kernel to '$(bin_dir_tmp)$(sys_dir_linux)')
-	$(Q)$(val_superuser) cp $(src_dir_linux) $(bin_dir_tmp)$(sys_dir_linux) $(OUT)
+	$(call heading, sub, Copying kernel as '$(bin_dir_tmp)$(sys_dir_linux)')
+	$(Q)$(val_superuser) cp "$(src_dir_linux)" "$(bin_dir_tmp)$(sys_dir_linux)" $(OUT)
 #  -- Finalization --  #
 	@echo -e ""
 	$(call heading, main, Doing finalization procedures)
@@ -310,7 +387,7 @@ main:
 	menuentry \"$(val_grub-entry-one_name)\" { \n\
 	    linux $(sys_dir_linux) root=$(val_grub-entry-one_li_root) $(val_grub-entry-one_li_params) \n\
 	}"\
-	| $(val_superuser) tee $(bin_dir_tmp)/boot/grub/grub.cfg $(OUT)
+	| $(val_superuser) tee "$(bin_dir_tmp)/boot/grub/grub.cfg" $(OUT)
 #   - Syslinux conf -   #
 	$(call heading, sub, Syslinux config)
 	$(Q)echo -e "\
@@ -327,28 +404,28 @@ main:
 	    MENU LABEL $(val_grub-entry-one_name) \n\
 	    KERNEL $(sys_dir_linux) \n\
 	    APPEND root=$(val_grub-entry-one_li_root) $(val_grub-entry-one_li_params) vga=$(val_sylin-entry-one_li_vga_mode)" \
-	| $(val_superuser) tee -a $(bin_dir_tmp)/boot/syslinux/syslinux.cfg $(OUT)
+	| $(val_superuser) tee -a "$(bin_dir_tmp)/boot/syslinux/syslinux.cfg" $(OUT)
 #  -- Installing bootloaders --  #
 #   - Syslinux -   #
     ifeq ($(bool_use_sylin_exlin), y)
 	    @echo -e ""
 	    $(call heading, main, Installing syslinux to the image)
-	    $(Q)sudo extlinux --install $(bin_dir_tmp) $(OUT)
+	    $(Q)sudo extlinux --install "$(bin_dir_tmp)" $(OUT)
 	    $(call heading, sub, Unmounting '$(bin_dir_tmp)')
-	    $(Q)sudo umount $(bin_dir_tmp) $(OUT)
+	    $(Q)sudo umount "$(bin_dir_tmp)" $(OUT)
     else
 #   - GNU/Grub -   #
 	    @echo -e ""
 	    $(call heading, main, Creating new disc image with GRUB)
-	    $(Q)grub-mkrescue -o $(bin_dir_iso) $(bin_dir_tmp) $(OUT)
+	    $(Q)grub-mkrescue -o "$(bin_dir_iso)" "$(bin_dir_tmp)" $(OUT)
     endif
 # Makefile's 'ifeq' conditions ain't working here for some reason
 	$(Q)if [ "$(val_do_update_count)" = "y" ] || [ "$(update)" = "true" ]; then \
-		"$(src_dir_scripts)/count_increment.sh" "latest_next" "$(src_dir_conf)/bcount.txt"; \
+	    val_temp=$$("$(src_dir_scripts)/count_increment.sh" "latest_next" "$(src_dir_conf)/bcount.txt"); \
 	fi
 	@echo -e ""
 	$(call heading, info, $(col_FALSE)Cleaning temporary files)
-	$(Q)rm -rf $(bin_dir_tmp)
+	$(Q)rm -rf "$(bin_dir_tmp)"
 
 # --- Run --- #
 .PHONY: run runs
@@ -356,7 +433,7 @@ run:
     ifeq ($(shell [ -f "$(bin_dir_iso)" ] && echo y), y)
 	    @echo -e ""
 	    $(call ok,    // Now running '$(bin_dir_iso)' using '$(util_vm)' //    )
-	    $(Q)$(util_vm) $(util_vm_params) $(OUT)
+	    $(Q)"$(util_vm)" $(util_vm_params) $(OUT)
     else
 	    $(call stop, Supplied file '$(bin_dir_iso)' doesn't exist. Make sure you ran 'make' and check if the file specified in bin_dir_iso is correct.)
     endif
@@ -375,7 +452,7 @@ define cleancode
 		sudo umount "$(bin_dir_tmp)" $(OUT); \
 	fi; \
 	$(subst @echo, echo, $(call heading, info, $(col_FALSE)Deleting directories and image)); \
-	rm -rf $(bin_dir_tmp) $(bin_dir_iso) $(bin_dir)
+	rm -rf "$(bin_dir_tmp)" "$(bin_dir_iso)" "$(bin_dir)"
 endef
 
 # --- Clean all stuff --- #
@@ -389,7 +466,10 @@ cleanall:
 	if [ "$$choice" = "Y" ] || [ "$$choice" = "y" ]; then \
 	    $(subst @if, if, $(call cleancode)); \
 	    $(subst @echo, echo, $(call heading, info, $(col_FALSE)Cleaning buildroot)); \
-	    $(MAKE) -C $(src_dir_buildroot) clean || exit 1; \
+	    $(MAKE) -C "$(src_dir_buildroot)" clean || exit 1; \
+	    echo -e ""; \
+	    $(subst @echo, echo, $(call heading, info, $(col_FALSE)Removing preinit binary)); \
+	    rm $(src_dir_preinit)/preinit; \
 	    echo -e ""; \
 	    $(subst @echo, echo, $(call ok,  Done. Run 'make' to re-compile. Be prepared to wait a long time.  )); \
 	    echo -e ""; \
