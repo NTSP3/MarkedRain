@@ -398,6 +398,27 @@ main:
 #  -- Finalization --  #
 	@echo -e ""
 	$(call heading, main, Doing finalization procedures)
+#   - Convenient aliases -   #
+	$(call heading, sub, Convenient aliases)
+	$(Q)echo -e "\
+	# Aliases & colors \n\
+	alias copy='cp' \n\
+	alias cls='clear' \n\
+	alias del='rm -i' \n\
+	alias dir='dir --color=auto' \n\
+	alias egrep='egrep --color=auto' \n\
+	alias fgrep='fgrep --color=auto' \n\
+	alias grep='grep --color=auto' \n\
+	alias l='ls -CF' \n\
+	alias la='ls -A' \n\
+	alias ll='ls -alF' \n\
+	alias ls='ls --color=auto' \n\
+	alias md='mkdir' \n\
+	alias move='mv' \n\
+	alias pause='read' \n\
+	alias rd='rm -ri' \n\
+	alias vdir='vdir --color=auto' "\
+	| $(val_superuser) tee "$(bin_dir_tmp)/boot/grub/grub.cfg" $(OUT)
 #   - GNU/Grub conf -   #
 	$(call heading, sub, Grub boot config)
 	$(Q)echo -e "\
