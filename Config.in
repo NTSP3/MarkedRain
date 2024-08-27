@@ -377,6 +377,7 @@ menu "Operating System configuration"
     config sys_dir_apps
         string "Programs directory"
         default "/Program Files"
+        depends on bool_move_root
         help
             Enter the location of the users directory.
             This value can be used in Makefile using
@@ -386,6 +387,7 @@ menu "Operating System configuration"
     config sys_dir_usr
         string "Users directory"
         default "/Users"
+        depends on bool_move_root
         help
             Enter the location of the users directory.
             This value can be used in Makefile using
