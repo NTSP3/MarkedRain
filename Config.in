@@ -21,14 +21,14 @@ menu "Makefile customizations"
             Enable it so you can see what the stuff called by make
             are doing.
 
-    config bool_show_cmd_out_err
-        bool "Display important messages of commands"
-        default y
-        depends on !bool_show_cmd_out
-        help
-            If not checked, this adds "> /dev/null 2>&1" to the end of all
-            commands, hiding every possible output of a command, including
-            error messages. Enable it so you can see these important messages.
+        config bool_show_cmd_out_err
+            bool "Display important messages of commands"
+            default y
+            depends on !bool_show_cmd_out
+            help
+                If not checked, this adds "> /dev/null 2>&1" to the end of all
+                commands, hiding every possible output of a command, including
+                error messages. Enable it so you can see these important messages.
 
     config val_unmain_sect
         string "Targets to exclude from global code"
@@ -49,12 +49,12 @@ menu "Makefile customizations"
             the same location provided in bin_dir_iso already exists.
             Set this to false to compile without waiting.
 
-    config val_timeout_num
-        int "Seconds to waste time"
-        depends on bool_do_timeout
-        default "20"
-        help
-            Timer value for bool_do_timeout
+        config val_timeout_num
+            int "Seconds to waste time"
+            depends on bool_do_timeout
+            default "20"
+            help
+                Timer value for bool_do_timeout
 
     config bool_use_old_headings
         bool "Use legacy style for headings"
@@ -65,51 +65,60 @@ menu "Makefile customizations"
             with the older style "// //" (Does not have old
             versions for newer features, like "  -[]-  ").
 
-    menu "Message ANSI escape sequence"
-    depends on !bool_use_old_headings
-        config col_HEADING
-            string "Heading"
-            default "\\e[1;37;45m"
+        menu "Message ANSI escape sequence"
+        depends on !bool_use_old_headings
+            config col_HEADING
+                string "Heading"
+                default "\\e[1;37;45m"
 
-        config col_SUBHEADING
-            string "Sub-heading"
-            default "\\e[1;35;40m"
+            config col_SUBHEADING
+                string "Sub-heading"
+                default "\\e[1;35;40m"
 
-        config col_INFOHEADING
-            string "Informative Heading"
-            default "\\e[37;44m"
+            config col_INFOHEADING
+                string "Informative Heading"
+                default "\\e[37;44m"
 
-        config col_INFO
-            string "Regular Information"
-            default "\\e[36m"
+            config col_INFO
+                string "Regular Information"
+                default "\\e[36m"
 
-        config col_TRUE
-            string "Variable is TRUE"
-            default "\\e[32m"
+            config col_TRUE
+                string "Variable is TRUE"
+                default "\\e[32m"
 
-        config col_FALSE
-            string "Variable is FALSE"
-            default "\\e[91m"
+            config col_FALSE
+                string "Variable is FALSE"
+                default "\\e[91m"
 
-        config col_DONE
-            string "OK Message"
-            default "\\e[92m"
+            config col_DONE
+                string "OK Message"
+                default "\\e[92m"
 
-        config col_ERROR
-            string "Error Message"
-            default "\\e[1;91m"
+            config col_ERROR
+                string "Error Message"
+                default "\\e[1;91m"
 
-        config col_IMP
-            string "Important Message"
-            default "\\e[1;37;41m"
+            config col_IMP
+                string "Important Message"
+                default "\\e[1;37;41m"
 
-        config col_NORMAL
-            string "Default terminal color"
-            default "\\e[0m"
-    endmenu
+            config col_NORMAL
+                string "Default terminal color"
+                default "\\e[0m"
+        endmenu
 endmenu
 
 menu "Source configuration"
+    config CC
+        string "C code compiler w/ arguments"
+        default "gcc"
+        help
+        Specify the C code compiler and its arguments. This can be used to
+        define the compiler and options used during the build process. 
+
+        The default value is "gcc".
+
     config src_dir
         string "Project's source directory"
         default "source"
@@ -128,6 +137,14 @@ menu "Source configuration"
             The buildroot source directory contains source
             code for various buildroot utilites.
 
+    config src_dir_conf
+        string "Configurations directory"
+        default "$[src_dir]/configs"
+        help
+            The configurations directory contains files
+            that are used for the compiling and using
+            procedures of the operating system.
+
     config src_dir_linux
         string "Linux kernel directory (bzImage file)"
         default "$[src_dir]/kernel/bzImage"
@@ -137,13 +154,14 @@ menu "Source configuration"
             the kernel directory or the bzImage file,
             change this value to point to that file.
 
-    config src_dir_conf
-        string "Configurations directory"
-        default "$[src_dir]/configs"
+    config src_dir_preinit
+        string "Preinit source directory"
+        default "$[src_dir]/preinit"
+        depends on bool_move_root
         help
-            The configurations directory contains files
-            that are used for the compiling and using
-            procedures of the operating system.
+            The preinit source directory contains the
+            source code to the binary used to create
+            symlinks at bootup.
 
     config src_dir_scripts
         string "Scripting directory"
@@ -356,13 +374,31 @@ menu "Operating System configuration"
                 "quiet rw"
     endmenu
 
+    config sys_dir_apps
+        string "Programs directory"
+        default "/Program Files"
+        help
+            Enter the location of the users directory.
+            This value can be used in Makefile using
+            $[sys_dir_usr]. This directory houses the
+            user's files and customizations.
+
+    config sys_dir_usr
+        string "Users directory"
+        default "/Users"
+        help
+            Enter the location of the users directory.
+            This value can be used in Makefile using
+            $[sys_dir_usr]. This directory houses the
+            user's files and customizations.
+
     config sys_dir_sys
         string "System directory"
         default "/System"
         help
             Enter the location of the system directory.
             This value can be used in Makefile using
-            $[sys_dir_sys]. This directory houses most
+            $[sys_dir_sys]. This directory houses many
             important files that are used by MRain OS.
 
     config sys_dir_linux
@@ -372,6 +408,68 @@ menu "Operating System configuration"
             Enter the location to copy the linux kernel into in the iso
             image. This value would also be used to determine the kernel's
             location from the grub or extlinux config file.
+
+    config bool_move_root
+        bool "Move root directories into system directory"
+        default y
+        help
+            Enable this option to move essential root directories like
+            '/usr/lib' into a specified directory.
+            
+            When enabled, the init program will be set to where preinit
+            is located. It will create the necessary symlinks to those
+            directories and start the main init process.
+
+        config sys_dir_preinit
+            string "Preinit file location & name in the final iso"
+            default "$[sys_dir_sys]/base/init"
+            depends on bool_move_root
+            help
+                Enter the location to copy the preinit binary into in the iso
+                image.
+
+        menu "New paths for root directories"
+        depends on bool_move_root
+            config sys_dir_newroot_etc
+                string "/etc"
+                default "$[sys_dir_sys]/sysconf"
+
+            config sys_dir_newroot_opt
+                string "/opt"
+                default "$[sys_dir_sys]/addons"
+
+            config sys_dir_newroot_root
+                string "/root"
+                default "$[sys_dir_usr]/Administrator"
+
+            config sys_dir_newroot_bin
+                string "/usr/bin"
+                default "$[sys_dir_apps]/system"
+
+            config sys_dir_newroot_lib
+                string "/usr/lib"
+                default "$[sys_dir_sys]/library"
+
+            config sys_dir_newroot_libexec
+                string "/usr/libexec"
+                default "$[sys_dir_sys]/library/services"
+
+            config sys_dir_newroot_share
+                string "/usr/share"
+                default "$[sys_dir_sys]/shared"
+
+            config sys_dir_newroot_sbin
+                string "/usr/sbin"
+                default "$[sys_dir_sys]/sysapps"
+
+            config sys_dir_newroot_tmp
+                string "/tmp"
+                default "$[sys_dir_sys]/temp"
+
+            config sys_dir_newroot_var
+                string "/var"
+                default "$[sys_dir_sys]/variable"
+        endmenu
 
     config bool_include_aliases
         bool "Include convenient commands"
@@ -428,7 +526,7 @@ menu "Utilities"
 
     config util_vm_params
         string "Parameters to be sent to the Virtualization software"
-        default "-m 256M $[bin_dir_iso]"
+        default "-m 256M '$[bin_dir_iso]'"
         help
             These parameters will be directly sent to the VM software
             by appending it to the end of its filename. Different
