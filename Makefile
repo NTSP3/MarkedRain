@@ -295,6 +295,8 @@ main:
 	    $(Q)$(val_superuser) tar xf "$(src_dir_buildroot)/output/images/rootfs.tar" -C "$(bin_dir_tmp)$(sys_dir_newroot_sbin)" ./usr/sbin/ --strip-components=3
 	    $(call heading, sub, Extracting root.fs/var as '$(bin_dir_tmp)$(sys_dir_newroot_var)')
 	    $(Q)$(val_superuser) tar xf "$(src_dir_buildroot)/output/images/rootfs.tar" -C "$(bin_dir_tmp)$(sys_dir_newroot_var)" ./var/ --strip-components=2
+	    $(call heading, sub, Extracting root.fs/linuxrc to '$(bin_dir_tmp)')
+	    $(Q)$(val_superuser) tar xf "$(src_dir_buildroot)/output/images/rootfs.tar" -C "$(bin_dir_tmp)" ./linuxrc
 	    @echo ""
 	    $(call heading, main, Adding the preinit binary & configuration)
 	    $(call heading, sub, Comparing preinit hash)
@@ -355,6 +357,25 @@ main:
 	    create \"var\" \n\
 	    mount \"$(sys_dir_newroot_var)\" as \"var\" "\
 	    | $(val_superuser) tee "$(bin_dir_tmp)/.preinit" $(OUT)
+	    $(call heading, sub, Creating .hidden config file)
+	    $(Q)echo -e "\
+	    bin/ \n\
+	    dev/ \n\
+	    etc/ \n\
+	    lib/ \n\
+	    lib64/ \n\
+	    media/ \n\
+	    mnt/ \n\
+	    opt/ \n\
+	    proc/ \n\
+	    root/ \n\
+	    run/ \n\
+	    sbin/ \n\
+	    sys/ \n\
+	    tmp/ \n\
+	    usr/ \n\
+	    var/ "\
+	    | $(val_superuser) tee "$(bin_dir_tmp)/.hidden" $(OUT)
     else
 	    $(call heading, sub, Extracting rootfs archive to '$(bin_dir_tmp)')
 	    $(Q)$(val_superuser) tar xf "$(src_dir_buildroot)/output/images/rootfs.tar" -C "$(bin_dir_tmp)" $(OUT)
