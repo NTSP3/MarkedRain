@@ -355,7 +355,7 @@ main:
 	    create \"usr/share\" \n\
 	    mount \"$(sys_dir_newroot_share)\" as \"usr/share\" \n\
 	    create \"var\" \n\
-	    mount \"$(sys_dir_newroot_var)\" as \"var\" \n"\
+	    mount \"$(sys_dir_newroot_var)\" as \"var\" "\
 	    | $(val_superuser) tee "$(bin_dir_tmp)/.preinit" $(OUT)
 	    $(call heading, sub, Creating .hidden config file)
 	    $(Q)echo -e "\
