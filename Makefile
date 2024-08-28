@@ -355,7 +355,7 @@ main:
 	    create \"usr/share\" \n\
 	    mount \"$(sys_dir_newroot_share)\" as \"usr/share\" \n\
 	    create \"var\" \n\
-	    mount \"$(sys_dir_newroot_var)\" as \"var\" \n\"\
+	    mount \"$(sys_dir_newroot_var)\" as \"var\" \n"\
 	    | $(val_superuser) tee "$(bin_dir_tmp)/.preinit" $(OUT)
 	    $(call heading, sub, Creating .hidden config file)
 	    $(Q)echo -e "\
@@ -374,7 +374,7 @@ main:
 	    sys/ \n\
 	    tmp/ \n\
 	    usr/ \n\
-	    var/ \n\"\
+	    var/ \n"\
 	    | $(val_superuser) tee "$(bin_dir_tmp)/.hidden" $(OUT)
     else
 	    $(call heading, sub, Extracting rootfs archive to '$(bin_dir_tmp)')
@@ -401,7 +401,26 @@ main:
 #   - Convenient aliases -   #
     ifeq ($(bool_include_aliases), y)
 	    $(call heading, sub, Convenient aliases & functions)
-	    $(call heading, sub2, Aliases)
+	    $(call heading, sub2, ls function)
+	    $(Q)echo -e "\
+	    ls() { \
+	        # Check if the user is trying to use --help or --version \
+	        case "$*" in \
+	            --help|--version|-v|-V) \
+	                command ls "$@" \
+	                return \
+	                ;; \
+	        esac \
+	        \
+	        # Filter stuff in .hidden \
+	        local files \
+	        files=$(command ls --color=auto "$@" | grep -vFf .hidden | grep -v '^\.') \
+	        if [ -n "$files" ]; then \
+	            echo "$files" | xargs -d '\n' ls --color=auto -d \
+	        fi \
+		} \n"\
+	    | $(val_superuser) tee -a "$(bin_dir_tmp)/$(sys_dir_newroot_etc)/profile" $(OUT)
+	    $(call heading, sub2, Command aliases)
 	    $(Q)echo -e "\
 	    # Great command aliases \n\
 	    alias cd.='cd .' \n\
@@ -420,7 +439,7 @@ main:
 	    alias move='mv' \n\
 	    alias pause='read' \n\
 	    alias rd='rm -ri' \n\
-	    alias vdir='vdir --color=auto' \n\"\
+	    alias vdir='vdir --color=auto' \n"\
 	    | $(val_superuser) tee -a "$(bin_dir_tmp)/$(sys_dir_newroot_etc)/profile" $(OUT)
     endif
 #   - GNU/Grub conf -   #
@@ -432,7 +451,7 @@ main:
 	\n\
 	menuentry \"$(val_grub-entry-one_name)\" { \n\
 	    linux $(sys_dir_linux) root=$(val_grub-entry-one_li_root) $(val_grub-entry-one_li_params) \n\
-	}\n\"\
+	}\n"\
 	| $(val_superuser) tee "$(bin_dir_tmp)/boot/grub/grub.cfg" $(OUT)
 #   - Syslinux conf -   #
 	$(call heading, sub, Syslinux config)
@@ -449,7 +468,7 @@ main:
 	LABEL $(val_grub-boot_default) \n\
 	    MENU LABEL $(val_grub-entry-one_name) \n\
 	    KERNEL $(sys_dir_linux) \n\
-	    APPEND root=$(val_grub-entry-one_li_root) $(val_grub-entry-one_li_params) vga=$(val_sylin-entry-one_li_vga_mode)\n\" \
+	    APPEND root=$(val_grub-entry-one_li_root) $(val_grub-entry-one_li_params) vga=$(val_sylin-entry-one_li_vga_mode)\n" \
 	| $(val_superuser) tee -a "$(bin_dir_tmp)/boot/syslinux/syslinux.cfg" $(OUT)
 #  -- Installing bootloaders --  #
 #   - Syslinux -   #
