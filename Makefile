@@ -355,7 +355,7 @@ main:
 	    create \"usr/share\" \n\
 	    mount \"$(sys_dir_newroot_share)\" as \"usr/share\" \n\
 	    create \"var\" \n\
-	    mount \"$(sys_dir_newroot_var)\" as \"var\" "\
+	    mount \"$(sys_dir_newroot_var)\" as \"var\" \n\"\
 	    | $(val_superuser) tee "$(bin_dir_tmp)/.preinit" $(OUT)
 	    $(call heading, sub, Creating .hidden config file)
 	    $(Q)echo -e "\
@@ -374,7 +374,7 @@ main:
 	    sys/ \n\
 	    tmp/ \n\
 	    usr/ \n\
-	    var/ "\
+	    var/ \n\"\
 	    | $(val_superuser) tee "$(bin_dir_tmp)/.hidden" $(OUT)
     else
 	    $(call heading, sub, Extracting rootfs archive to '$(bin_dir_tmp)')
@@ -399,26 +399,30 @@ main:
 	@echo -e ""
 	$(call heading, main, Doing finalization procedures)
 #   - Convenient aliases -   #
-	$(call heading, sub, Convenient aliases)
-	$(Q)echo -e "\
-	# Aliases & colors \n\
-	alias copy='cp' \n\
-	alias cls='clear' \n\
-	alias del='rm -i' \n\
-	alias dir='dir --color=auto' \n\
-	alias egrep='egrep --color=auto' \n\
-	alias fgrep='fgrep --color=auto' \n\
-	alias grep='grep --color=auto' \n\
-	alias l='ls -CF' \n\
-	alias la='ls -A' \n\
-	alias ll='ls -alF' \n\
-	alias ls='ls --color=auto' \n\
-	alias md='mkdir' \n\
-	alias move='mv' \n\
-	alias pause='read' \n\
-	alias rd='rm -ri' \n\
-	alias vdir='vdir --color=auto' "\
-	| $(val_superuser) tee -a "$(bin_dir_tmp)/$(sys_dir_newroot_etc)/profile" $(OUT)
+    ifeq ($(bool_include_aliases), y)
+	    $(call heading, sub, Convenient aliases & functions)
+	    $(call heading, sub2, Aliases)
+	    $(Q)echo -e "\
+	    # Great command aliases \n\
+	    alias cd.='cd .' \n\
+	    alias cd..='cd ..' \n\
+	    alias cls='clear' \n\
+	    alias copy='cp' \n\
+	    alias del='rm -i' \n\
+	    alias dir='ls -l' \n\
+	    alias egrep='egrep --color=auto' \n\
+	    alias fgrep='fgrep --color=auto' \n\
+	    alias grep='grep --color=auto' \n\
+	    alias l='ls -CF' \n\
+	    alias la='ls -A' \n\
+	    alias ll='ls -alF' \n\
+	    alias md='mkdir' \n\
+	    alias move='mv' \n\
+	    alias pause='read' \n\
+	    alias rd='rm -ri' \n\
+	    alias vdir='vdir --color=auto' \n\"\
+	    | $(val_superuser) tee -a "$(bin_dir_tmp)/$(sys_dir_newroot_etc)/profile" $(OUT)
+    endif
 #   - GNU/Grub conf -   #
 	$(call heading, sub, Grub boot config)
 	$(Q)echo -e "\
@@ -428,7 +432,7 @@ main:
 	\n\
 	menuentry \"$(val_grub-entry-one_name)\" { \n\
 	    linux $(sys_dir_linux) root=$(val_grub-entry-one_li_root) $(val_grub-entry-one_li_params) \n\
-	}"\
+	}\n\"\
 	| $(val_superuser) tee "$(bin_dir_tmp)/boot/grub/grub.cfg" $(OUT)
 #   - Syslinux conf -   #
 	$(call heading, sub, Syslinux config)
@@ -445,7 +449,7 @@ main:
 	LABEL $(val_grub-boot_default) \n\
 	    MENU LABEL $(val_grub-entry-one_name) \n\
 	    KERNEL $(sys_dir_linux) \n\
-	    APPEND root=$(val_grub-entry-one_li_root) $(val_grub-entry-one_li_params) vga=$(val_sylin-entry-one_li_vga_mode)" \
+	    APPEND root=$(val_grub-entry-one_li_root) $(val_grub-entry-one_li_params) vga=$(val_sylin-entry-one_li_vga_mode)\n\" \
 	| $(val_superuser) tee -a "$(bin_dir_tmp)/boot/syslinux/syslinux.cfg" $(OUT)
 #  -- Installing bootloaders --  #
 #   - Syslinux -   #
