@@ -111,13 +111,17 @@ int main(int argc, char *argv[]) {
     while (fgets(line, sizeof(line), file)) {
         line_number++;
 
-        char *newline = strchr(line, '\n');
-        if (newline) {
-            *newline = '\0';
-        }
-
+        // Trim leading and trailing whitespace
         char *ptr = line;
         while (*ptr == ' ' || *ptr == '\t') ptr++;
+        char *end = ptr + strlen(ptr) - 1;
+        while (end > ptr && (*end == ' ' || *end == '\t' || *end == '\n')) end--;
+        *(end + 1) = '\0';
+
+        // Skip empty lines
+        if (*ptr == '\0') {
+            continue;
+        }
 
         if (strncmp(ptr, "link", 4) == 0) {
             ptr += 4;
@@ -253,6 +257,10 @@ int main(int argc, char *argv[]) {
             ptr += 2;
             while (*ptr == ' ' || *ptr == '\t') ptr++;
 
+            if (*ptr == '\0' || *ptr == '\n') {
+                report_error(program_name, "No destination path specified after 'as'", line_number, "mount");
+            }
+
             if (*ptr != '"') {
                 report_error(program_name, "Destination path not quoted", line_number, "mount");
             }
@@ -268,15 +276,7 @@ int main(int argc, char *argv[]) {
             if (*ptr != '"') {
                 report_error(program_name, "No closing quote for destination path", line_number, "mount");
             }
-            ptr++;
 
-            // Check for additional paths after the first destination
-            while (*ptr == ' ' || *ptr == '\t') ptr++;
-            if (*ptr != '\0' && *ptr != '\n') {
-                report_error(program_name, "Multiple destinations not allowed", line_number, "mount");
-            }
-
-            // Handle the mount command
             handle_mount_command(source, dest, program_name, line_number);
         } else {
             char unknown_directive[MAX_LINE_LENGTH];
@@ -299,10 +299,10 @@ int main(int argc, char *argv[]) {
         char *argv[] = { (char *)init_apps[i], NULL };
 
         if (execvp(init_apps[i], argv) == -1) {
-            report_warning(program_name, strerror(errno), line_number, "execvp");
+            report_warning(program_name, strerror(errno), __LINE__, "execvp");
         }
     }
 
-    report_error(program_name, "None of the init applications could be executed", line_number, "execvp");
+    report_error(program_name, "None of the init applications could be executed", __LINE__, "execvp");
     return EXIT_FAILURE;
 }
