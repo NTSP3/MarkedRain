@@ -1,6 +1,6 @@
 # Configuration file for MarkedRain 
 
-mainmenu "MarkedRain $(col_FG) Configuration"
+mainmenu "MarkedRain $(MRAIN_FINALVERSION) Configuration"
 
 menu "Makefile customizations"
     config bool_show_cmd
