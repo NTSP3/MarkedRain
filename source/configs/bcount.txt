@@ -5,7 +5,9 @@
 # 23-6-2024 21:22
 #
 
-latest_next=53
+latest_next=55
+54 - 2024-08-28 10:08:23 : Alias 'ls' new new new syntax
+53 - 2024-08-28 09:55:02 : Alias 'ls' new new syntax
 52 - 2024-08-28 09:49:23 : Alias 'ls' new syntax
 51 - 2024-08-28 09:44:50 : Alias 'ls' test
 50 - 2024-08-28 09:33:28 : preinit newline check
