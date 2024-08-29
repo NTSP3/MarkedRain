@@ -182,7 +182,7 @@ ifeq ($(filter $(val_target),$(val_unmain_sect)),)
         export val_superuser = sudo
     endif
     $(info $(shell $(subst @echo, echo, $(call heading, info, Exporting MRain System version))))
-    export FINALVERSION := $(VERSION).$(PATCHLEVEL).$(SUBLEVEL).$(EXTRAVERSION)-$(RELEASE_TAG)
+    export MRAIN_VERSION := $(VERSION).$(PATCHLEVEL).$(SUBLEVEL).$(EXTRAVERSION)-$(RELEASE_TAG)
 endif
 # Go to 'all' if nothing is specified #
 .DEFAULT_GOAL := all
