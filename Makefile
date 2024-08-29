@@ -401,25 +401,7 @@ main:
 #   - Convenient aliases -   #
     ifeq ($(bool_include_aliases), y)
 	    $(call heading, sub, Convenient aliases & functions)
-	    $(call heading, sub2, ls function)
-	    $(Q)echo -e "\
-	    ls() { \n\
-	        # Check if the user is trying to use --help or --version \n\
-	        case "$*" in \n\
-	            --help|--version|-v|-V) \n\
-	                command ls "$@" \n\
-	                return \n\
-	                ;; \n\
-	        esac \n\
-	        \n\n\
-	        # Filter stuff in .hidden \n\
-	        local files \n\
-	        files=$(command ls --color=auto "$@" | grep -vFf .hidden | grep -v '^\.') \n\
-	        if [ -n "$files" ]; then \n\
-	            echo "$files" | xargs -d '\n' ls --color=auto -d \n\
-	        fi \n\
-		} \n"\
-	    | $(val_superuser) tee -a "$(bin_dir_tmp)/$(sys_dir_newroot_etc)/profile" $(OUT)
+	    $(call heading, sub2, Functions <scr>)
 	    $(call heading, sub2, Command aliases)
 	    $(Q)echo -e "\
 	    # Great command aliases \n\
