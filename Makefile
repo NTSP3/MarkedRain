@@ -30,9 +30,9 @@ val_temp		:=#                            # Temporary variable
 EXTRAVERSION	:= $(shell "$(src_dir_scripts)/get_var.sh" "latest_next" "$(src_dir_conf)/bcount.txt")
 
 # ---[ Macros ]--- #
-#  --[ Workers party ]--  #
+#  --[ Definitions that do something ]--  #
 define save_hash
-	@$(call heading, info, Saving hash of$(2) as$(1)=)
+	@$(call heading, info, Saving hash of file$(2) as$(1)=)
 	$(Q)"$(src_dir_scripts)/set_var.sh"$(1) `shasum$(2) | cut -d ' ' -f 1` "$(src_dir_conf)/hashes.txt"
 endef
 
@@ -265,16 +265,16 @@ main:
 	@echo -e ""
 	$(call heading, main, Adding buildroot into the image)
     ifneq ($(shell [ -f "$(src_dir_buildroot)/output/images/rootfs.tar" ] && echo y), y)
-	    $(call heading, sub, rootfs.tar does not exist, making Buildroot)
-	    $(Q)$(MAKE) -C "$(src_dir_buildroot)" || exit 1
-	    $(call save_hash, buildroot, "$(src_dir_buildroot)/.config")
+	    $(call heading, sub, rootfs.tar does not exist; making Buildroot)
+	    $(Q)$(MAKE) -C "$(src_dir_buildroot)" $(OUT) || exit 1
+	    $(call save_hash, "buildroot", "$(src_dir_buildroot)/.config")
 	    $(eval val_do_update_count := y)
     else
 	    $(call heading, sub, Comparing .config hash)
         ifneq ($(shell "$(src_dir_scripts)/get_var.sh" "buildroot" "$(src_dir_conf)/hashes.txt"),$(shell shasum "$(src_dir_buildroot)/.config" | cut -d ' ' -f 1))
 	        $(call heading, sub, Hashes didn't match; making Buildroot)
 	        $(Q)$(MAKE) -C "$(src_dir_buildroot)" $(OUT) || exit 1
-	        $(call save_hash, buildroot, "$(src_dir_buildroot)/.config")
+	        $(call save_hash, "buildroot", "$(src_dir_buildroot)/.config")
 	        $(eval val_do_update_count := y)
         endif
     endif
@@ -303,7 +303,7 @@ main:
         ifeq ($(shell [ ! -f "$(src_dir_preinit)/preinit" ] || [ "$$(shasum "$(src_dir_preinit)/preinit.c" | cut -d ' ' -f 1)" != "$$($(src_dir_scripts)/get_var.sh preinit "$(src_dir_conf)/hashes.txt")" ] && echo y),y)
 	        $(call heading, sub2, Binary doesn't exist or hash didn't match; compiling preinit)
 	        $(Q)$(CC) -static -o "$(src_dir_preinit)/preinit" "$(src_dir_preinit)/preinit.c"
-	        $(call save_hash, preinit, "$(src_dir_preinit)/preinit.c")
+	        $(call save_hash, "preinit", "$(src_dir_preinit)/preinit.c")
 	        $(eval val_do_update_count := y)
         endif
 	    $(call heading, sub, Copying preinit as '$(bin_dir_tmp)$(sys_dir_preinit)')
@@ -389,7 +389,7 @@ main:
     else
 	    $(call heading, sub, Checking kernel hash)
         ifneq ($(shell "$(src_dir_scripts)/get_var.sh" "kernel" "$(src_dir_conf)/hashes.txt"), $(shell shasum "$(src_dir_linux)" | cut -d ' ' -f 1))
-	        $(call save_hash, kernel, "$(src_dir_linux)")
+	        $(call save_hash, "kernel", "$(src_dir_linux)")
 	        $(eval val_do_update_count := y)
         endif
     endif
@@ -513,7 +513,7 @@ cleanall:
 	if [ "$$choice" = "Y" ] || [ "$$choice" = "y" ]; then \
 	    $(subst @if, if, $(call cleancode)); \
 	    $(subst @echo, echo, $(call heading, info, $(col_FALSE)Cleaning buildroot)); \
-	    $(MAKE) -C "$(src_dir_buildroot)" clean || exit 1; \
+	    $(MAKE) -C "$(src_dir_buildroot)" clean $(OUT) || exit 1; \
 	    echo -e ""; \
 	    $(subst @echo, echo, $(call heading, info, $(col_FALSE)Removing preinit binary)); \
 	    rm $(src_dir_preinit)/preinit; \
