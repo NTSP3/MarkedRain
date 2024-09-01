@@ -1,0 +1,47 @@
+all:
+    ifeq ($(shell [ -f "$(src_dir_conf)/.errbr" ] && echo y), y)
+    # file .errbr in src_dir_conf is found
+	    $(call heading, sub, Error file is found; making Buildroot)
+	    $(Q)$(MAKE) -C "$(src_dir_buildroot)" $(OUT)
+	    $(Q)rm "$(src_dir_conf)/.errbr"
+	    $(call save_hash, "buildroot", "$(src_dir_buildroot)/.config")
+	    $(call save_hash_dir, "buildroot_build_output", "$(src_dir_buildroot)/output/build")
+	    $(eval val_do_update_count := y)
+    else
+        ifeq ($(shell [ -f "$(src_dir_buildroot)/output/images/rootfs.tar" ] && [ -d "$(src_dir_buildroot)/output/build" ] && echo true),)
+        # Either rootfs.tar or output/build doesn't exist
+	        $(call heading, sub, rootfs.tar or BR output doesn't exist, making Buildroot)
+	        $(Q)echo > "$(src_dir_conf)/.errbr"
+	        $(Q)$(MAKE) -C "$(src_dir_buildroot)" $(OUT)
+	        $(Q)rm "$(src_dir_conf)/.errbr"
+	        $(call save_hash, "buildroot", "$(src_dir_buildroot)/.config")
+	        $(call save_hash_dir, "buildroot_build_output", "$(src_dir_buildroot)/output/build")
+	        $(eval val_do_update_count := y)
+        else
+            TODO: The first check should be check to see if BOTH hashes are changed. If so, combine
+            both functions.
+            ifneq ($(shell "$(src_dir_scripts)/get_var.sh" "buildroot_build_output" "$(src_dir_conf)/hashes.txt"),$(shell find "$(src_dir_buildroot)/output/build" -type d -printf '%T@' | md5sum | cut -d' ' -f1))
+                ifneq ($(shell "$(src_dir_scripts)/get_var.sh" "buildroot" "$(src_dir_conf)/hashes.txt"),$(shell shasum "$(src_dir_buildroot)/.config" | cut -d ' ' -f 1))
+                # Hash of .config and output/build is different
+	                $(call heading, sub, .config and output/build changed, making Buildroot)
+	                $(Q)echo > "$(src_dir_conf)/.errbr"
+	                $(Q)$(MAKE) -C "$(src_dir_buildroot)" $(OUT)
+	                $(call heading, sub2, Deleting buildroot target directory)
+	                $(Q)rm -rf "$(src_dir_buildroot)/output/target"
+					TODO: Add code to do pkg-rebuild and pkg-reinstall here.
+					WHAT U ARE DOING. That code is in buildroot/package/pkg-generic.mk
+	                $(Q)rm "$(src_dir_conf)/.errbr"
+	                $(call save_hash, "buildroot", "$(src_dir_buildroot)/.config")
+	                $(call save_hash_dir, "buildroot_build_output", "$(src_dir_buildroot)/output/build")
+	                $(eval val_do_update_count := y)
+                else
+                # Only hash of output/build is different
+                TODO: HEADING, 'rm output/target' 'make <pkg>-rebuild' 'make <pkg>-reinstall'
+                endif
+            else ifneq ($(shell "$(src_dir_scripts)/get_var.sh" "buildroot" "$(src_dir_conf)/hashes.txt"),$(shell shasum "$(src_dir_buildroot)/.config" | cut -d ' ' -f 1))
+            # Only hash of .config is different
+            TODO: HEADING, 'make' 'rm output/target' 'make <pkg>-reinstall'
+            endif
+        endif
+    endif
+	<bool_move_root code continue>
