@@ -123,7 +123,7 @@ else
 	    elif [ "<type>" = "sub2" ]; then \
 	        echo -e "$(col_SUBHEADING)  -+ <message> +-  $(col_NORMAL)"; \
 	    elif [ "<type>" = "info" ]; then \
-	        echo -e "$(col_INFOHEADING) ++ <message>$(col_INFOHEADING) ++ $(col_NORMAL)"; \
+	        echo -e "$(col_INFOHEADING) ++ <message>$(col_NORMAL)$(col_INFOHEADING) ++ $(col_NORMAL)"; \
 	    else \
 	        $(subst @echo, echo, $(call warn, Definition \"script_heading\" doesn't know what '<type>' means.)); \
 	    fi
@@ -295,8 +295,6 @@ main:
 	    $(Q)$(val_superuser) tar xf "$(src_dir_buildroot)/output/images/rootfs.tar" -C "$(bin_dir_tmp)$(sys_dir_newroot_sbin)" ./usr/sbin/ --strip-components=3
 	    $(call heading, sub, Extracting root.fs/var as '$(bin_dir_tmp)$(sys_dir_newroot_var)')
 	    $(Q)$(val_superuser) tar xf "$(src_dir_buildroot)/output/images/rootfs.tar" -C "$(bin_dir_tmp)$(sys_dir_newroot_var)" ./var/ --strip-components=2
-	    $(call heading, sub, Extracting root.fs/linuxrc to '$(bin_dir_tmp)')
-	    $(Q)$(val_superuser) tar xf "$(src_dir_buildroot)/output/images/rootfs.tar" -C "$(bin_dir_tmp)" ./linuxrc
 	    @echo ""
 	    $(call heading, main, Adding the preinit binary & configuration)
 	    $(call heading, sub, Comparing preinit hash)
