@@ -18,7 +18,7 @@ OPENRC_CONF_OPTS = \
 	-Dpkgconfig=false \
 	-Dsysvinit=true \
 	-Drootprefix=/ \
-	-Dbranding="\"Buildroot $(BR2_VERSION_FULL)\""
+	-Dbranding="\"MarkedRain $(MRAIN_VERSION)\""
 
 ifeq ($(BR2_PACKAGE_BASH_COMPLETION),y)
 OPENRC_CONF_OPTS += -Dbash-completions=true

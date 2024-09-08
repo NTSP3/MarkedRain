@@ -55,7 +55,7 @@ PERL_CONF_OPTS = \
 	-Dldflags="$(TARGET_LDFLAGS) -lm $(TARGET_NLS_LIBS)" \
 	-Dmydomain="" \
 	-Dmyhostname="noname" \
-	-Dmyuname="Buildroot $(BR2_VERSION_FULL)" \
+	-Dmyuname="MarkedRain $(MRAIN_VERSION)" \
 	-Dosname=linux \
 	-Dosvers=$(LINUX_VERSION) \
 	-Dperladmin=root
@@ -80,7 +80,7 @@ endif
 define PERL_CONFIGURE_CMDS
 	(cd $(@D); $(TARGET_MAKE_ENV) HOSTCC='$(HOSTCC_NOCCACHE)' \
 		./configure $(PERL_CONF_OPTS))
-	$(SED) 's/UNKNOWN-/Buildroot $(subst /,\/,$(BR2_VERSION_FULL)) /' $(@D)/patchlevel.h
+	$(SED) 's/UNKNOWN-/MarkedRain $(subst /,\/,$(MRAIN_VERSION)) /' $(@D)/patchlevel.h
 endef
 
 define PERL_BUILD_CMDS

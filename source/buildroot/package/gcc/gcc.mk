@@ -82,7 +82,7 @@ HOST_GCC_COMMON_CONF_OPTS = \
 	--with-gmp=$(HOST_DIR) \
 	--with-mpc=$(HOST_DIR) \
 	--with-mpfr=$(HOST_DIR) \
-	--with-pkgversion="Buildroot $(BR2_VERSION_FULL)" \
+	--with-pkgversion="MarkedRain $(MRAIN_VERSION)" \
 	--with-bugurl="http://bugs.buildroot.net/" \
 	--without-zstd
 
@@ -327,9 +327,11 @@ endif
 # _CONF_OPTS contains some references to the absolute path of $(HOST_DIR)
 # and a reference to the Buildroot git revision (BR2_VERSION_FULL),
 # so substitute those away.
+#
+# version update - markedrain
 HOST_GCC_COMMON_TOOLCHAIN_WRAPPER_ARGS += -DBR_CCACHE_HASH=\"`\
 	printf '%s\n' $(subst $(HOST_DIR),@HOST_DIR@,\
-		$(subst --with-pkgversion="Buildroot $(BR2_VERSION_FULL)",,$($(PKG)_CONF_OPTS))) \
+		$(subst --with-pkgversion="MarkedRain $(MRAIN_VERSION)",,$($(PKG)_CONF_OPTS))) \
 		| sha256sum - $(HOST_GCC_COMMON_CCACHE_HASH_FILES) \
 		| cut -c -64 | tr -d '\n'`\"
 endif # BR2_CCACHE

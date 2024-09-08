@@ -759,11 +759,11 @@ endif
 		{ echo "ERROR: we shouldn't have a /etc/ld.so.conf.d directory"; exit 1; } || true
 	mkdir -p $(TARGET_DIR)/etc
 	( \
-		echo "NAME=Buildroot"; \
-		echo "VERSION=$(BR2_VERSION_FULL)"; \
-		echo "ID=buildroot"; \
-		echo "VERSION_ID=$(BR2_VERSION)"; \
-		echo "PRETTY_NAME=\"Buildroot $(BR2_VERSION)\"" \
+		echo "NAME=MarkedRain"; \
+		echo "VERSION=$(MRAIN_VERSION)"; \
+		echo "ID=markedrain"; \
+		echo "VERSION_ID=$(MRAIN_VERSION)"; \
+		echo "PRETTY_NAME=\"MarkedRain $(MRAIN_VERSION)\"" \
 	) >  $(TARGET_DIR)/usr/lib/os-release
 	ln -sf ../usr/lib/os-release $(TARGET_DIR)/etc
 
