@@ -12,7 +12,6 @@ builds/
 
 # MarkedRain files
 dotconfig.busybox
-source/configs/hashes.txt
 source/preinit/preinit
 
 # make menuconfig tmp & usr cfg
