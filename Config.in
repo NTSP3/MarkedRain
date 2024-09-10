@@ -210,7 +210,6 @@ menu "Destination configuration"
             when Extlinux is used instead of GRUB. The value must
             be in megabytes (MB). You cannot do something like
             "100MB", only the "100" part is supported.
-
 endmenu
 
 menu "Operating System configuration"
@@ -550,7 +549,7 @@ menu "Other configurations"
     endmenu
 
     config val_remake_br_pack
-        string "BR Packages to rebuild upon version change"
+        string "BR Packages to remake upon version change"
         default "openrc"
         help
             This variable contains the package names in buildroot
@@ -558,7 +557,7 @@ menu "Other configurations"
             does not change dynamically according to a version
             file, found in their package makefiles.
 
-            Leave blank to not rebuild any packages automatically.
+            Leave blank to not remake any packages automatically.
 
             Makefiles edited: gcc perl openrc swupdate
 endmenu
