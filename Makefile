@@ -33,7 +33,7 @@ EXTRAVERSION	:= $(shell "$(src_dir_scripts)/get_var.sh" "latest_next" "$(src_dir
 #  --[ Definitions that do something ]--  #
 define save_hash
 	@$(call heading, info, Saving hash of file$(2) as$(1)=)
-	$(Q)"$(src_dir_scripts)/set_var.sh"$(1) `shasum$(2) | cut -d ' ' -f 1` "$(src_dir_conf)/hashes.txt"
+	$(Q)"$(src_dir_scripts)/set_var.sh"$(1) `shasum$(2) | cut -d ' ' -f 1` "$(src_dir_conf)/variables.txt"
 endef
 
 #  --[ Exceptional message printers ]--  #
@@ -207,7 +207,7 @@ all: main
 	$(call ok,    // If you want to automatically open the iso in $(util_vm), use 'make runs' //    )
 	@echo -e ""
 
-# --- Heart of compilation --- #
+# --- Main compiling procedure --- #
 .PHONY: main
 main:
     ifneq ($(shell [ -f ".config" ] && echo y), y)
@@ -241,10 +241,18 @@ main:
 	        $(call false, Wait a minute, bool_do_timeout)
         endif
     endif
+#  -- Compare MRain version --  #
+	$(call stat, Comparing MarkedRain version)
+	$(eval val_temp := $(shell "$(src_dir_scripts)/get_var.sh" "ver_mrain-sys" "$(src_dir_conf)/variables.txt"))
+    ifneq ($(val_temp), $(MRAIN_VERSION))
+	    $(call heading, info, Version change detected)
+	    $(eval bool_ver_change := y)
+    endif
+#  -- Clean --  #
 	$(call cleancode)
 #  -- Directories --  #
 	$(call heading, info, $(col_TRUE)Creating image directory)
-	$(Q) mkdir -p "$(bin_dir)" "$(bin_dir_tmp)"
+	$(Q)mkdir -p "$(bin_dir)" "$(bin_dir_tmp)"
 #  -- Syslinux check 1 --  #
     ifeq ($(bool_use_sylin_exlin), y)
 	    $(call true, BootSyslinux, bool_use_sylin_exlin)
@@ -264,18 +272,35 @@ main:
 #  -- Buildroot --  #
 	@echo -e ""
 	$(call heading, main, Adding buildroot into the image)
+    # Check if version changed (don't invoke BR make now, it may get invoked later)
+    # Also, can't put BR make here and do the ifneq condition as 'else ifneq', bash 'if' conditions
+    # doesn't seem to work with makefile, and can't make those ifeq and ifneq conditions into bash
+    # because it cannot do $(eval)
+	$(Q)if [ "$(bool_ver_change)" = "y" ] && [ "$(strip $(val_remake_br_pack))" != "" ]; then \
+	    val_temp="$(val_remake_br_pack)"; \
+	    for val_temp2 in $$val_temp; do \
+	        $(subst @echo, echo, $(call heading, sub, Re-making package: $$val_temp2)); \
+	        $(MAKE) -C "$(src_dir_buildroot)" "$${val_temp2}-reconfigure"; \
+	    done; \
+	fi
     ifneq ($(shell [ -f "$(src_dir_buildroot)/output/images/rootfs.tar" ] && echo y), y)
 	    $(call heading, sub, rootfs.tar does not exist; making Buildroot)
 	    $(Q)$(MAKE) -C "$(src_dir_buildroot)" $(OUT) || exit 1
-	    $(call save_hash, "buildroot", "$(src_dir_buildroot)/.config")
-	    $(eval val_do_update_count := y)
+	    $(call save_hash, "hash_buildroot", "$(src_dir_buildroot)/.config")
+	    $(eval bool_do_update_count := y)
     else
 	    $(call heading, sub, Comparing .config hash)
-        ifneq ($(shell "$(src_dir_scripts)/get_var.sh" "buildroot" "$(src_dir_conf)/hashes.txt"),$(shell shasum "$(src_dir_buildroot)/.config" | cut -d ' ' -f 1))
+        ifneq ($(shell "$(src_dir_scripts)/get_var.sh" "hash_buildroot" "$(src_dir_conf)/variables.txt"),$(shell shasum "$(src_dir_buildroot)/.config" | cut -d ' ' -f 1))
 	        $(call heading, sub, Hashes didn't match; making Buildroot)
 	        $(Q)$(MAKE) -C "$(src_dir_buildroot)" $(OUT) || exit 1
-	        $(call save_hash, "buildroot", "$(src_dir_buildroot)/.config")
-	        $(eval val_do_update_count := y)
+	        $(call save_hash, "hash_buildroot", "$(src_dir_buildroot)/.config")
+	        $(eval bool_do_update_count := y)
+        else
+            # Invoke BR make if version changed & all other checks are clear
+	        $(Q)if [ "$(bool_ver_change)" = "y" ] && [ "$(strip $(val_remake_br_pack))" != "" ]; then \
+	            $(call heading, sub, Making Buildroot (version changed)); \
+	            $(MAKE) -C "$(src_dir_buildroot)" $(OUT) || exit 1; \
+	        fi
         endif
     endif
     ifeq ($(bool_move_root), y)
@@ -298,11 +323,11 @@ main:
 	    @echo ""
 	    $(call heading, main, Adding the preinit binary & configuration)
 	    $(call heading, sub, Comparing preinit hash)
-        ifeq ($(shell [ ! -f "$(src_dir_preinit)/preinit" ] || [ "$$(shasum "$(src_dir_preinit)/preinit.c" | cut -d ' ' -f 1)" != "$$($(src_dir_scripts)/get_var.sh preinit "$(src_dir_conf)/hashes.txt")" ] && echo y),y)
+        ifeq ($(shell [ ! -f "$(src_dir_preinit)/preinit" ] || [ "$$(shasum "$(src_dir_preinit)/preinit.c" | cut -d ' ' -f 1)" != "$$($(src_dir_scripts)/get_var.sh "hash_preinit" "$(src_dir_conf)/variables.txt")" ] && echo y),y)
 	        $(call heading, sub2, Binary doesn't exist or hash didn't match; compiling preinit)
 	        $(Q)$(CC) -static -o "$(src_dir_preinit)/preinit" "$(src_dir_preinit)/preinit.c"
-	        $(call save_hash, "preinit", "$(src_dir_preinit)/preinit.c")
-	        $(eval val_do_update_count := y)
+	        $(call save_hash, "hash_preinit", "$(src_dir_preinit)/preinit.c")
+	        $(eval bool_do_update_count := y)
         endif
 	    $(call heading, sub, Copying preinit as '$(bin_dir_tmp)$(sys_dir_preinit)')
 	    $(Q)$(val_superuser) cp "$(src_dir_preinit)/preinit" "$(bin_dir_tmp)$(sys_dir_preinit)" $(OUT)
@@ -386,9 +411,9 @@ main:
 	    $(call stop, Kernel file doesn't exist in $(src_dir_linux). Ensure you gave the correct path to it by running menuconfig.)
     else
 	    $(call heading, sub, Checking kernel hash)
-        ifneq ($(shell "$(src_dir_scripts)/get_var.sh" "kernel" "$(src_dir_conf)/hashes.txt"), $(shell shasum "$(src_dir_linux)" | cut -d ' ' -f 1))
-	        $(call save_hash, "kernel", "$(src_dir_linux)")
-	        $(eval val_do_update_count := y)
+        ifneq ($(shell "$(src_dir_scripts)/get_var.sh" "hash_kernel" "$(src_dir_conf)/variables.txt"), $(shell shasum "$(src_dir_linux)" | cut -d ' ' -f 1))
+	        $(call save_hash, "hash_kernel", "$(src_dir_linux)")
+	        $(eval bool_do_update_count := y)
         endif
     endif
 	$(call heading, sub, Copying kernel as '$(bin_dir_tmp)$(sys_dir_linux)')
@@ -465,8 +490,12 @@ main:
 	    $(Q)grub-mkrescue -o "$(bin_dir_iso)" "$(bin_dir_tmp)" $(OUT)
     endif
 # Makefile's 'ifeq' conditions ain't working here for some reason
-	$(Q)if [ "$(val_do_update_count)" = "y" ] || [ "$(update)" = "true" ]; then \
-	    val_temp=$$("$(src_dir_scripts)/count_increment.sh" "latest_next" "$(src_dir_conf)/bcount.txt"); \
+	$(Q)if [ "$(bool_ver_change)" = "y" ]; then \
+	    $(subst @echo, echo, $(call heading, info, Saving version: $(MRAIN_VERSION))); \
+	    "$(src_dir_scripts)/set_var.sh" "ver_previous_mrain-sys" "$(MRAIN_VERSION)" "$(src_dir_conf)/variables.txt"; \
+	fi
+	$(Q)if [ "$(bool_do_update_count)" = "y" ] || [ "$(update)" = "true" ]; then \
+	    "$(src_dir_scripts)/count_increment.sh" "latest_next" "$(src_dir_conf)/bcount.txt"; \
 	fi
 	@echo -e ""
 	$(call heading, info, $(col_FALSE)Cleaning temporary files)
