@@ -213,6 +213,13 @@ menu "Destination configuration"
 endmenu
 
 menu "Operating System configuration"
+    comment "-------------------------------------------------------"
+    comment "Intel:                                                 "
+    comment "+ If you edit any of the path names for directories,   "
+    comment "+ you must update source/configs/dir.txt with the new  "
+    comment "+ directory name, otherwise it will complain about it  "
+    comment "+ not existing.                                        "
+    comment "-------------------------------------------------------"
     menu "Bootloader configuration"
         config bool_use_sylin_exlin
             bool "Use syslinux instead of GRUB."
