@@ -42,7 +42,8 @@ num_definitions=$(echo "$definition" | wc -l)
 
 # Check if the number is less than or greater than one
 if [ "$num_definitions" -eq 0 ] || [ -z "$definition" ]; then
-    error "No definitions with '${variable}' found." "$src_file"
+#    error "No definitions with '${variable}' found." "$src_file"
+    exit
 elif [ "$num_definitions" -gt 1 ]; then
     error "More than one definition for '${variable}'. Cannot continue." "$src_file"
 else
