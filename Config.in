@@ -210,6 +210,7 @@ menu "Destination configuration"
             when Extlinux is used instead of GRUB. The value must
             be in megabytes (MB). You cannot do something like
             "100MB", only the "100" part is supported.
+
 endmenu
 
 menu "Operating System configuration"
@@ -513,8 +514,6 @@ menu "Operating System configuration"
                 This variable contains the release 'tag' of the version string,
                 which looks like "<major>.<minor>.<sub-minor>.<count>-<tag>".
     endmenu
-
-    comment "Other configurations"
 endmenu
 
 menu "Utilities"
@@ -544,4 +543,22 @@ menu "Utilities"
             to build the bootloader used by Syslinux. By default,
             the image filesystem is Ext4, so the application used
             is extlinux.
+endmenu
+
+menu "Other configurations"
+    menu "Buildroot (placeholder)"
+    endmenu
+
+    config val_remake_br_pack
+        string "BR Packages to rebuild upon version change"
+        default "openrc"
+        help
+            This variable contains the package names in buildroot
+            that uses a fixed version string when compiling and
+            does not change dynamically according to a version
+            file, found in their package makefiles.
+
+            Leave blank to not rebuild any packages automatically.
+
+            Makefiles edited: gcc perl openrc swupdate
 endmenu
