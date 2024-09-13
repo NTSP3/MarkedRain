@@ -5,7 +5,8 @@
 # 23-6-2024 21:22
 #
 
-latest_next=58
+latest_next=59
+58 - 2024-09-13 09:27:39 : Static root test
 57 - 2024-09-10 18:35:56 : OpenRC boot name test 2
 56 - 2024-09-08 22:53:10 : Buildroot utils over Busybox utils test
 55 - 2024-08-29 09:46:40 : OpenRC boot name test
