@@ -254,8 +254,7 @@ main:
     endif
 #  -- Compare MRain version --  #
 	$(call stat, Comparing MarkedRain version)
-	$(eval val_temp := $(shell "$(src_dir_scripts)/get_var.sh" "ver_previous_mrain-sys" "$(src_dir_conf)/variables.txt"))
-    ifneq ($(val_temp), $(MRAIN_VERSION))
+    ifneq ($(shell "$(src_dir_scripts)/get_var.sh" "ver_previous_mrain-sys" "$(src_dir_conf)/variables.txt"), $(MRAIN_VERSION))
 	    $(call heading, info, Version change detected)
 	    $(eval bool_ver_change := y)
     endif
