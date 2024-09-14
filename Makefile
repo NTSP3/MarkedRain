@@ -1,40 +1,40 @@
 #==--[ Makefile for MRainOS - Linux based ]--==#
 # ---[ Makefile variable configuration ]--- #
 #  --[ Default version info ]-- #
-VERSION			:= 0
-PATCHLEVEL		:= 0
-SUBLEVEL		:= 0
+VERSION					:= 0
+PATCHLEVEL				:= 0
+SUBLEVEL				:= 0
 # Extraversion is declared after "-include .config.mk" so it can get values of src_dir_(conf & scripts)
-RELEASE_TAG		:= unknown
+RELEASE_TAG				:= unknown
 #  --[ Default escape sequence for colour values ]--  #
-col_HEADING		:= \e[1;37;45m
-col_SUBHEADING	:= \e[1;35;40m
-col_INFOHEADING	:= \e[37;44m
-col_INFO		:= \e[36m
-col_TRUE		:= \e[32m
-col_FALSE		:= \e[91m
-col_DONE		:= \e[92m
-col_ERROR		:= \e[1;91m
-col_IMP			:= \e[1;37;41m
-col_NORMAL		:= \e[0m
+col_HEADING				:= \e[1;37;45m
+col_SUBHEADING			:= \e[1;35;40m
+col_INFOHEADING			:= \e[37;44m
+col_INFO				:= \e[36m
+col_TRUE				:= \e[32m
+col_FALSE				:= \e[91m
+col_DONE				:= \e[92m
+col_ERROR				:= \e[1;91m
+col_IMP					:= \e[1;37;41m
+col_NORMAL				:= \e[0m
 export col_HEADING col_SUBHEADING col_INFOHEADING col_INFO col_TRUE col_FALSE col_DONE col_ERROR col_IMP col_NORMAL
-#  --[ System paths if move root isnt enabled ]--  #
-sys_dir_newroot_etc=/etc
-sys_dir_newroot_opt=/opt
-sys_dir_newroot_root=/root
-sys_dir_newroot_tmp=/tmp
-sys_dir_newroot_bin=/usr/bin
-sys_dir_newroot_lib=/usr/lib
-sys_dir_newroot_libexec=/usr/libexec
-sys_dir_newroot_share=/usr/share
-sys_dir_newroot_sbin=/usr/sbin
-sys_dir_newroot_var=/var
+#  --[ Default system paths (if move root isn't set) ]--  #
+sys_dir_newroot_etc		:= /etc
+sys_dir_newroot_opt		:= /opt
+sys_dir_newroot_root	:= /root
+sys_dir_newroot_tmp		:= /tmp
+sys_dir_newroot_bin		:= /usr/bin
+sys_dir_newroot_lib		:= /usr/lib
+sys_dir_newroot_libexec	:= /usr/libexec
+sys_dir_newroot_share	:= /usr/share
+sys_dir_newroot_sbin	:= /usr/sbin
+sys_dir_newroot_var		:= /var
 #  --[ Command shell ]-- #
-SHELL			:= /bin/bash
+SHELL					:= /bin/bash
 #  --[ Others ]--  #
-val_target		:= $(MAKECMDGOALS)#            # Gets the target that the user invoked
-val_current_dir	:= $(shell pwd)#               # Gets the current working director
-val_temp		:=#                            # Temporary variable
+val_target				:= $(MAKECMDGOALS)#    # Gets the target that the user invoked
+val_current_dir			:= $(shell pwd)#       # Gets the current working director
+val_temp				:=#                    # Temporary variable
 #  --[ User's configuration (overrides vars with same name) ]--  #
 -include .config.mk#                           # Include .config.mk
 # Extraversion is here - read the comment in its previous location #
@@ -163,10 +163,10 @@ else
     $(info $(shell $(subst @echo, echo, $(call false, ShowAppOutput, bool_show_cmd_out))))
     ifeq ($(bool_show_cmd_out_err), y)
         $(info $(shell $(subst @echo, echo, $(call true, ShowAppErrors, bool_show_cmd_out_err))))
-        export OUT = > /dev/null
+        export OUT := > /dev/null
     else
         $(info $(shell $(subst @echo, echo, $(call false, ShowAppErrors, bool_show_cmd_out_err))))
-        export OUT = > /dev/null 2>&1
+        export OUT := > /dev/null 2>&1
     endif
     ifeq ($(findstring --no-print-directory,$(MAKEFLAGS)), )
         MAKEFLAGS += --no-print-directory
@@ -186,11 +186,11 @@ ifeq ($(filter $(val_target),$(val_unmain_sect)),)
     ifneq ($(and $(val_target), $(filter %config,$(val_target)), $(val_target)), )
         $(info $(shell $(subst @echo, echo, $(call stat, Preparing config manager))))
         export srctree := $(if $(KBUILD_SRC),$(KBUILD_SRC),$(CURDIR))
-        export HOSTCC = gcc
+        export HOSTCC := gcc
         include $(srctree)/make/Kbuild.include
     else ifeq ($(bool_use_sylin_exlin), y)#        # Export val_superuser now because we can't do it later
         $(info $(shell $(subst @echo, echo, $(call heading, info, Exporting superuser variable))))
-        export val_superuser = sudo
+        export val_superuser := sudo
     endif
     $(info $(shell $(subst @echo, echo, $(call heading, info, Exporting MRain System version))))
     export MRAIN_VERSION := $(VERSION).$(PATCHLEVEL).$(SUBLEVEL).$(EXTRAVERSION)-$(RELEASE_TAG)
