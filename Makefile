@@ -214,8 +214,8 @@ all: main
 	@echo -e ""
 	$(call ok,    -------------------------------------------------------------------------------    )
 	$(call ok,    // The iso is now ready. You can find it in '$(bin_dir_iso)' //    )
-	$(call ok,    // If you want to run this iso image now, use 'make run' //    )
-	$(call ok,    // If you want to automatically open the iso in $(util_vm), use 'make runs' //    )
+	$(call ok,    // Use 'make run' if you want to run this iso image now  //    )
+	$(call ok,    // Use 'make runs' if you want to automatically open the iso in $(util_vm) //    )
 	@echo -e ""
 
 # --- Main compiling procedure --- #
