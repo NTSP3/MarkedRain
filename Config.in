@@ -448,6 +448,10 @@ menu "Operating System configuration"
                 string "/root"
                 default "$[sys_dir_usr]/Administrator"
 
+            config sys_dir_newroot_tmp
+                string "/tmp"
+                default "$[sys_dir_sys]/temp"
+
             config sys_dir_newroot_bin
                 string "/usr/bin"
                 default "$[sys_dir_apps]/system"
@@ -467,10 +471,6 @@ menu "Operating System configuration"
             config sys_dir_newroot_sbin
                 string "/usr/sbin"
                 default "$[sys_dir_sys]/sysapps"
-
-            config sys_dir_newroot_tmp
-                string "/tmp"
-                default "$[sys_dir_sys]/temp"
 
             config sys_dir_newroot_var
                 string "/var"
