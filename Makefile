@@ -18,6 +18,17 @@ col_ERROR		:= \e[1;91m
 col_IMP			:= \e[1;37;41m
 col_NORMAL		:= \e[0m
 export col_HEADING col_SUBHEADING col_INFOHEADING col_INFO col_TRUE col_FALSE col_DONE col_ERROR col_IMP col_NORMAL
+#  --[ System paths if move root isnt enabled ]--  #
+sys_dir_newroot_etc=/etc
+sys_dir_newroot_opt=/opt
+sys_dir_newroot_root=/root
+sys_dir_newroot_tmp=/tmp
+sys_dir_newroot_bin=/usr/bin
+sys_dir_newroot_lib=/usr/lib
+sys_dir_newroot_libexec=/usr/libexec
+sys_dir_newroot_share=/usr/share
+sys_dir_newroot_sbin=/usr/sbin
+sys_dir_newroot_var=/var
 #  --[ Command shell ]-- #
 SHELL			:= /bin/bash
 #  --[ Others ]--  #
@@ -298,7 +309,7 @@ main:
         else
             # Invoke BR make if version changed & all other checks are clear
 	        $(Q)if [ "$(bool_ver_change)" = "y" ] && [ "$(strip $(val_remake_br_pack))" != "" ]; then \
-	            $(call heading, sub, Making Buildroot (version changed)); \
+	            $(subst @echo, echo, $(call heading, sub, Making Buildroot (version changed))); \
 	            $(MAKE) -C "$(src_dir_buildroot)" $(OUT) || exit 1; \
 	        fi
         endif
@@ -382,22 +393,23 @@ main:
 	    | $(val_superuser) tee "$(bin_dir_tmp)/.preinit" $(OUT)
 	    $(call heading, sub, Creating .hidden config file)
 	    $(Q)echo -e "\
-	    bin/ \n\
-	    dev/ \n\
-	    etc/ \n\
-	    lib/ \n\
-	    lib64/ \n\
-	    media/ \n\
-	    mnt/ \n\
-	    opt/ \n\
-	    proc/ \n\
-	    root/ \n\
-	    run/ \n\
-	    sbin/ \n\
-	    sys/ \n\
-	    tmp/ \n\
-	    usr/ \n\
-	    var/ \n"\
+	    bin\n\
+	    dev\n\
+	    etc\n\
+	    lib\n\
+	    lib64\n\
+	    media\n\
+	    mnt\n\
+	    opt\n\
+	    proc\n\
+	    root\n\
+	    run\n\
+	    sbin\n\
+	    sys\n\
+	    tmp\n\
+	    usr\n\
+	    var\n"\
+	    | sed 's/^    //' \
 	    | $(val_superuser) tee "$(bin_dir_tmp)/.hidden" $(OUT)
     else
 	    $(call heading, sub, Extracting rootfs archive to '$(bin_dir_tmp)')
@@ -424,7 +436,40 @@ main:
 #   - Convenient aliases -   #
     ifeq ($(bool_include_aliases), y)
 	    $(call heading, sub, Convenient aliases & functions)
-	    $(call heading, sub2, Functions <scr>)
+	    $(call heading, sub2, Functions)
+	    $(Q)echo -e "\
+	    marked-rain-list-not-hidden-function() { \n\
+	        # Check if .hidden exists \n\
+	        if [ -f .hidden ]; then \n\
+	            # Get list of files, replace spaces with '\\\\ ', and convert to hex \n\
+	            list=\$$(command ls -F | sed 's/ /\\\\\\\\ /g' | xxd -p | tr -d '\\\\n') \n\
+	            list=\"0a\$$list\" \n\
+	    \n\
+	            # Read .hidden line-by-line \n\
+	            while IFS= read -r word; do \n\
+	                # Convert word to hex \n\
+	                word=\$$(printf \"%s\" \"\$$word\" | xxd -p | tr -d '\\\\n') \n\
+	    \n\
+	                # Check if word exists in list (might save some cycles) \n\
+	                if [[ \"\$$list\" =~ \"0a\$$word\" ]]; then \n\
+	                    # Remove patterns \n\
+	                    for symbol in '2a' '2f' '3d' '3e' '40' '7c'; do \n\
+	                        list=\"\$${list//0a\$$word\$$symbol/}\" \n\
+	                    done \n\
+	                fi \n\
+	            done < .hidden \n\
+	    \n\
+	            # Convert hex to ASCII and replace newlines with spaces & remove '/' \n\
+	            list=\$$(printf \"%s\" \"\$$list\" | xxd -r -p | tr '\\\\n' ' ' | tr -d '/') \n\
+	    \n\
+	            # Execute the command with the modified list \n\
+	            eval command ls \"\$$@\" -d \$$list \n\
+	        else \n\
+	            command ls \"\$$@\" \n\
+	        fi \n\
+	    }\n"\
+	    | sed 's/^    //' \
+	    | $(val_superuser) tee -a "$(bin_dir_tmp)/$(sys_dir_newroot_etc)/profile" $(OUT)
 	    $(call heading, sub2, Command aliases)
 	    $(Q)echo -e "\
 	    # Great command aliases \n\
@@ -440,11 +485,13 @@ main:
 	    alias l='ls -CF' \n\
 	    alias la='ls -A' \n\
 	    alias ll='ls -alF' \n\
+	    alias ls='marked-rain-list-not-hidden-function --color=auto' \n\
 	    alias md='mkdir' \n\
 	    alias move='mv' \n\
 	    alias pause='read' \n\
 	    alias rd='rm -ri' \n\
 	    alias vdir='vdir --color=auto' \n"\
+	    | sed 's/^    //' \
 	    | $(val_superuser) tee -a "$(bin_dir_tmp)/$(sys_dir_newroot_etc)/profile" $(OUT)
     endif
 #   - GNU/Grub conf -   #
