@@ -418,6 +418,7 @@ menu "Operating System configuration"
     config bool_move_root
         bool "Move root directories into system directory"
         default y
+        depends on bool_use_sylin_exlin
         help
             Enable this option to move essential root directories like
             '/usr/lib' into a specified directory.
