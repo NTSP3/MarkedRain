@@ -1,6 +1,6 @@
 # "MarkedRain" Operating System
 
-The "MarkedRain" is a new linux OS that uses buildroot with OpenRC as init. It is really easy to work with. There was an older system based on Os2020, but working with nothing proved difficult.
+The "MarkedRain" is a new linux OS sthat uses buildroot wssith OpenRC as init. It is really easy to work with. There was an older system based on Os2020, but working with nothing proved difficult.
 
 ## Showcase
 
@@ -10,14 +10,6 @@ The "MarkedRain" is a new linux OS that uses buildroot with OpenRC as init. It i
 ![Preview 2](media/preview2.png "MarkedRain OS preview 2")
 
 ![Preview 3](media/preview3.gif "MarkedRain OS preview 3")
-
-## To-do Goals
-
-- Add package manager
-- Neat root directory (System/rootfs houses those stuff)
-- Program files directory instead of bin sbin
-- Windows command replicants "ren" "del" etc
-- Graphical User Interface
 
 ## Compiling
 
