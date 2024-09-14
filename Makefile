@@ -212,7 +212,12 @@ config:
 .PHONY: all
 all: main
 	@echo -e ""
-	$(call ok,    -------------------------------------------------------------------------------    )
+	@width=$$(tput cols); \
+	for i in $$(seq 1 $$width); do \
+	    printf "$(col_DONE)-"; \
+	done; \
+	printf "$(col_NORMAL)\n"
+	@echo -e ""
 	$(call ok,    // The iso is now ready. You can find it in '$(bin_dir_iso)' //    )
 	$(call ok,    // Use 'make run' if you want to run this iso image now  //    )
 	$(call ok,    // Use 'make runs' if you want to automatically open the iso in $(util_vm) //    )
