@@ -154,6 +154,14 @@ menu "Source configuration"
             the kernel directory or the bzImage file,
             change this value to point to that file.
 
+    config src_dir_ohmyzsh
+        string "OhMyZsh source directory"
+        default "$[src_dir]/ohmyzsh"
+        help
+            The OhMyZsh source directory contains the
+            source code of Oh My Zsh, which is a thing
+            that adds some really cool stuff to Zsh.
+
     config src_dir_preinit
         string "Preinit source directory"
         default "$[src_dir]/preinit"
@@ -210,13 +218,124 @@ menu "Destination configuration"
             when Extlinux is used instead of GRUB. The value must
             be in megabytes (MB). You cannot do something like
             "100MB", only the "100" part is supported.
-endmenu
 
-menu "Operating System configuration"
+    comment "System paths & program target directories           "
+    comment "----------------------------------------------------"
     comment "If you edit any of the path names for directories,  "
     comment "you must update source/configs/dir.txt with the new "
     comment "directory name, otherwise it will complain about it "
     comment "not existing.                                       "
+    config sys_dir_apps
+        string "Programs directory"
+        default "/Program Files"
+        depends on bool_move_root
+        help
+            Enter the location of the users directory.
+            This value can be used in Makefile using
+            $[sys_dir_usr]. This directory houses the
+            user's files and customizations.
+
+    menu "Program installation sub-directories"
+    depends on bool_move_root
+        comment "If you don't want MRain to include an app,"
+        comment "leave its directory blank."
+        config app_dir_ohmyzsh
+            string "OhMyZsh"
+            default "$[sys_dir_apps]/ohmyzsh"
+    endmenu
+
+    config sys_dir_usr
+        string "Users directory"
+        default "/Users"
+        depends on bool_move_root
+        help
+            Enter the location of the users directory.
+            This value can be used in Makefile using
+            $[sys_dir_usr]. This directory houses the
+            user's files and customizations.
+
+    config sys_dir_sys
+        string "System directory"
+        default "/System"
+        help
+            Enter the location of the system directory.
+            This value can be used in Makefile using
+            $[sys_dir_sys]. This directory houses many
+            important files that are used by MRain OS.
+
+    config sys_dir_linux
+        string "Linux kernel location & name in the final iso"
+        default "$[sys_dir_sys]/base/kernel"
+        help
+            Enter the location to copy the linux kernel into in the iso
+            image. This value would also be used to determine the kernel's
+            location from the grub or extlinux config file.
+
+    config bool_move_root
+        bool
+        default y
+        depends on bool_use_sylin_exlin
+        help
+            Enable this option to move essential root directories like
+            '/usr/lib' into a specified directory.
+            
+            When enabled, the init program will be set to where preinit
+            is located. It will create the necessary symlinks to those
+            directories and start the main init process.
+
+        config sys_dir_preinit
+            string "Preinit file location & name in the final iso"
+            default "$[sys_dir_sys]/base/init"
+            depends on bool_move_root
+            help
+                Enter the location to copy the preinit binary into in the iso
+                image.
+
+        menu "New paths for root directories"
+        depends on bool_move_root
+            config sys_dir_newroot_etc
+                string "/etc"
+                default "$[sys_dir_sys]/sysconf"
+
+            config sys_dir_newroot_opt
+                string "/opt"
+                default "$[sys_dir_sys]/addons"
+
+            config sys_dir_newroot_root
+                string "/root"
+                default "$[sys_dir_usr]/Administrator"
+
+            config sys_dir_newroot_tmp
+                string "/tmp"
+                default "$[sys_dir_sys]/temp"
+
+            config sys_dir_newroot_bin
+                string "/usr/bin"
+                default "$[sys_dir_apps]/system"
+
+            config sys_dir_newroot_lib
+                string "/usr/lib"
+                default "$[sys_dir_sys]/library"
+
+            config sys_dir_newroot_libexec
+                string "/usr/libexec"
+                default "$[sys_dir_sys]/library/services"
+
+            config sys_dir_newroot_share
+                string "/usr/share"
+                default "$[sys_dir_sys]/shared"
+
+            config sys_dir_newroot_sbin
+                string "/usr/sbin"
+                default "$[sys_dir_sys]/sysapps"
+
+            config sys_dir_newroot_var
+                string "/var"
+                default "$[sys_dir_sys]/variable"
+        endmenu
+endmenu
+
+menu "Operating System configuration"
     menu "Bootloader configuration"
         config bool_use_sylin_exlin
             bool "Use syslinux instead of GRUB."
@@ -377,106 +496,6 @@ menu "Operating System configuration"
                 Seperate all options with spaces, like
                 "quiet rw"
     endmenu
-
-    config sys_dir_apps
-        string "Programs directory"
-        default "/Program Files"
-        depends on bool_move_root
-        help
-            Enter the location of the users directory.
-            This value can be used in Makefile using
-            $[sys_dir_usr]. This directory houses the
-            user's files and customizations.
-
-    config sys_dir_usr
-        string "Users directory"
-        default "/Users"
-        depends on bool_move_root
-        help
-            Enter the location of the users directory.
-            This value can be used in Makefile using
-            $[sys_dir_usr]. This directory houses the
-            user's files and customizations.
-
-    config sys_dir_sys
-        string "System directory"
-        default "/System"
-        help
-            Enter the location of the system directory.
-            This value can be used in Makefile using
-            $[sys_dir_sys]. This directory houses many
-            important files that are used by MRain OS.
-
-    config sys_dir_linux
-        string "Linux kernel location & name in the final iso"
-        default "$[sys_dir_sys]/base/kernel"
-        help
-            Enter the location to copy the linux kernel into in the iso
-            image. This value would also be used to determine the kernel's
-            location from the grub or extlinux config file.
-
-    config bool_move_root
-        bool "Move root directories into system directory"
-        default y
-        depends on bool_use_sylin_exlin
-        help
-            Enable this option to move essential root directories like
-            '/usr/lib' into a specified directory.
-            
-            When enabled, the init program will be set to where preinit
-            is located. It will create the necessary symlinks to those
-            directories and start the main init process.
-
-        config sys_dir_preinit
-            string "Preinit file location & name in the final iso"
-            default "$[sys_dir_sys]/base/init"
-            depends on bool_move_root
-            help
-                Enter the location to copy the preinit binary into in the iso
-                image.
-
-        menu "New paths for root directories"
-        depends on bool_move_root
-            config sys_dir_newroot_etc
-                string "/etc"
-                default "$[sys_dir_sys]/sysconf"
-
-            config sys_dir_newroot_opt
-                string "/opt"
-                default "$[sys_dir_sys]/addons"
-
-            config sys_dir_newroot_root
-                string "/root"
-                default "$[sys_dir_usr]/Administrator"
-
-            config sys_dir_newroot_tmp
-                string "/tmp"
-                default "$[sys_dir_sys]/temp"
-
-            config sys_dir_newroot_bin
-                string "/usr/bin"
-                default "$[sys_dir_apps]/system"
-
-            config sys_dir_newroot_lib
-                string "/usr/lib"
-                default "$[sys_dir_sys]/library"
-
-            config sys_dir_newroot_libexec
-                string "/usr/libexec"
-                default "$[sys_dir_sys]/library/services"
-
-            config sys_dir_newroot_share
-                string "/usr/share"
-                default "$[sys_dir_sys]/shared"
-
-            config sys_dir_newroot_sbin
-                string "/usr/sbin"
-                default "$[sys_dir_sys]/sysapps"
-
-            config sys_dir_newroot_var
-                string "/var"
-                default "$[sys_dir_sys]/variable"
-        endmenu
 
     config bool_include_aliases
         bool "Include convenient commands"
