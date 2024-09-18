@@ -188,10 +188,13 @@ ifeq ($(filter $(val_target),$(val_unmain_sect)),)
         export srctree := $(if $(KBUILD_SRC),$(KBUILD_SRC),$(CURDIR))
         export HOSTCC := gcc
         include $(srctree)/make/Kbuild.include
-    else ifeq ($(bool_use_sylin_exlin), y)#        # Export val_superuser now because we can't do it later
+    else ifeq ($(bool_use_sylin_exlin), y)#        # Export val_superuser now because we can't do it later (globally?)
         $(info $(shell $(subst @echo, echo, $(call heading, info, Exporting superuser variable))))
         export val_superuser := sudo
     endif
+    # Export Kernel configuration because Buildroot might need rebuilding, and it needs kernel .config file for building linux.
+    $(info $(shell $(subst @echo, echo, $(call heading, info, Exporting Kernel configuration variable))))
+    export src_dir_krnl_conf := $(val_current_dir)/$(src_dir_conf)/kernel.txt
     $(info $(shell $(subst @echo, echo, $(call heading, info, Exporting MRain System version))))
     export MRAIN_VERSION := $(VERSION).$(PATCHLEVEL).$(SUBLEVEL).$(EXTRAVERSION)-$(RELEASE_TAG)
 endif
@@ -416,6 +419,7 @@ main:
 	    | sed 's/^    //' \
 	    | $(val_superuser) tee "$(bin_dir_tmp)/.hidden" $(OUT)
     else
+        # legacy
 	    $(call heading, sub, Extracting rootfs archive to '$(bin_dir_tmp)')
 	    $(Q)$(val_superuser) tar xf "$(src_dir_buildroot)/output/images/rootfs.tar" -C "$(bin_dir_tmp)" $(OUT)
     endif
@@ -434,6 +438,12 @@ main:
     endif
 	$(call heading, sub, Copying kernel as '$(bin_dir_tmp)$(sys_dir_linux)')
 	$(Q)$(val_superuser) cp "$(src_dir_linux)" "$(bin_dir_tmp)$(sys_dir_linux)" $(OUT)
+#  -- sub-projects --  #
+	@echo -e ""
+    ifneq ($(app_dir_ohmyzsh),)
+	    $(call heading, main, Installing OhMyZSH)
+	    $(Q)$(val_superuser) ZSH="$(app_dir_ohmyzsh)" src_dir_ohmyzsh="$(val_current_dir)/$(src_dir_ohmyzsh)" sh cd $(bin_dir_tmp) && $(src_dir_ohmyzsh)/tools/install.sh $(OUT)
+    endif
 #  -- Finalization --  #
 	@echo -e ""
 	$(call heading, main, Doing finalization procedures)
@@ -498,6 +508,9 @@ main:
 	    | sed 's/^    //' \
 	    | $(val_superuser) tee -a "$(bin_dir_tmp)/$(sys_dir_newroot_etc)/profile" $(OUT)
     endif
+#   - zsh conf -   #
+	$(call heading, sub, Zsh config)
+	$(Q)echo "[[ -f /etc/profile ]] && source /etc/profile" | $(val_superuser) tee -a "$(bin_dir_tmp)/$(sys_dir_newroot_etc)/zshenv" $(OUT)
 #   - GNU/Grub conf -   #
 	$(call heading, sub, Grub boot config)
 	$(Q)echo -e "\
@@ -574,7 +587,7 @@ clean:
 define cleancode
 	$(Q)if mountpoint -q "$(bin_dir_tmp)"; then \
 	    $(subst @echo, echo, $(call heading, info, $(col_FALSE)Unmounting '$(bin_dir_tmp)')); \
-		sudo umount "$(bin_dir_tmp)" $(OUT); \
+		sudo umount "$(bin_dir_tmp)" $(OUT) || exit 1; \
 	fi; \
 	$(subst @echo, echo, $(call heading, info, $(col_FALSE)Deleting directories and image)); \
 	rm -rf "$(bin_dir_tmp)" "$(bin_dir_iso)" "$(bin_dir)"
