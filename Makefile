@@ -188,13 +188,10 @@ ifeq ($(filter $(val_target),$(val_unmain_sect)),)
         export srctree := $(if $(KBUILD_SRC),$(KBUILD_SRC),$(CURDIR))
         export HOSTCC := gcc
         include $(srctree)/make/Kbuild.include
-    else ifeq ($(bool_use_sylin_exlin), y)#        # Export val_superuser now because we can't do it later (globally?)
+    else ifeq ($(bool_use_sylin_exlin), y)#        # Export val_superuser now because we can't do it later
         $(info $(shell $(subst @echo, echo, $(call heading, info, Exporting superuser variable))))
         export val_superuser := sudo
     endif
-    # Export Kernel configuration because Buildroot might need rebuilding, and it needs kernel .config file for building linux.
-    $(info $(shell $(subst @echo, echo, $(call heading, info, Exporting Kernel configuration variable))))
-    export src_dir_krnl_conf := $(val_current_dir)/$(src_dir_conf)/kernel.txt
     $(info $(shell $(subst @echo, echo, $(call heading, info, Exporting MRain System version))))
     export MRAIN_VERSION := $(VERSION).$(PATCHLEVEL).$(SUBLEVEL).$(EXTRAVERSION)-$(RELEASE_TAG)
 endif
