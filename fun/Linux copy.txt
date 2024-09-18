@@ -1,0 +1,10 @@
+2166 -> 10631
+2247 -> 11306
+
+11226 -> 11635
+2249 -> 2668
+
+12058 -> 12227
+2680 -> 2864
+
+# ^^^ kernel config copying from mrain-dev3 to allmodconf ^^^
