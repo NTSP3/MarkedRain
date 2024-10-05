@@ -23,6 +23,9 @@ source/preinit/preinit
 *.o
 include/
 
+# my linux src
+linux/
+
 # gitignore of Buildroot
 source/buildroot/output
 source/buildroot/dl
