@@ -1,0 +1,6 @@
+printk("hello %s", hi);
+0
+vprintk_emit(0, LOGLEVEL_DEFAULT, NULL, "hello %s", hi);
+vprintk_store(0, LOGLEVEL_DEFAULT, NULL, "hello %s", hi);
+0
+trace_console(
