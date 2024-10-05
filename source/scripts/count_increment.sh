@@ -18,7 +18,7 @@ heading() {
 }
 
 info() {
-    eval 'echo -e "${col_INFO} ++ $1 ++${col_NORMAL}  ::  ${col_FALSE}${me}${col_NORMAL}"'
+    eval echo -e "${col_INFO} ++ $1 ++${col_NORMAL}  ::  ${col_FALSE}${me}${col_NORMAL}"
 }
 
 error() {
