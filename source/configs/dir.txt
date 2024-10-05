@@ -33,6 +33,7 @@ root/Users/Administrator
 root/System
 root/System/addons
 root/System/base
+root/System/base/modules
 root/System/global
 root/System/library
 root/System/library/services
