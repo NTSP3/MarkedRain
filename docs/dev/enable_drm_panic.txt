@@ -1,0 +1,13 @@
+DRM_PANIC is a setting in Linux Kernel 6.11 that shows a BSOD-panic & successfully annoyed me a lot,
+but I did not enable it because if I did, the terminal text doesn't show up.
+
+This is the way I found out to make it work if it gets improved:
+
+1) Only enable either VT_CONSOLE OR FRAMEBUFFER_CONSOLE, and DRM_PANIC
+2) In qemu-system-x86_64 -kernel bzImage -append "console=tty0 console=ttyS0 vga=792" -serial stdio -vga std
+
+Notes:
+
+1) It only shows up if vga=792 is passed to kernel
+2) -vga std is not needed because std is default
+3) -vga cirrus doesn't work because it shows regular Kernel panic, and the video output is all garbage.
