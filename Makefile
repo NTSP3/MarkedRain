@@ -18,17 +18,6 @@ col_ERROR				:= \e[1;91m
 col_IMP					:= \e[1;37;41m
 col_NORMAL				:= \e[0m
 export col_HEADING col_SUBHEADING col_INFOHEADING col_INFO col_TRUE col_FALSE col_DONE col_ERROR col_IMP col_NORMAL
-#  --[ Default system paths (if move root isn't set) ]--  #
-sys_dir_newroot_etc		:= /etc
-sys_dir_newroot_opt		:= /opt
-sys_dir_newroot_root	:= /root
-sys_dir_newroot_tmp		:= /tmp
-sys_dir_newroot_bin		:= /usr/bin
-sys_dir_newroot_lib		:= /usr/lib
-sys_dir_newroot_libexec	:= /usr/libexec
-sys_dir_newroot_share	:= /usr/share
-sys_dir_newroot_sbin	:= /usr/sbin
-sys_dir_newroot_var		:= /var
 #  --[ Command shell ]-- #
 SHELL					:= /bin/bash
 #  --[ Others ]--  #
@@ -42,9 +31,22 @@ EXTRAVERSION	:= $(shell "$(src_dir_scripts)/get_var.sh" "latest_next" "$(src_dir
 
 # ---[ Macros ]--- #
 #  --[ Definitions that do something ]--  #
+define get_hash
+	shasum "$(strip $(1))" | cut -d ' ' -f 1
+endef
+
 define save_hash
-	@$(call heading, info, Saving hash of file$(2) as$(1)=)
-	$(Q)"$(src_dir_scripts)/set_var.sh"$(1) `shasum$(2) | cut -d ' ' -f 1` "$(src_dir_conf)/variables.txt"
+	@$(call heading, info, Saving hash of file '$(strip $(2))' as '$(strip $(1))=')
+	$(Q)"$(src_dir_scripts)/set_var.sh" "$(strip $(1))" `$(call get_hash, $(2))` "$(src_dir_conf)/variables.txt"
+endef
+
+define get_hash_dir
+	find "$(strip $(1))" -type f -exec stat --format="%s %Y %n" {} + | sort | shasum | cut -d ' ' -f 1
+endef
+
+define save_hash_dir
+	@$(call heading, info, Saving hash of directory '$(strip $(2))' as '$(strip $(1))=')
+	echo '$(Q)"$(src_dir_scripts)/set_var.sh" "$(strip $(1))" $(call get_hash_dir, $(2)) "$(src_dir_conf)/variables.txt"'
 endef
 
 #  --[ Exceptional message printers ]--  #
@@ -301,14 +303,14 @@ main:
     ifneq ($(shell [ -f "$(src_dir_buildroot)/output/images/rootfs.tar" ] && echo y), y)
 	    $(call heading, sub, rootfs.tar does not exist; making Buildroot)
 	    $(Q)$(MAKE) -C "$(src_dir_buildroot)" $(OUT) || exit 1
-	    $(call save_hash, "hash_buildroot", "$(src_dir_buildroot)/.config")
+	    $(call save_hash, hash_buildroot, $(src_dir_buildroot)/.config)
 	    $(eval bool_do_update_count := y)
     else
 	    $(call heading, sub, Comparing .config hash)
-        ifneq ($(shell "$(src_dir_scripts)/get_var.sh" "hash_buildroot" "$(src_dir_conf)/variables.txt"),$(shell shasum "$(src_dir_buildroot)/.config" | cut -d ' ' -f 1))
+        ifneq ($(shell "$(src_dir_scripts)/get_var.sh" "hash_buildroot" "$(src_dir_conf)/variables.txt"),$(shell $(call get_hash, $(src_dir_buildroot)/.config)))
 	        $(call heading, sub, Hashes didn't match; making Buildroot)
 	        $(Q)$(MAKE) -C "$(src_dir_buildroot)" $(OUT) || exit 1
-	        $(call save_hash, "hash_buildroot", "$(src_dir_buildroot)/.config")
+	        $(call save_hash, hash_buildroot, $(src_dir_buildroot)/.config)
 	        $(eval bool_do_update_count := y)
         else
             # Invoke BR make if version changed & all other checks are clear
@@ -338,19 +340,16 @@ main:
 	    @echo ""
 	    $(call heading, main, Adding the preinit binary & configuration)
 	    $(call heading, sub, Comparing preinit hash)
-        ifeq ($(shell [ ! -f "$(src_dir_preinit)/preinit" ] || [ "$$(shasum "$(src_dir_preinit)/preinit.c" | cut -d ' ' -f 1)" != "$$($(src_dir_scripts)/get_var.sh "hash_preinit" "$(src_dir_conf)/variables.txt")" ] && echo y),y)
+        ifeq ($(shell [ ! -f "$(src_dir_preinit)/preinit" ] || [ "$(shell $(call get_hash, $(src_dir_preinit)/preinit.c))" != "$$($(src_dir_scripts)/get_var.sh "hash_preinit" "$(src_dir_conf)/variables.txt")" ] && echo y),y)
 	        $(call heading, sub2, Binary doesn't exist or hash didn't match; compiling preinit)
 	        $(Q)$(CC) -static -o "$(src_dir_preinit)/preinit" "$(src_dir_preinit)/preinit.c"
-	        $(call save_hash, "hash_preinit", "$(src_dir_preinit)/preinit.c")
+	        $(call save_hash, hash_preinit, $(src_dir_preinit)/preinit.c)
 	        $(eval bool_do_update_count := y)
         endif
 	    $(call heading, sub, Copying preinit as '$(bin_dir_tmp)$(sys_dir_preinit)')
 	    $(Q)$(val_superuser) cp "$(src_dir_preinit)/preinit" "$(bin_dir_tmp)$(sys_dir_preinit)" $(OUT)
 	    $(call heading, sub, Expanding val_grub-entry-one_li_params to include preinit)
 	    $(eval val_grub-entry-one_li_params := $(val_grub-entry-one_li_params) init=$(sys_dir_preinit))
-	    $(call heading, sub, Shifting variables with sys_dir_newroot_ right to one side)
-	    $(foreach var, $(filter sys_dir_newroot_%, $(.VARIABLES)), \
-	        $(eval override $(var) := $(shell echo $($(var)) | cut -c 2-)))
 	    $(call heading, sub, Creating .preinit config file)
 	    $(Q)echo -e "\
 	    create \"bin\" \n\
@@ -394,6 +393,7 @@ main:
 	    mount \"$(sys_dir_newroot_share)\" as \"usr/share\" \n\
 	    create \"var\" \n\
 	    mount \"$(sys_dir_newroot_var)\" as \"var\" "\
+	    | sed 's/^    //' \
 	    | $(val_superuser) tee "$(bin_dir_tmp)/.preinit" $(OUT)
 	    $(call heading, sub, Creating .hidden config file)
 	    $(Q)echo -e "\
@@ -422,19 +422,31 @@ main:
     endif
 #  -- Kernel --  #
 	@echo -e ""
-	$(call heading, main, Adding the linux kernel)
+	$(call heading, main, Adding the linux kernel & kernel modules)
 	$(call heading, sub, Checking if kernel exists)
     ifneq ($(shell [ -f "$(src_dir_linux)" ] && echo y), y)
 	    $(call stop, Kernel file doesn't exist in $(src_dir_linux). Ensure you gave the correct path to it by running menuconfig.)
     else
 	    $(call heading, sub, Checking kernel hash)
-        ifneq ($(shell "$(src_dir_scripts)/get_var.sh" "hash_kernel" "$(src_dir_conf)/variables.txt"), $(shell shasum "$(src_dir_linux)" | cut -d ' ' -f 1))
-	        $(call save_hash, "hash_kernel", "$(src_dir_linux)")
+        ifneq ($(shell "$(src_dir_scripts)/get_var.sh" "hash_kernel" "$(src_dir_conf)/variables.txt"), $(shell $(call get_hash, $(src_dir_linux))))
+	        $(call save_hash, hash_kernel, $(src_dir_linux))
 	        $(eval bool_do_update_count := y)
         endif
     endif
 	$(call heading, sub, Copying kernel as '$(bin_dir_tmp)$(sys_dir_linux)')
 	$(Q)$(val_superuser) cp "$(src_dir_linux)" "$(bin_dir_tmp)$(sys_dir_linux)" $(OUT)
+#   - Kernel modules -  #
+    ifeq ($(shell [ -d "$(src_dir_modules)" ] && echo y), y)
+	    $(call heading, sub, Adding kernel modules)
+        ifneq ($(shell "$(src_dir_scripts)/get_var.sh" "hash_kernel_modules" "$(src_dir_conf)/variables.txt"), $(shell $(call get_hash_dir, $(src_dir_modules))))
+	        $(call heading, sub2, Kernel modules have been modified.)
+	        $(eval bool_do_update_count ?= y)
+	        $(call save_hash_dir, hash_kernel_modules, $(src_dir_modules))
+            # I don't want this to appear if message 'Kernel modules have been modified' did not appear bcz 'adding kernel modules' already does the job
+	        $(call heading, sub2, Copying kernel modules)
+        endif
+	    $(Q)$(val_superuser) cp -r "$(src_dir_modules)/." "$(bin_dir_tmp)$(sys_dir_newroot_lib_modules)"
+    endif
 #  -- sub-projects --  #
 	@echo -e ""
     ifneq ($(app_dir_ohmyzsh),)
@@ -480,7 +492,7 @@ main:
 	        fi \n\
 	    }\n"\
 	    | sed 's/^    //' \
-	    | $(val_superuser) tee -a "$(bin_dir_tmp)/$(sys_dir_newroot_etc)/profile" $(OUT)
+	    | $(val_superuser) tee -a "$(bin_dir_tmp)$(sys_dir_newroot_etc)/profile" $(OUT)
 	    $(call heading, sub2, Command aliases)
 	    $(Q)echo -e "\
 	    # Great command aliases \n\
@@ -503,11 +515,11 @@ main:
 	    alias rd='rm -ri' \n\
 	    alias vdir='vdir --color=auto' \n"\
 	    | sed 's/^    //' \
-	    | $(val_superuser) tee -a "$(bin_dir_tmp)/$(sys_dir_newroot_etc)/profile" $(OUT)
+	    | $(val_superuser) tee -a "$(bin_dir_tmp)$(sys_dir_newroot_etc)/profile" $(OUT)
     endif
 #   - zsh conf -   #
 	$(call heading, sub, Zsh config)
-	$(Q)echo "[[ -f /etc/profile ]] && source /etc/profile" | $(val_superuser) tee -a "$(bin_dir_tmp)/$(sys_dir_newroot_etc)/zshenv" $(OUT)
+	$(Q)echo "[[ -f /etc/profile ]] && source /etc/profile" | $(val_superuser) tee -a "$(bin_dir_tmp)$(sys_dir_newroot_etc)/zshenv" $(OUT)
 #   - GNU/Grub conf -   #
 	$(call heading, sub, Grub boot config)
 	$(Q)echo -e "\
@@ -567,8 +579,8 @@ main:
 run:
     ifeq ($(shell [ -f "$(bin_dir_iso)" ] && echo y), y)
 	    @echo -e ""
-	    $(call ok,    // Now running '$(bin_dir_iso)' using '$(util_vm)' //    )
-	    $(Q)"$(util_vm)" $(util_vm_params) $(OUT)
+	    $(call ok,    // Now running '$(bin_dir_iso)' using '$(util_vm)' and parameters '$(shell echo -n $(util_vm_params))' //    )
+	    $(Q)"$(util_vm)" $(shell echo -n $(util_vm_params)) $(OUT)
     else
 	    $(call stop, Supplied file '$(bin_dir_iso)' doesn't exist. Make sure you ran 'make' and check if the file specified in bin_dir_iso is correct.)
     endif
