@@ -5,7 +5,19 @@
 # 23-6-2024 21:22
 #
 
-latest_next=66
+latest_next=78
+77 - 2024-10-02 20:23:57 : Removed unneccessary modules (6.3gb -> 73mb)
+76 - 2024-10-02 09:53:00 : Kernel DRM_PANIC test 1
+75 - 2024-09-30 22:07:27 : Linux kernel 6.11 VT_CONSOLE enabled
+74 - 2024-09-30 20:34:51 : Kernel 6.11 init + modules test
+73 - 2024-09-29 19:21:39 : Kernel updated to 6.11
+72 - 2024-09-24 20:24:29 : Linux kernel preinit tst 2
+71 - 2024-09-24 19:53:17 : Linux kernel boot arg test
+70 - 2024-09-22 12:37:12 : Preinit v2 test 4
+69 - 2024-09-21 16:22:51 : Preinit 2 test 3
+68 - 2024-09-21 13:14:45 : Preinit 2 test 2
+67 - 2024-09-21 13:07:51 : Preinit 2 test 1
+66 - 2024-09-18 11:51:41 : Linux kernel updated init path & name
 65 - 2024-09-14 19:47:01 : ZSH shell
 64 - 2024-09-14 09:41:14 : unmove root test
 63 - 2024-09-13 20:29:22 : Alias 'ls' rebuilt 5
