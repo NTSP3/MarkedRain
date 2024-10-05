@@ -110,15 +110,6 @@ menu "Makefile customizations"
 endmenu
 
 menu "Source configuration"
-    config CC
-        string "C code compiler w/ arguments"
-        default "gcc"
-        help
-        Specify the C code compiler and its arguments. This can be used to
-        define the compiler and options used during the build process. 
-
-        The default value is "gcc".
-
     config src_dir
         string "Project's source directory"
         default "source"
@@ -153,6 +144,15 @@ menu "Source configuration"
             image that's used in MRain OS. If you renamed
             the kernel directory or the bzImage file,
             change this value to point to that file.
+
+    config src_dir_modules
+        string "Linux kernel modules directory"
+        default "$[src_dir]/kernel/modules"
+        help
+            The linux kernel modules directory contains the
+            kernel modules to be used while booting MRain OS.
+            The kernel modules enable additional functionality
+            to the kernel that would otherwise be unavailable.
 
     config src_dir_ohmyzsh
         string "OhMyZsh source directory"
@@ -316,6 +316,10 @@ menu "Destination configuration"
             config sys_dir_newroot_lib
                 string "/usr/lib"
                 default "$[sys_dir_sys]/library"
+
+            config sys_dir_newroot_lib_modules
+                string "/usr/lib/modules"
+                default "$[sys_dir_sys]/base/modules"
 
             config sys_dir_newroot_libexec
                 string "/usr/libexec"
@@ -489,7 +493,7 @@ menu "Operating System configuration"
 
         config val_grub-entry-one_li_params
             string "Additional parameters to pass to kernel"
-            default "rw"
+            default "rw console=ttyS0 console=tty0"
             help
                 The options here will get passed into kernel,
                 after everything before it like "root=/dev".
@@ -504,7 +508,6 @@ menu "Operating System configuration"
             Enable this option to include convenient aliases & functions
             such as 'del' for 'rm', 'ren' for renaming files,
             'ls --color' for colored directory listings, and others.
-
 
     menu "System version information"
         config VERSION
@@ -523,7 +526,7 @@ menu "Operating System configuration"
 
         config SUBLEVEL
             int "Sub-minor release number [SUBLEVEL]"
-            default 2
+            default 3
             help
                 This variable contains the sub-minor version of the version string,
                 which looks like "<major>.<minor>.<sub-minor>.<count>-<tag>".
@@ -532,7 +535,7 @@ menu "Operating System configuration"
 
         config RELEASE_TAG
             string "Version release tag"
-            default "aliaser"
+            default "none"
             help
                 This variable contains the release 'tag' of the version string,
                 which looks like "<major>.<minor>.<sub-minor>.<count>-<tag>".
@@ -540,6 +543,15 @@ menu "Operating System configuration"
 endmenu
 
 menu "Utilities"
+    config CC
+        string "C code compiler w/ arguments"
+        default "gcc"
+        help
+        Specify the C code compiler and its arguments. This can be used to
+        define the compiler and options used during the build process.
+
+        The default value is "gcc".
+
     config util_vm
         string "Virtualization software"
         default "qemu-system-x86_64"
@@ -550,7 +562,7 @@ menu "Utilities"
 
     config util_vm_params
         string "Parameters to be sent to the Virtualization software"
-        default "-m 256M '$[bin_dir_iso]'"
+        default "-m 256M '$[bin_dir_iso]' -serial stdio"
         help
             These parameters will be directly sent to the VM software
             by appending it to the end of its filename. Different
