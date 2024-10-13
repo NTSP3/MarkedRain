@@ -5,8 +5,6 @@ kernel/arch/x86/events/intel/intel-cstate.ko
 kernel/arch/x86/kernel/msr.ko
 kernel/arch/x86/kernel/cpuid.ko
 kernel/arch/x86/platform/intel/iosf_mbi.ko
-kernel/kernel/configs.ko
-kernel/kernel/kheaders.ko
 kernel/fs/binfmt_misc.ko
 kernel/fs/binfmt_script.ko
 kernel/fs/mbcache.ko
@@ -38,6 +36,7 @@ kernel/crypto/crypto_algapi.ko
 kernel/crypto/aead.ko
 kernel/crypto/geniv.ko
 kernel/crypto/crypto_skcipher.ko
+kernel/crypto/bpf_crypto_skcipher.ko
 kernel/crypto/seqiv.ko
 kernel/crypto/echainiv.ko
 kernel/crypto/crypto_hash.ko
@@ -102,6 +101,7 @@ kernel/lib/asn1_decoder.ko
 kernel/lib/fonts/font.ko
 kernel/lib/oid_registry.ko
 kernel/lib/ucs2_string.ko
+kernel/drivers/video/vgastate.ko
 kernel/drivers/video/console/vgacon.ko
 kernel/drivers/video/backlight/backlight.ko
 kernel/drivers/video/fbdev/core/fb.ko
@@ -109,10 +109,9 @@ kernel/drivers/video/fbdev/core/cfbfillrect.ko
 kernel/drivers/video/fbdev/core/cfbcopyarea.ko
 kernel/drivers/video/fbdev/core/cfbimgblt.ko
 kernel/drivers/video/fbdev/core/fb_io_fops.ko
-kernel/drivers/video/fbdev/core/sysfillrect.ko
-kernel/drivers/video/fbdev/core/syscopyarea.ko
-kernel/drivers/video/fbdev/core/sysimgblt.ko
-kernel/drivers/video/fbdev/core/fb_sys_fops.ko
+kernel/drivers/video/fbdev/uvesafb.ko
+kernel/drivers/video/fbdev/vesafb.ko
+kernel/drivers/video/fbdev/vga16fb.ko
 kernel/drivers/acpi/ac.ko
 kernel/drivers/acpi/button.ko
 kernel/drivers/acpi/fan.ko
@@ -139,6 +138,9 @@ kernel/drivers/tty/serial/8250/8250_lpss.ko
 kernel/drivers/tty/serial/8250/8250_mid.ko
 kernel/drivers/tty/serial/8250/8250_pci.ko
 kernel/drivers/tty/serial/8250/8250_pericom.ko
+kernel/drivers/tty/serial/serial_mctrl_gpio.ko
+kernel/drivers/tty/ttynull.ko
+kernel/drivers/char/ttyprintk.ko
 kernel/drivers/char/virtio_console.ko
 kernel/drivers/char/nvram.ko
 kernel/drivers/char/hw_random/rng-core.ko
@@ -158,10 +160,9 @@ kernel/drivers/gpu/drm/display/drm_display_helper.ko
 kernel/drivers/gpu/drm/ttm/ttm.ko
 kernel/drivers/gpu/drm/i915/i915.ko
 kernel/drivers/gpu/drm/virtio/virtio-gpu.ko
-kernel/drivers/gpu/drm/tiny/cirrus.ko
+kernel/drivers/gpu/drm/tiny/simpledrm.ko
 kernel/drivers/connector/cn.ko
 kernel/drivers/base/firmware_loader/firmware_class.ko
-kernel/drivers/base/regmap/regmap-mmio.ko
 kernel/drivers/block/loop.ko
 kernel/drivers/block/virtio_blk.ko
 kernel/drivers/misc/mei/mei.ko
@@ -214,6 +215,7 @@ kernel/drivers/usb/host/ohci-pci.ko
 kernel/drivers/usb/host/uhci-hcd.ko
 kernel/drivers/usb/host/xhci-hcd.ko
 kernel/drivers/usb/host/xhci-pci.ko
+kernel/drivers/usb/class/usblp.ko
 kernel/drivers/usb/storage/usb-storage.ko
 kernel/drivers/input/serio/serio.ko
 kernel/drivers/input/serio/i8042.ko
@@ -237,11 +239,6 @@ kernel/drivers/ptp/ptp.ko
 kernel/drivers/ptp/ptp_kvm.ko
 kernel/drivers/hwmon/hwmon.ko
 kernel/drivers/md/md-mod.ko
-kernel/drivers/md/dm-mod.ko
-kernel/drivers/md/dm-mirror.ko
-kernel/drivers/md/dm-log.ko
-kernel/drivers/md/dm-region-hash.ko
-kernel/drivers/md/dm-zero.ko
 kernel/drivers/cpufreq/cpufreq_performance.ko
 kernel/drivers/cpufreq/cpufreq_userspace.ko
 kernel/drivers/cpufreq/cpufreq_ondemand.ko
