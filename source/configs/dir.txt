@@ -26,6 +26,7 @@ root/
 root/boot
 root/boot/grub
 root/boot/syslinux
+root/boot/ksysboot
 root/Program Files
 root/Program Files/system
 root/Users
