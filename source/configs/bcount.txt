@@ -5,7 +5,8 @@
 # 23-6-2024 21:22
 #
 
-latest_next=78
+latest_next=79
+78 - 2024-10-13 13:01:24 : Linux Kernel : New configurations
 77 - 2024-10-02 20:23:57 : Removed unneccessary modules (6.3gb -> 73mb)
 76 - 2024-10-02 09:53:00 : Kernel DRM_PANIC test 1
 75 - 2024-09-30 22:07:27 : Linux kernel 6.11 VT_CONSOLE enabled
