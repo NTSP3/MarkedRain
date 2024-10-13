@@ -1,0 +1,5 @@
+[Linux source]
+1. Do not enable sysfb_simplefb:
+	It causes text to not display during 'vga=792' boot mode.
+2. * Use 'make -j4 bzImage' to compile only kernel (not modules) in linux kernel source code.
+   * Use 'make INSTALL_MOD_PATH=<modules-dir> modules_install' to install modules to custom dir.
