@@ -3,6 +3,6 @@
 #
 
 hash_buildroot=a66ea506de19d62d42e1b047fc3b14ae2f664e5b
-hash_preinit=48f54fa4ecd78990dbbdfe75613f833720eb6b20
-ver_previous_mrain-sys=0.0.3.78-none
-hash_kernel=c04c2ac4374247010150b6554ad2a8c03f5085c4
+hash_preinit=e8aca879171a7a16f8e6984ac850659955ea4549
+ver_previous_mrain-sys=0.0.3.79-none
+hash_kernel=0b05d1d23d4c30c5dc3c481035028d3fa6b45be4
