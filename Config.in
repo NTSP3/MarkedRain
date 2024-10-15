@@ -162,15 +162,6 @@ menu "Source configuration"
             source code of Oh My Zsh, which is a thing
             that adds some really cool stuff to Zsh.
 
-    config src_dir_preinit
-        string "Preinit source directory"
-        default "$[src_dir]/preinit"
-        depends on bool_move_root
-        help
-            The preinit source directory contains the
-            source code to the binary used to create
-            symlinks at bootup.
-
     config src_dir_scripts
         string "Scripting directory"
         default "$[src_dir]/scripts"
@@ -228,7 +219,7 @@ menu "Destination configuration"
     config sys_dir_apps
         string "Programs directory"
         default "/Program Files"
-        depends on bool_move_root
+        depends on hide_this_funct
         help
             Enter the location of the users directory.
             This value can be used in Makefile using
@@ -236,7 +227,7 @@ menu "Destination configuration"
             user's files and customizations.
 
     menu "Program installation sub-directories"
-    depends on bool_move_root
+    depends on hide_this_funct
         comment "If you don't want MRain to include an app,"
         comment "leave its directory blank."
         config app_dir_ohmyzsh
@@ -247,7 +238,7 @@ menu "Destination configuration"
     config sys_dir_usr
         string "Users directory"
         default "/Users"
-        depends on bool_move_root
+        depends on hide_this_funct
         help
             Enter the location of the users directory.
             This value can be used in Makefile using
@@ -257,6 +248,7 @@ menu "Destination configuration"
     config sys_dir_sys
         string "System directory"
         default "/System"
+        depends on hide_this_funct
         help
             Enter the location of the system directory.
             This value can be used in Makefile using
@@ -265,16 +257,15 @@ menu "Destination configuration"
 
     config sys_dir_linux
         string "Linux kernel location & name in the final iso"
-        default "$[sys_dir_sys]/base/kernel"
+        default "/boot/bzImage"
         help
             Enter the location to copy the linux kernel into in the iso
             image. This value would also be used to determine the kernel's
             location from the grub or extlinux config file.
-
     config bool_move_root
-        bool
+        bool "Move root directories into system directory"
         default y
-        depends on bool_use_sylin_exlin
+        depends on hide_this_funct
         help
             Enable this option to move essential root directories like
             '/usr/lib' into a specified directory.
@@ -282,15 +273,6 @@ menu "Destination configuration"
             When enabled, the init program will be set to where preinit
             is located. It will create the necessary symlinks to those
             directories and start the main init process.
-
-        config sys_dir_preinit
-            string "Preinit file location & name in the final iso"
-            default "$[sys_dir_sys]/base/init"
-            depends on bool_move_root
-            help
-                Enter the location to copy the preinit binary into in the iso
-                image.
-
         menu "New paths for root directories"
         depends on bool_move_root
             config sys_dir_newroot_etc
