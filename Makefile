@@ -320,106 +320,8 @@ main:
 	        fi
         endif
     endif
-    ifeq ($(bool_move_root), y)
-	    $(call heading, sub, Extracting root.fs/etc as '$(bin_dir_tmp)$(sys_dir_newroot_etc)')
-	    $(Q)$(val_superuser) tar xf "$(src_dir_buildroot)/output/images/rootfs.tar" -C "$(bin_dir_tmp)$(sys_dir_newroot_etc)" ./etc/ --strip-components=2
-	    $(call heading, sub, Extracting root.fs/opt as '$(bin_dir_tmp)$(sys_dir_newroot_opt)')
-	    $(Q)$(val_superuser) tar xf "$(src_dir_buildroot)/output/images/rootfs.tar" -C "$(bin_dir_tmp)$(sys_dir_newroot_opt)" ./opt/ --strip-components=2
-	    $(call heading, sub, Extracting root.fs/usr/bin as '$(bin_dir_tmp)$(sys_dir_newroot_bin)')
-	    $(Q)$(val_superuser) tar xf "$(src_dir_buildroot)/output/images/rootfs.tar" -C "$(bin_dir_tmp)$(sys_dir_newroot_bin)" ./usr/bin/ --strip-components=3
-	    $(call heading, sub, Extracting root.fs/usr/lib as '$(bin_dir_tmp)$(sys_dir_newroot_lib)')
-	    $(Q)$(val_superuser) tar xf "$(src_dir_buildroot)/output/images/rootfs.tar" -C "$(bin_dir_tmp)$(sys_dir_newroot_lib)" ./usr/lib/ --strip-components=3
-	    $(call heading, sub, Extracting root.fs/usr/libexec as '$(bin_dir_tmp)$(sys_dir_newroot_libexec)')
-	    $(Q)$(val_superuser) tar xf "$(src_dir_buildroot)/output/images/rootfs.tar" -C "$(bin_dir_tmp)$(sys_dir_newroot_libexec)" ./usr/libexec/ --strip-components=3
-	    $(call heading, sub, Extracting root.fs/usr/share as '$(bin_dir_tmp)$(sys_dir_newroot_share)')
-	    $(Q)$(val_superuser) tar xf "$(src_dir_buildroot)/output/images/rootfs.tar" -C "$(bin_dir_tmp)$(sys_dir_newroot_share)" ./usr/share/ --strip-components=3
-	    $(call heading, sub, Extracting root.fs/usr/sbin as '$(bin_dir_tmp)$(sys_dir_newroot_sbin)')
-	    $(Q)$(val_superuser) tar xf "$(src_dir_buildroot)/output/images/rootfs.tar" -C "$(bin_dir_tmp)$(sys_dir_newroot_sbin)" ./usr/sbin/ --strip-components=3
-	    $(call heading, sub, Extracting root.fs/var as '$(bin_dir_tmp)$(sys_dir_newroot_var)')
-	    $(Q)$(val_superuser) tar xf "$(src_dir_buildroot)/output/images/rootfs.tar" -C "$(bin_dir_tmp)$(sys_dir_newroot_var)" ./var/ --strip-components=2
-	    @echo ""
-	    $(call heading, main, Adding the preinit binary & configuration)
-	    $(call heading, sub, Comparing preinit hash)
-        ifeq ($(shell [ ! -f "$(src_dir_preinit)/preinit" ] || [ "$(shell $(call get_hash, $(src_dir_preinit)/preinit.c))" != "$$($(src_dir_scripts)/get_var.sh "hash_preinit" "$(src_dir_conf)/variables.txt")" ] && echo y),y)
-	        $(call heading, sub2, Binary doesn't exist or hash didn't match; compiling preinit)
-	        $(Q)$(CC) -static -o "$(src_dir_preinit)/preinit" "$(src_dir_preinit)/preinit.c"
-	        $(call save_hash, hash_preinit, $(src_dir_preinit)/preinit.c)
-	        $(eval bool_do_update_count := y)
-        endif
-	    $(call heading, sub, Copying preinit as '$(bin_dir_tmp)$(sys_dir_preinit)')
-	    $(Q)$(val_superuser) cp "$(src_dir_preinit)/preinit" "$(bin_dir_tmp)$(sys_dir_preinit)" $(OUT)
-	    $(call heading, sub, Expanding val_grub-entry-one_li_params to include preinit)
-	    $(eval val_grub-entry-one_li_params := $(val_grub-entry-one_li_params) init=$(sys_dir_preinit))
-	    $(call heading, sub, Creating .preinit config file)
-	    $(Q)echo -e "\
-	    create \"bin\" \n\
-	    mount \"$(sys_dir_newroot_bin)\" as \"bin\" \n\
-	    create \"dev\" \n\
-	    create \"proc\" \n\
-	    link \"$(sys_dir_newroot_tmp)\" as \"tmp\" \n\
-	    link \"proc/self/fd\" as \"dev/fd\" \n\
-	    link \"tmp/log\" as \"dev/log\" \n\
-	    link \"proc/self/fd/2\" as \"dev/stderr\" \n\
-	    link \"proc/self/fd/0\" as \"dev/stdin\" \n\
-	    link \"proc/self/fd/1\" as \"dev/stdout\" \n\
-	    create \"etc\" \n\
-	    mount \"$(sys_dir_newroot_etc)\" as \"etc\" \n\
-	    create \"lib\" \n\
-	    mount \"$(sys_dir_newroot_lib)\" as \"lib\" \n\
-	    create \"lib64\" \n\
-	    mount \"$(sys_dir_newroot_lib)\" as \"lib64\" \n\
-	    create \"media\" \n\
-	    create \"mnt\" \n\
-	    create \"opt\" \n\
-	    mount \"$(sys_dir_newroot_opt)\" as \"opt\" \n\
-	    create \"root\" \n\
-	    mount \"$(sys_dir_newroot_root)\" as \"root\" \n\
-	    create \"run\" \n\
-	    create \"sbin\" \n\
-	    mount \"$(sys_dir_newroot_sbin)\" as \"sbin\" \n\
-	    create \"sys\" \n\
-	    create \"usr\" \n\
-	    create \"usr/bin\" \n\
-	    mount \"$(sys_dir_newroot_bin)\" as \"usr/bin\" \n\
-	    create \"usr/lib\" \n\
-	    mount \"$(sys_dir_newroot_lib)\" as \"usr/lib\" \n\
-	    create \"usr/lib64\" \n\
-	    mount \"$(sys_dir_newroot_lib)\" as \"usr/lib64\" \n\
-	    create \"usr/libexec\" \n\
-	    mount \"$(sys_dir_newroot_libexec)\" as \"usr/libexec\" \n\
-	    create \"usr/sbin\" \n\
-	    mount \"$(sys_dir_newroot_sbin)\" as \"usr/sbin\" \n\
-	    create \"usr/share\" \n\
-	    mount \"$(sys_dir_newroot_share)\" as \"usr/share\" \n\
-	    create \"var\" \n\
-	    mount \"$(sys_dir_newroot_var)\" as \"var\" "\
-	    | sed 's/^    //' \
-	    | $(val_superuser) tee "$(bin_dir_tmp)/.preinit" $(OUT)
-	    $(call heading, sub, Creating .hidden config file)
-	    $(Q)echo -e "\
-	    bin\n\
-	    dev\n\
-	    etc\n\
-	    lib\n\
-	    lib64\n\
-	    media\n\
-	    mnt\n\
-	    opt\n\
-	    proc\n\
-	    root\n\
-	    run\n\
-	    sbin\n\
-	    sys\n\
-	    tmp\n\
-	    usr\n\
-	    var\n"\
-	    | sed 's/^    //' \
-	    | $(val_superuser) tee "$(bin_dir_tmp)/.hidden" $(OUT)
-    else
-        # legacy
-	    $(call heading, sub, Extracting rootfs archive to '$(bin_dir_tmp)')
-	    $(Q)$(val_superuser) tar xf "$(src_dir_buildroot)/output/images/rootfs.tar" -C "$(bin_dir_tmp)" $(OUT)
-    endif
+	$(call heading, sub, Extracting rootfs archive to '$(bin_dir_tmp)')
+	$(Q)$(val_superuser) tar xf "$(src_dir_buildroot)/output/images/rootfs.tar" -C "$(bin_dir_tmp)" $(OUT)
 #  -- Kernel --  #
 	@echo -e ""
 	$(call heading, main, Adding the linux kernel & kernel modules)
@@ -445,7 +347,7 @@ main:
             # I don't want this to appear if message 'Kernel modules have been modified' did not appear bcz 'adding kernel modules' already does the job
 	        $(call heading, sub2, Copying kernel modules)
         endif
-	    $(Q)$(val_superuser) cp -r "$(src_dir_modules)/." "$(bin_dir_tmp)$(sys_dir_newroot_lib_modules)"
+	    $(Q)$(val_superuser) cp -r "$(src_dir_modules)/." "$(bin_dir_tmp)/lib/modules"
     endif
 #  -- sub-projects --  #
 	@echo -e ""
@@ -456,7 +358,7 @@ main:
 #  -- Finalization --  #
 	@echo -e ""
 	$(call heading, main, Doing finalization procedures)
-#   - Convenient aliases -   #
+#   - Convenient aliases & Functions -   #
     ifeq ($(bool_include_aliases), y)
 	    $(call heading, sub, Convenient aliases & functions)
 	    $(call heading, sub2, Functions)
@@ -492,7 +394,7 @@ main:
 	        fi \n\
 	    }\n"\
 	    | sed 's/^    //' \
-	    | $(val_superuser) tee -a "$(bin_dir_tmp)$(sys_dir_newroot_etc)/profile" $(OUT)
+	    | $(val_superuser) tee -a "$(bin_dir_tmp)/etc/profile" $(OUT)
 	    $(call heading, sub2, Command aliases)
 	    $(Q)echo -e "\
 	    # Great command aliases \n\
@@ -515,11 +417,11 @@ main:
 	    alias rd='rm -ri' \n\
 	    alias vdir='vdir --color=auto' \n"\
 	    | sed 's/^    //' \
-	    | $(val_superuser) tee -a "$(bin_dir_tmp)$(sys_dir_newroot_etc)/profile" $(OUT)
+	    | $(val_superuser) tee -a "$(bin_dir_tmp)/etc/profile" $(OUT)
     endif
 #   - zsh conf -   #
 	$(call heading, sub, Zsh config)
-	$(Q)echo "[[ -f /etc/profile ]] && source /etc/profile" | $(val_superuser) tee -a "$(bin_dir_tmp)$(sys_dir_newroot_etc)/zshenv" $(OUT)
+	$(Q)echo "[[ -f /etc/profile ]] && source /etc/profile" | $(val_superuser) tee -a "$(bin_dir_tmp)/etc/zshenv" $(OUT)
 #   - GNU/Grub conf -   #
 	$(call heading, sub, Grub boot config)
 	$(Q)echo -e "\
@@ -572,7 +474,7 @@ main:
 	fi
 	@echo -e ""
 	$(call heading, info, $(col_FALSE)Cleaning temporary files)
-	$(Q)rm -rf "$(bin_dir_tmp)"
+	$(Q)rm -rf "$(bin_dir_tmp)/*"
 
 # --- Run --- #
 .PHONY: run runs
@@ -580,7 +482,7 @@ run:
     ifeq ($(shell [ -f "$(bin_dir_iso)" ] && echo y), y)
 	    @echo -e ""
 	    $(call ok,    // Now running '$(bin_dir_iso)' using '$(util_vm)' and parameters '$(shell echo -n $(util_vm_params))' //    )
-	    $(Q)"$(util_vm)" $(shell echo -n $(util_vm_params)) $(OUT)
+	    $(Q)"$(util_vm)" $(shell echo -n $(util_vm_params))
     else
 	    $(call stop, Supplied file '$(bin_dir_iso)' doesn't exist. Make sure you ran 'make' and check if the file specified in bin_dir_iso is correct.)
     endif
