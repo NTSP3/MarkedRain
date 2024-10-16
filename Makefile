@@ -46,7 +46,7 @@ endef
 
 define save_hash_dir
 	@$(call heading, info, Saving hash of directory '$(strip $(2))' as '$(strip $(1))=')
-	echo '$(Q)"$(src_dir_scripts)/set_var.sh" "$(strip $(1))" $(call get_hash_dir, $(2)) "$(src_dir_conf)/variables.txt"'
+	$(Q)"$(src_dir_scripts)/set_var.sh" "$(strip $(1))" `$(call get_hash_dir, $(2))` "$(src_dir_conf)/variables.txt"
 endef
 
 #  --[ Exceptional message printers ]--  #
@@ -314,6 +314,7 @@ main:
 	    $(Q)$(MAKE) -C "$(src_dir_buildroot)" $(OUT) || exit 1
 	    $(call save_hash, hash_buildroot, $(src_dir_buildroot)/.config)
 	    $(eval bool_do_update_count := y)
+	    $(eval val_changes += rootfs.tar did not exist\n)
     else
 	    $(call heading, sub, Comparing .config hash)
         ifneq ($(shell "$(src_dir_scripts)/get_var.sh" "hash_buildroot" "$(src_dir_conf)/variables.txt"),$(shell $(call get_hash, $(src_dir_buildroot)/.config)))
@@ -321,6 +322,7 @@ main:
 	        $(Q)$(MAKE) -C "$(src_dir_buildroot)" $(OUT) || exit 1
 	        $(call save_hash, hash_buildroot, $(src_dir_buildroot)/.config)
 	        $(eval bool_do_update_count := y)
+	        $(eval val_changes += Buildroot's configuration (.config) changed\n)
         else
             # Invoke BR make if version changed & all other checks are clear
 	        $(Q)if [ "$(bool_ver_change)" = "y" ] && [ "$(strip $(val_remake_br_pack))" != "" ]; then \
@@ -342,6 +344,7 @@ main:
         ifneq ($(shell "$(src_dir_scripts)/get_var.sh" "hash_kernel" "$(src_dir_conf)/variables.txt"), $(shell $(call get_hash, $(src_dir_linux))))
 	        $(call save_hash, hash_kernel, $(src_dir_linux))
 	        $(eval bool_do_update_count := y)
+	        $(eval val_changes += Kernel file changed\n)
         endif
     endif
 	$(call heading, sub, Copying kernel as '$(bin_dir_tmp)$(sys_dir_linux)')
@@ -351,7 +354,8 @@ main:
 	    $(call heading, sub, Adding kernel modules)
         ifneq ($(shell "$(src_dir_scripts)/get_var.sh" "hash_kernel_modules" "$(src_dir_conf)/variables.txt"), $(shell $(call get_hash_dir, $(src_dir_modules))))
 	        $(call heading, sub2, Kernel modules have been modified.)
-	        $(eval bool_do_update_count ?= y)
+	        $(eval bool_do_update_count := y)
+	        $(eval val_changes += Kernel modules changed\n)
 	        $(call save_hash_dir, hash_kernel_modules, $(src_dir_modules))
             # I don't want this to appear if message 'Kernel modules have been modified' did not appear bcz 'adding kernel modules' already does the job
 	        $(call heading, sub2, Copying kernel modules)
@@ -479,6 +483,12 @@ main:
 	    "$(src_dir_scripts)/set_var.sh" "ver_previous_mrain-sys" "$(MRAIN_VERSION)" "$(src_dir_conf)/variables.txt"; \
 	fi
 	$(Q)if [ "$(bool_do_update_count)" = "y" ] || [ "$(update)" = "true" ]; then \
+	    echo -e "$(col_TRUE)Summary of items changed"; \
+	    echo -e "$(col_TRUE)--------------------------$(col_NORMAL)"; \
+	    echo -en "$(val_changes)"; \
+	    if [ "$(update)" = "true" ]; then \
+	        echo -e "$(col_INFO)Variable 'update' is set to true."; \
+	    fi; \
 	    "$(src_dir_scripts)/count_increment.sh" "latest_next" "$(src_dir_conf)/bcount.txt"; \
 	fi
 	@echo -e ""
