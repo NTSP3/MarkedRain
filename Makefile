@@ -332,7 +332,7 @@ main:
         endif
     endif
 	$(call heading, sub, Extracting rootfs archive to '$(bin_dir_tmp)')
-	$(Q)$(val_superuser) tar xf "$(src_dir_buildroot)/output/images/rootfs.tar" -C "$(bin_dir_tmp)" $(OUT)
+	$(Q) pv -i 0.01 "$(src_dir_buildroot)/output/images/rootfs.tar" | $(val_superuser) tar -xf "-" -C "$(bin_dir_tmp)"
 #  -- Kernel --  #
 	@echo -e ""
 	$(call heading, main, Adding the linux kernel & kernel modules)
