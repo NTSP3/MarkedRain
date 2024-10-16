@@ -296,8 +296,17 @@ main:
 	$(Q)if [ "$(bool_ver_change)" = "y" ] && [ "$(strip $(val_remake_br_pack))" != "" ]; then \
 	    val_temp="$(val_remake_br_pack)"; \
 	    for val_temp2 in $$val_temp; do \
-	        $(subst @echo, echo, $(call heading, sub, Re-making package: $$val_temp2)); \
-	        $(MAKE) -C "$(src_dir_buildroot)" "$${val_temp2}-reconfigure"; \
+	        echo -en "$(col_INFO)Do you want to re-compile package '$$val_temp2'? $(col_NORMAL)[$(col_DONE)Y$(col_NORMAL)/$(col_ERROR)N$(col_NORMAL)]"; \
+	        while true; do \
+	            read choice; \
+	            if [ "$$choice" = "N" ] || [ "$$choice" = "n" ]; then \
+	                break; \
+	            elif [ "$$choice" = "Y" ] || [ "$$choice" = "y" ]; then \
+	                $(subst @echo, echo, $(call heading, sub, Re-making package: $$val_temp2)); \
+	                $(MAKE) -C "$(src_dir_buildroot)" "$${val_temp2}-reconfigure"; \
+	                break; \
+	            fi; \
+	        done; \
 	    done; \
 	fi
     ifneq ($(shell [ -f "$(src_dir_buildroot)/output/images/rootfs.tar" ] && echo y), y)
