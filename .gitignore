@@ -13,6 +13,7 @@ builds/
 # MarkedRain files
 dotconfig.busybox
 source/configs/hashes.txt
+source/initramfs/init.cpio.zst
 
 # make menuconfig tmp & usr cfg
 .config
