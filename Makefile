@@ -37,7 +37,7 @@ endef
 
 define save_hash
 	@$(call heading, info, Saving hash of file '$(strip $(2))' as '$(strip $(1))=')
-	$(Q)"$(src_dir_scripts)/set_var.sh" "$(strip $(1))" `$(call get_hash, $(2))` "$(src_dir_conf)/variables.txt"
+	$(Q)"$(src_dir_scripts)/set_var.sh" "$(strip $(1))" `$(call get_hash, $(2))` "$(src_dir_conf)/hashes.txt"
 endef
 
 define get_hash_dir
@@ -46,7 +46,7 @@ endef
 
 define save_hash_dir
 	@$(call heading, info, Saving hash of directory '$(strip $(2))' as '$(strip $(1))=')
-	$(Q)"$(src_dir_scripts)/set_var.sh" "$(strip $(1))" `$(call get_hash_dir, $(2))` "$(src_dir_conf)/variables.txt"
+	$(Q)"$(src_dir_scripts)/set_var.sh" "$(strip $(1))" `$(call get_hash_dir, $(2))` "$(src_dir_conf)/hashes.txt"
 endef
 
 #  --[ Exceptional message printers ]--  #
@@ -331,7 +331,7 @@ main:
 	    $(eval val_changes += rootfs.tar did not exist\n)
     else
 	    $(call heading, sub, Comparing .config hash)
-        ifneq ($(shell "$(src_dir_scripts)/get_var.sh" "hash_buildroot" "$(src_dir_conf)/variables.txt"),$(shell $(call get_hash, $(src_dir_buildroot)/.config)))
+        ifneq ($(shell "$(src_dir_scripts)/get_var.sh" "hash_buildroot" "$(src_dir_conf)/hashes.txt"),$(shell $(call get_hash, $(src_dir_buildroot)/.config)))
 	        $(call heading, sub, Hashes didn't match; making Buildroot)
 	        $(Q)$(MAKE) -C "$(src_dir_buildroot)" $(OUT) || exit 1
 	        $(call save_hash, hash_buildroot, $(src_dir_buildroot)/.config)
@@ -357,7 +357,7 @@ main:
 	    $(call stop, Kernel file doesn't exist in $(src_dir_linux). Ensure you gave the correct path to it by running menuconfig.)
     else
 	    $(call heading, sub, Comparing kernel hash)
-        ifneq ($(shell "$(src_dir_scripts)/get_var.sh" "hash_kernel" "$(src_dir_conf)/variables.txt"), $(shell $(call get_hash, $(src_dir_linux))))
+        ifneq ($(shell "$(src_dir_scripts)/get_var.sh" "hash_kernel" "$(src_dir_conf)/hashes.txt"), $(shell $(call get_hash, $(src_dir_linux))))
 	        $(call save_hash, hash_kernel, $(src_dir_linux))
 	        $(eval bool_do_update_count := y)
 	        $(eval val_changes += Kernel file changed\n)
@@ -369,7 +369,7 @@ main:
 	@echo -e ""
 	$(call heading, main, Adding initramfs)
 	$(call heading, sub, Checking hashes and file existance)
-    ifneq ($(shell [ -f "$(src_dir_initramfs)/init.cpio.zst" ] && [ "$(shell $(call get_hash_dir, $(src_dir_initramfs)/source))" = "$(shell "$(src_dir_scripts)/get_var.sh" "hash_initramfs" "$(src_dir_conf)/variables.txt")" ] && echo y),y)
+    ifneq ($(shell [ -f "$(src_dir_initramfs)/init.cpio.zst" ] && [ "$(shell $(call get_hash_dir, $(src_dir_initramfs)/source))" = "$(shell "$(src_dir_scripts)/get_var.sh" "hash_initramfs" "$(src_dir_conf)/hashes.txt")" ] && echo y),y)
 	    $(call heading, sub, Creating/re-creating init.cpio.zst)
 	    $(Q)cd "$(src_dir_initramfs)/source"; \
 	    find . | cpio -o -H newc --quiet | pv -i 0.01 -s $$(du -sb . | awk '{print $$1}') | zstd --force --quiet -o "../init.cpio.zst"
@@ -505,7 +505,7 @@ main:
 	$(Q)if [ "$(bool_do_update_count)" = "y" ] || [ "$(update)" = "true" ]; then \
 	    echo -e "$(col_TRUE)Summary of items changed"; \
 	    echo -e "$(col_TRUE)--------------------------$(col_NORMAL)"; \
-	    echo -en "$(val_changes)"; \
+	    echo -en " $(val_changes)"; \
 	    if [ "$(update)" = "true" ]; then \
 	        echo -e "$(col_INFO)Variable 'update' is set to true."; \
 	    fi; \
