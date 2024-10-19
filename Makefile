@@ -190,9 +190,6 @@ ifeq ($(filter $(val_target),$(val_unmain_sect)),)
         export srctree := $(if $(KBUILD_SRC),$(KBUILD_SRC),$(CURDIR))
         export HOSTCC := gcc
         include $(srctree)/make/Kbuild.include
-    else ifeq ($(bool_use_sylin_exlin), y)#        # Export val_superuser now because we can't do it later
-        $(info $(shell $(subst @echo, echo, $(call heading, info, Exporting superuser variable))))
-        export val_superuser := sudo
     endif
     $(info $(shell $(subst @echo, echo, $(call heading, info, Exporting MRain System version))))
     export MRAIN_VERSION := $(VERSION).$(PATCHLEVEL).$(SUBLEVEL).$(EXTRAVERSION)-$(RELEASE_TAG)
@@ -270,20 +267,6 @@ main:
 #  -- Directories --  #
 	$(call heading, info, $(col_TRUE)Creating image directory)
 	$(Q)mkdir -p "$(bin_dir)" "$(bin_dir_tmp)"
-#  -- Syslinux check 1 --  #
-    ifeq ($(bool_use_sylin_exlin), y)
-	    $(call true, BootSyslinux, bool_use_sylin_exlin)
-	    $(call heading, main, Creating new disc image with syslinux as bootloader)
-	    $(call heading, sub, Creating an empty file ($(val_dev_iso_size)MB))
-	    $(Q)truncate -s $(val_dev_iso_size)M "$(bin_dir_iso)" $(OUT)
-	    $(call heading, sub, Creating an ext4 filesystem)
-	    $(Q)mkfs.ext4 "$(bin_dir_iso)" $(OUT)
-	    $(call heading, imp, From this point onward you may receive more requests for admin privileges)
-	    $(call heading, sub, Mounting iso image to '$(bin_dir_tmp)')
-	    $(Q)sudo mount "$(bin_dir_iso)" "$(bin_dir_tmp)" $(OUT)
-    else
-	    $(call false, BootSyslinux, bool_use_sylin_exlin)
-    endif
 	$(call heading, main, Creating system directories)
 	$(Q)"$(src_dir_scripts)/mk_sys_dir.sh" "$(src_dir_conf)/dir.txt" "$(bin_dir_tmp)"
 #  -- Buildroot --  #
@@ -483,20 +466,11 @@ main:
 	    INITRD \"$(sys_dir_initramfs)\" \n\
 	    APPEND root=$(val_grub-entry-one_li_root) $(val_grub-entry-one_li_params) vga=$(val_sylin-entry-one_li_vga_mode)\n" \
 	| $(val_superuser) tee -a "$(bin_dir_tmp)/boot/syslinux/syslinux.cfg" $(OUT)
-#  -- Installing bootloaders --  #
-#   - Syslinux -   #
-    ifeq ($(bool_use_sylin_exlin), y)
-	    @echo -e ""
-	    $(call heading, main, Installing syslinux to the image)
-	    $(Q)sudo extlinux --install "$(bin_dir_tmp)" $(OUT)
-	    $(call heading, sub, Unmounting '$(bin_dir_tmp)')
-	    $(Q)sudo umount "$(bin_dir_tmp)" $(OUT)
-    else
-#   - GNU/Grub -   #
-	    @echo -e ""
-	    $(call heading, main, Creating new disc image with GRUB)
-	    $(Q)grub-mkrescue -o "$(bin_dir_iso)" "$(bin_dir_tmp)" $(OUT)
-    endif
+#  -- Installing GRUB --  #
+	@echo -e ""
+	$(call heading, main, Creating new disc image with GRUB)
+	$(Q)grub-mkrescue -o "$(bin_dir_iso)" "$(bin_dir_tmp)" $(OUT)
+#  -- Version updation --  #
     # Makefile's 'ifeq' conditions ain't working here for some reason
 	$(Q)if [ "$(bool_ver_change)" = "y" ]; then \
 	    $(subst @echo, echo, $(call heading, info, Saving version: $(MRAIN_VERSION))); \
@@ -512,6 +486,7 @@ main:
 	    "$(src_dir_scripts)/count_increment.sh" "latest_next" "$(src_dir_conf)/bcount.txt"; \
 	fi
 	@echo -e ""
+#  -- Automatic cleaning --  #
 	$(call heading, info, $(col_FALSE)Cleaning temporary files)
 	$(Q)rm -rf "$(bin_dir_tmp)/*"
 

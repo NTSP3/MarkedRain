@@ -199,16 +199,6 @@ menu "Destination configuration"
             is mostly used to put the stuff in it into
             the iso image.
 
-    config val_dev_iso_size
-        int "Size of the iso image in megabytes"
-        default 200
-        depends on bool_use_sylin_exlin
-        help
-            Set the size of the null file used for the iso image
-            when Extlinux is used instead of GRUB. The value must
-            be in megabytes (MB). You cannot do something like
-            "100MB", only the "100" part is supported.
-
     comment "System paths & program target directories           "
     comment "----------------------------------------------------"
     comment "If you edit any of the path names for directories,  "
@@ -331,17 +321,6 @@ endmenu
 
 menu "Operating System configuration"
     menu "Bootloader configuration"
-        config bool_use_sylin_exlin
-            bool "Use syslinux instead of GRUB."
-            default n
-            help
-                By default, MRain uses the GNU/Grub bootloader.
-                However, the limitations imposed by the iso9660
-                filesystem makes the iso not writable from the
-                shell. Using syslinux, the fs is also changed to
-                ext4. This makes it writable. Use this option
-                for writability.
-
         config val_grub-boot_default
             int "Default entry to boot"
             default 0
@@ -358,116 +337,19 @@ menu "Operating System configuration"
                 before automatically booting the entry specified
                 in "val_grub-boot_default".
 
-        if !bool_use_sylin_exlin
-            config val_grub-boot_resolution
-                string "Screen resolution to use on boot"
-                default "1024x768"
-                help
-                    The string entered in the format <width>x<height>x<depth> is
-                    used as the screen resolution for linux in the booting process.
-                    Beware, there are only a handful of resolutions supported,
-                    "1024x768" being one of them - not too big, not too small.
-                    That's what she didn't say.
-        endif
-
-        if bool_use_sylin_exlin
-            choice
-                prompt "Extlinux VGA mode to use on boot"
-                default syslinux-vga_792
-                help
-                    The VGA Modes are used to determine the screen resolution
-                    and colour depth used while the system is booting in
-                    Syslinux.
-
-                config syslinux-vga_771
-                    bool "771 (800x600x8)"
-                    help
-                        Sets the VGA mode to 771, which corresponds to
-                        a screen resolution of 800x600 with 8-bit color depth.
-
-                config syslinux-vga_788
-                    bool "788 (800x600x16)"
-                    help
-                        Sets the VGA mode to 788, which corresponds to
-                        a screen resolution of 800x600 with 16-bit color depth.
-
-                config syslinux-vga_789
-                    bool "789 (800x600x24)"
-                    help
-                        Sets the VGA mode to 789, which corresponds to
-                        a screen resolution of 800x600 with 24-bit color depth.
-
-                config syslinux-vga_773
-                    bool "773 (1024x768x8)"
-                    help
-                        Sets the VGA mode to 773, which corresponds to
-                        a screen resolution of 1024x768 with 8-bit color depth.
-
-                config syslinux-vga_791
-                    bool "791 (1024x768x16)"
-                    help
-                        Sets the VGA mode to 791, which corresponds to
-                        a screen resolution of 1024x768 with 16-bit color depth.
-
-                config syslinux-vga_792
-                    bool "792 (1024x768x24)"
-                    help
-                        Sets the VGA mode to 792, which corresponds to
-                        a screen resolution of 1024x768 with 24-bit color depth.
-
-                config syslinux-vga_353
-                    bool "353 (1182x864x8)"
-                    help
-                        Sets the VGA mode to 353, which corresponds to
-                        a screen resolution of 1182x864 with 8-bit color depth.
-
-                config syslinux-vga_355
-                    bool "355 (1182x864x16)"
-                    help
-                        Sets the VGA mode to 355, which corresponds to
-                        a screen resolution of 1182x864 with 16-bit color depth.
-
-                config syslinux-vga_775
-                    bool "775 (1280x1024x8)"
-                    help
-                        Sets the VGA mode to 775, which corresponds to
-                        a screen resolution of 1280x1024 with 8-bit color depth.
-
-                config syslinux-vga_794
-                    bool "794 (1280x1024x16)"
-                    help
-                        Sets the VGA mode to 794, which corresponds to
-                        a screen resolution of 1280x1024 with 16-bit color depth.
-
-                config syslinux-vga_795
-                    bool "795 (1280x1024x24)"
-                    help
-                        Sets the VGA mode to 795, which corresponds to
-                        a screen resolution of 1280x1024 with 24-bit color depth.
-
-                config syslinux-vga_796
-                    bool "796 (1600x1200x8)"
-                    help
-                        Sets the VGA mode to 796, which corresponds to
-                        a screen resolution of 1600x1200 with 8-bit color depth.
-
-                config syslinux-vga_798
-                    bool "798 (1600x1200x16)"
-                    help
-                        Sets the VGA mode to 798, which corresponds to
-                        a screen resolution of 1600x1200 with 16-bit color depth.
-
-                config syslinux-vga_799
-                    bool "799 (1600x1200x24)"
-                    help
-                        Sets the VGA mode to 799, which corresponds to
-                        a screen resolution of 1600x1200 with 24-bit color depth.
-            endchoice
-        endif
+        config val_grub-boot_resolution
+            string "Screen resolution to use on boot"
+            default "1024x768"
+            help
+                The string entered in the format <width>x<height>x<depth> is
+                used as the screen resolution for linux in the booting process.
+                Beware, there are only a handful of resolutions supported,
+                "1024x768" being one of them - not too big, not too small.
+                That's what she didn't say.
 
         config val_grub-entry-one_name
             string "Distribution name in bootloader"
-            default "MarkedRain Linux "
+            default "MarkedRain Linux"
             help
                 The name that gets displayed on booting as the first entry's
                 name. Will not get seen if timeout is zero, or the menu is
@@ -558,16 +440,6 @@ menu "Utilities"
             by appending it to the end of its filename. Different
             VM software may have different ways of interpreting the 
             same thing, so do your research before modifying this.
-
-    config util_sylin
-        string "Application used to create syslinux bootloader"
-        depends on bool_use_sylin_exlin
-        default "extlinux"
-        help
-            This variable holds the name of the application used
-            to build the bootloader used by Syslinux. By default,
-            the image filesystem is Ext4, so the application used
-            is extlinux.
 endmenu
 
 menu "Other configurations"
