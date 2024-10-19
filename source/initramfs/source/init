@@ -1,0 +1,80 @@
+#!/bin/sh
+##
+## MarkedRain Linux [18-10-2024 @ 5:12PM]
+##
+## This init script mounts the .squashfs compressed archive
+## into a tmpfs folder, meaning that its contents will stay
+## on the memory itself and not make any changes to the
+## real disk, allowing it to have read/write access, even
+## if it is booting from a read-only file system
+## (effectively acting like a live-cd)
+##
+
+#
+# Mount required directories (proc, dev, sys)
+#
+
+echo "Initializing system paths"
+mount -t devtmpfs devtmpfs /dev
+mount -t proc proc /proc
+mount -t sysfs sysfs /sys
+
+#
+# Mount the root partition (the one that the user passed as 'root=' on boot)
+#
+
+echo "Mounting root partition"
+
+cmdline=$(cat proc/cmdline)
+
+for word in $cmdline; do
+  case "$word" in
+    root=*)
+      root=${word#root=}
+      break
+      ;;
+  esac
+done
+
+case "$root" in
+    /dev/*)
+        if ! mount "$root" "/mnt/sda"; then
+            echo "Error: Failed to mount '$root'."
+            exit 1
+        fi
+        ;;
+    UUID=*)
+        # Remove "UUID=" from the variable to get only the value of UUID
+        uuid="${root#UUID=}"
+        if ! mount "/dev/disk/by-uuid/$uuid" "/mnt/sda"; then
+            echo "Error: Failed to mount '$uuid'."
+            exit 1
+        fi
+        ;;
+    *)
+        # Init concludes that the user did not pass 'root=' correctly
+        echo "Error: Value of 'root' ($root) does not start with '/dev/', or is an invalid UUID."
+        exit 1
+        ;;
+esac
+
+#
+# To create a memory-based system, we need to mount the
+# squashfs image onto a folder & use overlayfs with a
+# tmpfs folder to allow reading from the image while
+# writing takes place in the tmpfs folder.
+#
+
+echo "Preparing to transfer control"
+mount -t squashfs -o ro /mnt/sda/rootfs.squashfs /mnt/lower
+mount -t tmpfs -o rw tmpfs /mnt/upper
+mkdir /mnt/upper/upper
+mkdir /mnt/upper/work
+mount -t overlay overlay -o lowerdir=/mnt/lower,upperdir=/mnt/upper/upper,workdir=/mnt/upper/work /mnt/overlay
+
+#
+# Now execute the real init from the squashfs image
+#
+
+echo "Transferring control to /sbin/init"
+exec switch_root /mnt/overlay /sbin/init
