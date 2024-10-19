@@ -289,23 +289,37 @@ main:
 #  -- Buildroot --  #
 	@echo -e ""
 	$(call heading, main, Adding buildroot into the image)
-    # Check if version changed (don't invoke BR make now, it may get invoked later)
-    # Also, can't put BR make here and do the ifneq condition as 'else ifneq', bash 'if' conditions
+    # Delete .recombr if it exists
+    ifeq ($(shell [ -f ".recombr" ] && echo y), y)
+	    $(Q)rm .recombr
+    endif
+    # Can't put BR make here and do the ifneq conditions because bash 'if' conditions
     # doesn't seem to work with makefile, and can't make those ifeq and ifneq conditions into bash
-    # because it cannot do $(eval)
+    # because it cannot do $(eval). Can't make these bash commands into Makefile because
+    # the 'ifeq' conditions doesn't seem to recognise changes to variables
 	$(Q)if [ "$(bool_ver_change)" = "y" ] && [ "$(strip $(val_remake_br_pack))" != "" ]; then \
 	    val_temp="$(val_remake_br_pack)"; \
 	    for val_temp2 in $$val_temp; do \
-	        echo -en "$(col_INFO)Do you want to re-compile package '$$val_temp2'? $(col_NORMAL)[$(col_DONE)Y$(col_NORMAL)/$(col_ERROR)N$(col_NORMAL)]"; \
+	        if [ "$$repeat" = "y" ]; then \
+	            $(subst @echo, echo, $(call heading, sub, Re-making package: $$val_temp2)); \
+	            $(MAKE) -C "$(src_dir_buildroot)" "$${val_temp2}-reconfigure"; \
+	            continue; \
+	        fi; \
+	        echo -en "$(col_FALSE)[Version changed] $(col_INFO)Do you want to re-compile package '$$val_temp2'? $(col_NORMAL)[$(col_DONE)[Y]es$(col_NORMAL)/$(col_FALSE)[N]o$(col_NORMAL)/$(col_INFO)[A]ll$(col_NORMAL)]"; \
 	        while true; do \
 	            read choice; \
 	            if [ "$$choice" = "N" ] || [ "$$choice" = "n" ]; then \
 	                break; \
-	            elif [ "$$choice" = "Y" ] || [ "$$choice" = "y" ]; then \
+	            elif [ "$$choice" = "Y" ] || [ "$$choice" = "y" ] || [ "$$choice" = "A" ] || [ "$$choice" = "a" ]  ; then \
 	                $(subst @echo, echo, $(call heading, sub, Re-making package: $$val_temp2)); \
 	                $(MAKE) -C "$(src_dir_buildroot)" "$${val_temp2}-reconfigure"; \
+	                echo > .recombr; \
+	                if [ "$$choice" = "A" ] || [ "$$choice" = "a" ] ; then \
+	                    repeat=y; \
+	                fi; \
 	                break; \
 	            fi; \
+	            echo -en "$(col_FALSE)Invalid option. Available options: $(col_NORMAL)[$(col_DONE)[Y]es$(col_NORMAL)/$(col_FALSE)[N]o$(col_NORMAL)/$(col_INFO)[A]ll$(col_NORMAL)]"; \
 	        done; \
 	    done; \
 	fi
@@ -325,22 +339,24 @@ main:
 	        $(eval val_changes += Buildroot's configuration (.config) changed\n)
         else
             # Invoke BR make if version changed & all other checks are clear
-	        $(Q)if [ "$(bool_ver_change)" = "y" ] && [ "$(strip $(val_remake_br_pack))" != "" ]; then \
-	            $(subst @echo, echo, $(call heading, sub, Making Buildroot (version changed))); \
-	            $(MAKE) -C "$(src_dir_buildroot)" $(OUT) || exit 1; \
-	        fi
+            ifeq ($(shell [ -f ".recombr" ] && echo y), y)
+	            $(call heading, sub, Making Buildroot (version changed))
+	            $(MAKE) -C "$(src_dir_buildroot)" $(OUT) || exit 1
+            endif
         endif
     endif
+    ifeq ($(shell [ -f ".recombr" ] && echo y), y)
+	    $(Q)rm ".recombr"
+    endif
 	$(call heading, sub, Extracting rootfs archive to '$(bin_dir_tmp)')
-	$(Q) pv -i 0.01 "$(src_dir_buildroot)/output/images/rootfs.tar" | $(val_superuser) tar -xf "-" -C "$(bin_dir_tmp)"
+	$(Q)pv -i 0.01 "$(src_dir_buildroot)/output/images/rootfs.tar" | $(val_superuser) tar -xf "-" -C "$(bin_dir_tmp)"
 #  -- Kernel --  #
 	@echo -e ""
-	$(call heading, main, Adding the linux kernel & kernel modules)
-	$(call heading, sub, Checking if kernel exists)
+	$(call heading, main, Adding the linux kernel)
     ifneq ($(shell [ -f "$(src_dir_linux)" ] && echo y), y)
 	    $(call stop, Kernel file doesn't exist in $(src_dir_linux). Ensure you gave the correct path to it by running menuconfig.)
     else
-	    $(call heading, sub, Checking kernel hash)
+	    $(call heading, sub, Comparing kernel hash)
         ifneq ($(shell "$(src_dir_scripts)/get_var.sh" "hash_kernel" "$(src_dir_conf)/variables.txt"), $(shell $(call get_hash, $(src_dir_linux))))
 	        $(call save_hash, hash_kernel, $(src_dir_linux))
 	        $(eval bool_do_update_count := y)
@@ -349,21 +365,23 @@ main:
     endif
 	$(call heading, sub, Copying kernel as '$(bin_dir_tmp)$(sys_dir_linux)')
 	$(Q)$(val_superuser) cp "$(src_dir_linux)" "$(bin_dir_tmp)$(sys_dir_linux)" $(OUT)
-#   - Kernel modules -  #
-    ifeq ($(shell [ -d "$(src_dir_modules)" ] && echo y), y)
-	    $(call heading, sub, Adding kernel modules)
-        ifneq ($(shell "$(src_dir_scripts)/get_var.sh" "hash_kernel_modules" "$(src_dir_conf)/variables.txt"), $(shell $(call get_hash_dir, $(src_dir_modules))))
-	        $(call heading, sub2, Kernel modules have been modified.)
-	        $(eval bool_do_update_count := y)
-	        $(eval val_changes += Kernel modules changed\n)
-	        $(call save_hash_dir, hash_kernel_modules, $(src_dir_modules))
-            # I don't want this to appear if message 'Kernel modules have been modified' did not appear bcz 'adding kernel modules' already does the job
-	        $(call heading, sub2, Copying kernel modules)
-        endif
-	    $(Q)$(val_superuser) cp -r "$(src_dir_modules)/." "$(bin_dir_tmp)/lib/modules"
-    endif
-#  -- sub-projects --  #
+#  -- Initramfs --  #
 	@echo -e ""
+	$(call heading, main, Adding initramfs)
+	$(call heading, sub, Checking hashes and file existance)
+    ifneq ($(shell [ -f "$(src_dir_initramfs)/init.cpio.zst" ] && [ "$(shell $(call get_hash_dir, $(src_dir_initramfs)/source))" = "$(shell "$(src_dir_scripts)/get_var.sh" "hash_initramfs" "$(src_dir_conf)/variables.txt")" ] && echo y),y)
+	    $(call heading, sub, Creating/re-creating init.cpio.zst)
+	    $(Q)cd "$(src_dir_initramfs)/source"; \
+	    find . | cpio -o -H newc --quiet | pv -i 0.01 -s $$(du -sb . | awk '{print $$1}') | zstd --force --quiet -o "../init.cpio.zst"
+	    $(call save_hash_dir, hash_initramfs, $(src_dir_initramfs)/source)
+	    $(eval bool_do_update_count := y)
+	    $(eval val_changes += init.cpio.zst did not exist or hash of source/ changed\n)
+    endif
+	$(call heading, sub, Copying init.cpio.zst as '$(bin_dir_tmp)$(sys_dir_initramfs)')
+	$(Q)$(val_superuser) cp "$(src_dir_initramfs)/init.cpio.zst" "$(bin_dir_tmp)$(sys_dir_initramfs)"
+#  -- Applications --  #
+	@echo -e ""
+	$(call heading, main, Installing applications)
     ifneq ($(app_dir_ohmyzsh),)
 	    $(call heading, main, Installing OhMyZSH)
 	    $(Q)$(val_superuser) ZSH="$(app_dir_ohmyzsh)" src_dir_ohmyzsh="$(val_current_dir)/$(src_dir_ohmyzsh)" sh cd $(bin_dir_tmp) && $(src_dir_ohmyzsh)/tools/install.sh $(OUT)
@@ -443,7 +461,8 @@ main:
 	gfxpayload=$(val_grub-boot_resolution) \n\
 	\n\
 	menuentry \"$(val_grub-entry-one_name)\" { \n\
-	    linux $(sys_dir_linux) root=$(val_grub-entry-one_li_root) $(val_grub-entry-one_li_params) \n\
+	    linux \"$(sys_dir_linux)\" root=$(val_grub-entry-one_li_root) $(val_grub-entry-one_li_params) \n\
+	    initrd \"$(sys_dir_initramfs)\" \n\
 	}\n"\
 	| $(val_superuser) tee "$(bin_dir_tmp)/boot/grub/grub.cfg" $(OUT)
 #   - Syslinux conf -   #
@@ -460,7 +479,8 @@ main:
 	$(Q)echo -e "\
 	LABEL $(val_grub-boot_default) \n\
 	    MENU LABEL $(val_grub-entry-one_name) \n\
-	    KERNEL $(sys_dir_linux) \n\
+	    KERNEL \"$(sys_dir_linux)\" \n\
+	    INITRD \"$(sys_dir_initramfs)\" \n\
 	    APPEND root=$(val_grub-entry-one_li_root) $(val_grub-entry-one_li_params) vga=$(val_sylin-entry-one_li_vga_mode)\n" \
 	| $(val_superuser) tee -a "$(bin_dir_tmp)/boot/syslinux/syslinux.cfg" $(OUT)
 #  -- Installing bootloaders --  #
@@ -477,7 +497,7 @@ main:
 	    $(call heading, main, Creating new disc image with GRUB)
 	    $(Q)grub-mkrescue -o "$(bin_dir_iso)" "$(bin_dir_tmp)" $(OUT)
     endif
-# Makefile's 'ifeq' conditions ain't working here for some reason
+    # Makefile's 'ifeq' conditions ain't working here for some reason
 	$(Q)if [ "$(bool_ver_change)" = "y" ]; then \
 	    $(subst @echo, echo, $(call heading, info, Saving version: $(MRAIN_VERSION))); \
 	    "$(src_dir_scripts)/set_var.sh" "ver_previous_mrain-sys" "$(MRAIN_VERSION)" "$(src_dir_conf)/variables.txt"; \
