@@ -32,11 +32,11 @@ info() {
 }
 
 ok() {
-    eval echo -e "$1: ${col_DONE}OK${col_NORMAL}" ${OUT}
+    eval echo -e '$1: ${col_DONE}OK${col_NORMAL}' ${OUT}
 }
 
 error() {
-    eval echo -e "${me}: $2: ${col_ERROR}$1${col_NORMAL}" >&2
+    eval echo -e '${me}: $2: ${col_ERROR}$1${col_NORMAL}' >&2
     exit 1
 }
 

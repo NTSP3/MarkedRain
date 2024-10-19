@@ -11,7 +11,7 @@
 # Fancy output functions
 error() {
     # colours aint showing in $(info) in makefile bruh
-    eval 'echo -e "${me}: $2: ${col_ERROR}$1${col_NORMAL}"'
+    eval echo -e '${me}: $2: ${col_ERROR}$1${col_NORMAL}'
     exit 1
 }
 

@@ -9,11 +9,11 @@
 
 # Fancy output functions
 info() {
-    eval echo -e "${col_INFO} ++ ${1} ++${col_NORMAL}  ::  ${col_FALSE}${me}${col_NORMAL}"
+    eval echo -e '${col_INFO} ++ ${1} ++${col_NORMAL}  ::  ${col_FALSE}${me}${col_NORMAL}'
 }
 
 error() {
-    eval echo -e "${me}: $2: ${col_ERROR}$1${col_NORMAL}"
+    eval echo -e '${me}: $2: ${col_ERROR}$1${col_NORMAL}'
     exit 1
 }
 
