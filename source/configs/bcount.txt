@@ -5,7 +5,11 @@
 # 23-6-2024 21:22
 #
 
-latest_next=79
+latest_next=83
+82 - 2024-10-19 18:58:37 : Initramfs edit 3
+81 - 2024-10-18 21:56:57 : Initramfs edit 2
+80 - 2024-10-18 21:51:17 : Initramfs recreated
+79 - 2024-10-18 15:11:14 : Initramfs test 1
 78 - 2024-10-13 13:01:24 : Linux Kernel : New configurations
 77 - 2024-10-02 20:23:57 : Removed unneccessary modules (6.3gb -> 73mb)
 76 - 2024-10-02 09:53:00 : Kernel DRM_PANIC test 1
