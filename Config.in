@@ -136,6 +136,14 @@ menu "Source configuration"
             that are used for the compiling and using
             procedures of the operating system.
 
+    config src_dir_initramfs
+        string "Initramfs source directory"
+        default "$[src_dir]/initramfs"
+        help
+            The initramfs is a compressed, temporary root filesystem
+            loaded into memory during boot which provides some
+            necessary items for mounting the real root filesystem.
+
     config src_dir_linux
         string "Linux kernel directory (bzImage file)"
         default "$[src_dir]/kernel/bzImage"
@@ -144,15 +152,6 @@ menu "Source configuration"
             image that's used in MRain OS. If you renamed
             the kernel directory or the bzImage file,
             change this value to point to that file.
-
-    config src_dir_modules
-        string "Linux kernel modules directory"
-        default "$[src_dir]/kernel/modules"
-        help
-            The linux kernel modules directory contains the
-            kernel modules to be used while booting MRain OS.
-            The kernel modules enable additional functionality
-            to the kernel that would otherwise be unavailable.
 
     config src_dir_ohmyzsh
         string "OhMyZsh source directory"
@@ -256,12 +255,20 @@ menu "Destination configuration"
             important files that are used by MRain OS.
 
     config sys_dir_linux
-        string "Linux kernel location & name in the final iso"
+        string "Linux kernel location"
         default "/boot/bzImage"
         help
             Enter the location to copy the linux kernel into in the iso
             image. This value would also be used to determine the kernel's
             location from the grub or extlinux config file.
+
+    config sys_dir_initramfs
+        string "Initramfs location"
+        default "/boot/init.cpio.zst"
+        help
+            Enter the location to copy the initramfs into in the iso
+            image.
+
     config bool_move_root
         bool "Move root directories into system directory"
         default y
@@ -273,6 +280,7 @@ menu "Destination configuration"
             When enabled, the init program will be set to where preinit
             is located. It will create the necessary symlinks to those
             directories and start the main init process.
+
         menu "New paths for root directories"
         depends on bool_move_root
             config sys_dir_newroot_etc
