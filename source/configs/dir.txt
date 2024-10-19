@@ -26,20 +26,20 @@ root/
 root/boot
 root/boot/grub
 root/boot/syslinux
-root/boot/ksysboot
-root/Program Files
-root/Program Files/system
-root/Users
-root/Users/Administrator
-root/System
-root/System/addons
-root/System/base
-root/System/base/modules
-root/System/global
-root/System/library
-root/System/library/services
-root/System/shared
-root/System/sysapps
-root/System/sysconf
-root/System/temp
-root/System/variable
+#root/boot/ksysboot
+#root/Program Files
+#root/Program Files/system
+#root/Users
+#root/Users/Administrator
+#root/System
+#root/System/addons
+#root/System/base
+#root/System/base/modules
+#root/System/global
+#root/System/library
+#root/System/library/services
+#root/System/shared
+#root/System/sysapps
+#root/System/sysconf
+#root/System/temp
+#root/System/variable
