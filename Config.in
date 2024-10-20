@@ -41,13 +41,15 @@ menu "Makefile customizations"
             bool_show_cmd_out.
 
     config bool_do_timeout
-        bool "Wait if another image already exist in the build directory"
+        bool "Wait if another ISO image with the same name already exists"
         default y
         help
             Set this option to true if you want Make to wait a few
             seconds specified in val_timeout_num if a file with
             the same location provided in bin_dir_iso already exists.
             Set this to false to compile without waiting.
+
+            Only takes effect if 'ISO=y' is passed to make.
 
         config val_timeout_num
             int "Seconds to waste time"
@@ -171,24 +173,35 @@ endmenu
 
 menu "Destination configuration"
     config bin_dir
-        string "Main output directory"
+        string "Memory-based output directory"
         default "bin"
         help
-            The main output directory can be used as
-            a base for any variables, by default it's
-            bin_dir_iso and bin_dir_tmp. Editing this
-            will only cause the "bin" directory to be
-            changed to your liking & no harm to the
-            OS created.
+            The memory-based output directory is a directory
+            in which the contents are not directly saved to
+            disk, but rather onto the memory. This is mainly
+            an effort to increase performance and reduce any
+            disk degradation.
+
+            It does this by creating a symlink to
+            '/dev/shm/mrain-bin'.
+
+            Any contents stored within it will be lost when the
+            computer loses power.
+
+            This directory would contain the latest ISO image
+            made, and its extracted contents (if bool_clean_dir_tmp
+            is disabled).
+
+            The name of the ISO image would be 'boot.iso'.
 
     config bin_dir_iso
         string "Location & name to output the ISO image"
-        default "$[bin_dir]/boot.iso"
+        default "builds/latest.iso"
         help
-            This variable contains the location and name
-            of the ISO file that will be made after the 
-            MRain OS finishes building.
-            The directory must already exist.
+            This is the location of the regular ISO Image that
+            is saved to disk.
+
+            This will only be used if 'ISO=y' is passed to make.
 
     config bin_dir_tmp
         string "Location to put temporary contents"
@@ -198,6 +211,19 @@ menu "Destination configuration"
             temporary files will reside. This location
             is mostly used to put the stuff in it into
             the iso image.
+
+            It is located within the memory-based folder
+            located in variable bin_dir by default.
+
+    config bool_clean_dir_tmp
+        bool "Clean the directory of temporary contents"
+        default y
+        help
+            Enable this if you want MRain to automatically
+            remove all contents of bin_dir_tmp, which may
+            free up some memory. If you are trying to diagnose
+            any issues of the final product, then you may want
+            to set this to N.
 
     comment "System paths & program target directories           "
     comment "----------------------------------------------------"
@@ -434,7 +460,7 @@ menu "Utilities"
 
     config util_vm_params
         string "Parameters to be sent to the Virtualization software"
-        default "-m 256M '$[bin_dir_iso]' -serial stdio"
+        default "-m 256M -serial stdio"
         help
             These parameters will be directly sent to the VM software
             by appending it to the end of its filename. Different
