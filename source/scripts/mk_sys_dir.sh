@@ -16,15 +16,15 @@ heading() {
 
 info() {
     if [ "$2" = "wait" ]; then
-        eval echo -en "${col_INFO}$1... ${col_NORMAL}" ${OUT}
+        eval echo -en '${col_INFO}$1... ${col_NORMAL}' ${OUT}
     elif [ "$1" = "ok" ]; then
         if [ -z $2 ]; then
-            eval echo -e "${col_DONE}OK${col_NORMAL}" ${OUT}
+            eval echo -e '${col_DONE}OK${col_NORMAL}' ${OUT}
         else
-            eval echo -e "${col_DONE}OK: $2${col_NORMAL}" ${OUT}
+            eval echo -e '${col_DONE}OK: $2${col_NORMAL}' ${OUT}
         fi
     elif [ "$3" = "stop" ]; then
-        eval echo -e "${col_ERROR}Fail${col_NORMAL}" ${OUT}
+        eval echo -e '${col_ERROR}Fail${col_NORMAL}' ${OUT}
         error "$1" "$2"
     else
         error "Specify an argument to me!" "info"
