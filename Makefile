@@ -68,12 +68,12 @@ define stat
 	@echo -n; \
 	val_temp='$(strip $(1))'; \
 	val_temp2=$${#val_temp}; \
-	if [ $$val_temp2 -gt 52 ] || [ $$((val_temp2 % 2)) -ne 0 ]; then \
-	    $(subst @echo, echo, $(call warn, Total length of characters ($$val_temp2) supplied to definition \"$(0)\" is greater than 52 or is not even.)); \
+	if [ $$val_temp2 -gt 60 ] || [ $$((val_temp2 % 2)) -ne 0 ]; then \
+	    $(subst @echo, echo, $(call warn, Total length of characters ($$val_temp2) supplied to definition \"$(0)\" is greater than 60 or is not even.)); \
 	else \
-	    val_temp2=$$(((52 - (val_temp2)) / 2)); \
+	    val_temp2=$$(((60 - (val_temp2)) / 2)); \
 	    val_temp2=$$(printf '%*s' "$$val_temp2"); \
-	    echo -e "$(col_INFO)               !**$$val_temp2$$val_temp$$val_temp2**!               $(col_NORMAL)"; \
+	    echo -e "$(col_INFO)         !** $$val_temp2$$val_temp$$val_temp2 **!         $(col_NORMAL)"; \
 	fi
 endef
 
@@ -84,12 +84,12 @@ define true
 	val_temp3='$(strip $(2))'; \
 	val_temp4=$${#val_temp3}; \
 	val_temp2=$$((val_temp2 + val_temp4)); \
-	if [ $$val_temp2 -gt 34 ] || [ $$((val_temp2 % 2)) -ne 0 ]; then \
-	    $(subst @echo, echo, $(call warn, Total length of characters ($$val_temp2) supplied to definition \"$(0)\" is greater than 34 or is not even.)); \
+	if [ $$val_temp2 -gt 42 ] || [ $$((val_temp2 % 2)) -ne 0 ]; then \
+	    $(subst @echo, echo, $(call warn, Total length of characters ($$val_temp2) supplied to definition \"$(0)\" is greater than 42 or is not even.)); \
 	else \
-	    val_temp2=$$(((52 - (val_temp2 + 4 + 14)) / 2)); \
+	    val_temp2=$$(((60 - (val_temp2 + 4 + 14)) / 2)); \
 	    val_temp2=$$(printf '%*s' "$$val_temp2"); \
-	    echo -e "$(col_TRUE)               !**$$val_temp2$$val_temp ($$val_temp3) is set to true$$val_temp2**!               $(col_NORMAL)"; \
+	    echo -e "$(col_TRUE)         !** $$val_temp2$$val_temp ($$val_temp3) is set to true$$val_temp2 **!         $(col_NORMAL)"; \
 	fi
 endef
 
@@ -100,12 +100,12 @@ define false
 	val_temp3='$(strip $(2))'; \
 	val_temp4=$${#val_temp3}; \
 	val_temp2=$$((val_temp2 + val_temp4)); \
-	if [ $$val_temp2 -gt 40 ] || [ $$((val_temp2 % 2)) -ne 0 ]; then \
-	    $(subst @echo, echo, $(call warn, Total length of characters ($$val_temp2) supplied to definition \"$(0)\" is greater than 40 or is not even.)); \
+	if [ $$val_temp2 -gt 48 ] || [ $$((val_temp2 % 2)) -ne 0 ]; then \
+	    $(subst @echo, echo, $(call warn, Total length of characters ($$val_temp2) supplied to definition \"$(0)\" is greater than 48 or is not even.)); \
 	else \
-	    val_temp2=$$(((52 - (val_temp2 + 4 + 8)) / 2)); \
+	    val_temp2=$$(((60 - (val_temp2 + 4 + 8)) / 2)); \
 	    val_temp2=$$(printf '%*s' "$$val_temp2"); \
-	    echo -e "$(col_FALSE)               !**$$val_temp2$$val_temp ($$val_temp3) is false$$val_temp2**!               $(col_NORMAL)"; \
+	    echo -e "$(col_FALSE)         !** $$val_temp2$$val_temp ($$val_temp3) is false$$val_temp2 **!         $(col_NORMAL)"; \
 	fi
 endef
 
@@ -151,7 +151,7 @@ define heading
 endef
 
 # ---[ Global ]--- #
-$(info $(shell echo -e "$(col_INFO)               +++++++++++++++++ MRain Operating System +++++++++++++++++               $(col_NORMAL)"))
+$(info $(shell echo -e "$(col_INFO)         ++++++++++++++++++++++ MRain Operating System ++++++++++++++++++++++         $(col_NORMAL)"))
 ifeq ($(bool_show_cmd), y)
     $(info $(shell $(subst @echo, echo, $(call true, ShowCommand, bool_show_cmd))))
     export Q :=
@@ -210,17 +210,25 @@ config:
 # --- Default --- #
 .PHONY: all
 all: main
-	@echo -e ""
+	@echo ""
 	@width=$$(tput cols); \
 	for i in $$(seq 1 $$width); do \
 	    printf "$(col_DONE)-"; \
 	done; \
 	printf "$(col_NORMAL)\n"
-	@echo -e ""
-	$(call ok,    // The iso is now ready. You can find it in '$(bin_dir_iso)' //    )
-	$(call ok,    // Use 'make run' if you want to run this iso image now  //    )
-	$(call ok,    // Use 'make runs' if you want to automatically open the iso in $(util_vm) //    )
-	@echo -e ""
+	@echo ""
+    ifeq ($(ISO), y)
+	    $(call ok,    // The ISO is now ready. You can find it in '$(bin_dir_iso)' //    )
+	    @echo -e "$(col_FALSE)    // 'make run' & 'make runs' do not have support for ISO image in '$(bin_dir_iso)' by default //    $(col_NORMAL)"
+    else
+	    $(call ok,    // The temporary image is now ready. You can find it as '$(bin_dir)/boot.iso' //    )
+	    $(call ok,    // Use 'make run' if you want to run this ISO image now  //    )
+	    $(call ok,    // Use 'make runs' if you want to automatically open the ISO in $(util_vm) //    )
+	    @echo ""
+	    $(call ok,    // Run 'make' with parameter 'ISO=y' if you want to create a persistant ISO image in '$(bin_dir_iso)' //    )
+		@echo -e "$(col_FALSE)    // 'make run' & 'make runs' do not have support for ISO image in '$(bin_dir_iso)' by default //    $(col_NORMAL)"
+    endif
+	@echo ""
 
 # --- Main compiling procedure --- #
 .PHONY: main
@@ -234,27 +242,25 @@ main:
 	    @echo -e "$(col_FALSE)               !**           Configuration file isn't found           **!               $(col_NORMAL)"
 	    $(call stop, .config.mk is not found. Run 'make menuconfig', save it & try again)
     endif
-    ifeq ($(shell [ -f "$(bin_dir_iso)" ] && echo y), y)
-        ifeq ($(bool_do_timeout), y)
-	        $(call true, Wait a minute, bool_do_timeout)
-	        @echo -e ""
-	        @echo -e "$(col_INFO) The file specified in 'bin_dir_iso' is $(bin_dir_iso), which is a file that already exists."
-	        @echo -e " Some grace time has been given for you, if you need to save the current file for whatever purpose."
-	        @echo -e " Press $(col_NORMAL)$(col_ERROR)CTRL-C$(col_NORMAL)$(col_INFO) to cancel NOW. Pressing literally any other key will skip this countdown."
-	        @echo -e ""
-	        @echo -e " You can turn this off by setting 'bool_do_timeout' to false, or you can set 'val_timeout_num'"
-		    @echo -e " to a lower number, if you find this annoying (which it probably is, but I want it)."
-	        @echo -e ""
-	        $(Q)for i in $$(seq $(val_timeout_num) -1 1); do \
-	            echo -en "\r$(col_INFO) You have $(col_NORMAL)$(col_ERROR)$$i$(col_NORMAL)$(col_INFO) seconds left $(col_NORMAL)"; \
-	            if ( read -n 1 -t 1 key </dev/tty 2>/dev/null ); then \
-	                break; \
-	            fi; \
-	        done
-	        @echo -e ""
-        else
-	        $(call false, Wait a minute, bool_do_timeout)
-        endif
+    ifeq ($(shell [ -f "$(bin_dir_iso)" ] && [ "$(ISO)" = "y" ] && [ "$(bool_do_timeout)" = "y" ] && echo y), y)
+	    $(call true, Wait a minute, bool_do_timeout)
+	    @echo -e ""
+	    @echo -e "$(col_INFO) The file specified in 'bin_dir_iso' is '$(bin_dir_iso)', which is a file that already exists."
+	    @echo -e " Some grace time has been given for you, if you need to save the current file for whatever purpose."
+	    @echo -e " Press $(col_NORMAL)$(col_ERROR)CTRL-C$(col_NORMAL)$(col_INFO) to cancel NOW. Pressing literally any other key will skip this countdown."
+	    @echo -e ""
+	    @echo -e " You can turn this off by setting 'bool_do_timeout' to false, or you can set 'val_timeout_num'"
+		@echo -e " to a lower number, if you find this annoying (which it probably is, but I want it)."
+	    @echo -e "$(col_NORMAL)"
+	    $(Q)for i in $$(seq $(val_timeout_num) -1 1); do \
+	        echo -en "\r$(col_INFO) You have $(col_NORMAL)$(col_ERROR)$$i$(col_NORMAL)$(col_INFO) seconds left $(col_NORMAL)"; \
+	        if ( read -n 1 -t 1 key </dev/tty 2>/dev/null ); then \
+	            break; \
+	        fi; \
+	    done
+	    @echo -e ""
+    else
+	    $(call false, Wait a minute, bool_do_timeout)
     endif
 #  -- Compare MRain version --  #
 	$(call stat, Comparing MarkedRain version)
@@ -263,10 +269,12 @@ main:
 	    $(eval bool_ver_change := y)
     endif
 #  -- Clean --  #
-	$(call cleancode)
+	@$(call cleancode)
 #  -- Directories --  #
-	$(call heading, info, $(col_TRUE)Creating image directory)
-	$(Q)mkdir -p "$(bin_dir)" "$(bin_dir_tmp)"
+	$(call heading, info, $(col_OK)Setting up temporary directories)
+	$(Q)mkdir -p "/dev/shm/mrain-bin"
+	$(Q)ln -s /dev/shm/mrain-bin "$(bin_dir)"
+	$(Q)mkdir -p "$(bin_dir_tmp)"
 	$(call heading, main, Creating system directories)
 	$(Q)"$(src_dir_scripts)/mk_sys_dir.sh" "$(src_dir_conf)/dir.txt" "$(bin_dir_tmp)"
 #  -- Buildroot --  #
@@ -332,7 +340,7 @@ main:
 	    $(Q)rm ".recombr"
     endif
 	$(call heading, sub, Extracting rootfs archive to '$(bin_dir_tmp)')
-	$(Q)pv -i 0.01 "$(src_dir_buildroot)/output/images/rootfs.tar" | $(val_superuser) tar -xf "-" -C "$(bin_dir_tmp)"
+	$(Q)pv -i 0.01 "$(src_dir_buildroot)/output/images/rootfs.tar" | tar -xf "-" -C "$(bin_dir_tmp)"
 #  -- Kernel --  #
 	@echo -e ""
 	$(call heading, main, Adding the linux kernel)
@@ -347,7 +355,7 @@ main:
         endif
     endif
 	$(call heading, sub, Copying kernel as '$(bin_dir_tmp)$(sys_dir_linux)')
-	$(Q)$(val_superuser) cp "$(src_dir_linux)" "$(bin_dir_tmp)$(sys_dir_linux)" $(OUT)
+	$(Q)cp "$(src_dir_linux)" "$(bin_dir_tmp)$(sys_dir_linux)" $(OUT)
 #  -- Initramfs --  #
 	@echo -e ""
 	$(call heading, main, Adding initramfs)
@@ -361,13 +369,13 @@ main:
 	    $(eval val_changes += init.cpio.zst did not exist or hash of source/ changed\n)
     endif
 	$(call heading, sub, Copying init.cpio.zst as '$(bin_dir_tmp)$(sys_dir_initramfs)')
-	$(Q)$(val_superuser) cp "$(src_dir_initramfs)/init.cpio.zst" "$(bin_dir_tmp)$(sys_dir_initramfs)"
+	$(Q)cp "$(src_dir_initramfs)/init.cpio.zst" "$(bin_dir_tmp)$(sys_dir_initramfs)"
 #  -- Applications --  #
 	@echo -e ""
 	$(call heading, main, Installing applications)
     ifneq ($(app_dir_ohmyzsh),)
-	    $(call heading, main, Installing OhMyZSH)
-	    $(Q)$(val_superuser) ZSH="$(app_dir_ohmyzsh)" src_dir_ohmyzsh="$(val_current_dir)/$(src_dir_ohmyzsh)" sh cd $(bin_dir_tmp) && $(src_dir_ohmyzsh)/tools/install.sh $(OUT)
+	    $(call heading, sub, Installing OhMyZSH)
+	    $(Q)ZSH="$(app_dir_ohmyzsh)" src_dir_ohmyzsh="$(val_current_dir)/$(src_dir_ohmyzsh)" sh cd $(bin_dir_tmp) && $(src_dir_ohmyzsh)/tools/install.sh $(OUT)
     endif
 #  -- Finalization --  #
 	@echo -e ""
@@ -408,7 +416,7 @@ main:
 	        fi \n\
 	    }\n"\
 	    | sed 's/^    //' \
-	    | $(val_superuser) tee -a "$(bin_dir_tmp)/etc/profile" $(OUT)
+	    | tee -a "$(bin_dir_tmp)/etc/profile" $(OUT)
 	    $(call heading, sub2, Command aliases)
 	    $(Q)echo -e "\
 	    # Great command aliases \n\
@@ -431,11 +439,11 @@ main:
 	    alias rd='rm -ri' \n\
 	    alias vdir='vdir --color=auto' \n"\
 	    | sed 's/^    //' \
-	    | $(val_superuser) tee -a "$(bin_dir_tmp)/etc/profile" $(OUT)
+	    | tee -a "$(bin_dir_tmp)/etc/profile" $(OUT)
     endif
 #   - zsh conf -   #
 	$(call heading, sub, Zsh config)
-	$(Q)echo "[[ -f /etc/profile ]] && source /etc/profile" | $(val_superuser) tee -a "$(bin_dir_tmp)/etc/zshenv" $(OUT)
+	$(Q)echo "[[ -f /etc/profile ]] && source /etc/profile" | tee -a "$(bin_dir_tmp)/etc/zshenv" $(OUT)
 #   - GNU/Grub conf -   #
 	$(call heading, sub, Grub boot config)
 	$(Q)echo -e "\
@@ -447,17 +455,17 @@ main:
 	    linux \"$(sys_dir_linux)\" root=$(val_grub-entry-one_li_root) $(val_grub-entry-one_li_params) \n\
 	    initrd \"$(sys_dir_initramfs)\" \n\
 	}\n"\
-	| $(val_superuser) tee "$(bin_dir_tmp)/boot/grub/grub.cfg" $(OUT)
+	| tee "$(bin_dir_tmp)/boot/grub/grub.cfg" $(OUT)
 #   - Syslinux conf -   #
 	$(call heading, sub, Syslinux config)
 	$(Q)echo -e "\
 	DEFAULT $(val_grub-boot_default) \n\
 	PROMPT 1" \
-	| $(val_superuser) tee $(bin_dir_tmp)/boot/syslinux/syslinux.cfg $(OUT)
+	| tee $(bin_dir_tmp)/boot/syslinux/syslinux.cfg $(OUT)
 	$(Q)if [ $(val_grub-boot_timeout) -gt 0 ]; then \
-	    $(val_superuser) bash -c 'echo "TIMEOUT $(val_grub-boot_timeout)0" >> $(bin_dir_tmp)/boot/syslinux/syslinux.cfg'; \
+	    bash -c 'echo "TIMEOUT $(val_grub-boot_timeout)0" >> $(bin_dir_tmp)/boot/syslinux/syslinux.cfg'; \
 	else \
-	    $(val_superuser) bash -c 'echo "TIMEOUT 01" >> $(bin_dir_tmp)/boot/syslinux/syslinux.cfg'; \
+	    bash -c 'echo "TIMEOUT 01" >> $(bin_dir_tmp)/boot/syslinux/syslinux.cfg'; \
 	fi
 	$(Q)echo -e "\
 	LABEL $(val_grub-boot_default) \n\
@@ -465,11 +473,16 @@ main:
 	    KERNEL \"$(sys_dir_linux)\" \n\
 	    INITRD \"$(sys_dir_initramfs)\" \n\
 	    APPEND root=$(val_grub-entry-one_li_root) $(val_grub-entry-one_li_params) vga=$(val_sylin-entry-one_li_vga_mode)\n" \
-	| $(val_superuser) tee -a "$(bin_dir_tmp)/boot/syslinux/syslinux.cfg" $(OUT)
+	| tee -a "$(bin_dir_tmp)/boot/syslinux/syslinux.cfg" $(OUT)
 #  -- Installing GRUB --  #
 	@echo -e ""
 	$(call heading, main, Creating new disc image with GRUB)
-	$(Q)grub-mkrescue -o "$(bin_dir_iso)" "$(bin_dir_tmp)" $(OUT)
+    ifeq (ISO, y)
+	    $(Q)grub-mkrescue -o "$(bin_dir_iso)" "$(bin_dir_tmp)" $(OUT)
+    else
+	    $(Q)mkdir -p "builds"
+	    $(Q)grub-mkrescue -o "$(bin_dir)/boot.iso" "$(bin_dir_tmp)" $(OUT)
+    endif
 #  -- Version updation --  #
     # Makefile's 'ifeq' conditions ain't working here for some reason
 	$(Q)if [ "$(bool_ver_change)" = "y" ]; then \
@@ -487,18 +500,23 @@ main:
 	fi
 	@echo -e ""
 #  -- Automatic cleaning --  #
-	$(call heading, info, $(col_FALSE)Cleaning temporary files)
-	$(Q)rm -rf "$(bin_dir_tmp)/*"
+    ifeq ($(bool_clean_dir_tmp), y)
+	    $(call true, Wipe temporary directory, bool_clean_dir_tmp)
+	    $(call heading, info, $(col_FALSE)Cleaning temporary files)
+	    $(Q)rm -rf "$(bin_dir_tmp)"/*
+    else
+	    $(call false, Clean temporary directory, bool_clean_dir_tmp)
+    endif
 
 # --- Run --- #
 .PHONY: run runs
 run:
-    ifeq ($(shell [ -f "$(bin_dir_iso)" ] && echo y), y)
+    ifeq ($(shell [ -f "$(bin_dir)/boot.iso" ] && echo y), y)
 	    @echo -e ""
-	    $(call ok,    // Now running '$(bin_dir_iso)' using '$(util_vm)' and parameters '$(shell echo -n $(util_vm_params))' //    )
-	    $(Q)"$(util_vm)" $(shell echo -n $(util_vm_params))
+	    $(call ok,    // Now running '$(bin_dir)/boot.iso' using '$(util_vm)' and parameters '$(util_vm_params)' //    )
+	    $(Q)"$(util_vm)" "$(bin_dir)/boot.iso" $(shell echo -n $(util_vm_params))
     else
-	    $(call stop, Supplied file '$(bin_dir_iso)' doesn't exist. Make sure you ran 'make' and check if the file specified in bin_dir_iso is correct.)
+	    $(call stop, Supplied file '$(bin_dir)/boot.iso' doesn't exist. Make sure you ran 'make', and try again.)
     endif
 	@echo -e ""
 
@@ -507,15 +525,11 @@ runs: main run
 # --- Clean --- #
 .PHONY: clean
 clean:
-	$(call cleancode)
+	@$(call cleancode)
 
 define cleancode
-	$(Q)if mountpoint -q "$(bin_dir_tmp)"; then \
-	    $(subst @echo, echo, $(call heading, info, $(col_FALSE)Unmounting '$(bin_dir_tmp)')); \
-		sudo umount "$(bin_dir_tmp)" $(OUT) || exit 1; \
-	fi; \
 	$(subst @echo, echo, $(call heading, info, $(col_FALSE)Deleting directories and image)); \
-	rm -rf "$(bin_dir_tmp)" "$(bin_dir_iso)" "$(bin_dir)"
+	rm -rf "$(bin_dir_tmp)" "$(bin_dir)/boot.iso" "$(bin_dir)"
 endef
 
 # --- Clean all stuff --- #
@@ -527,7 +541,7 @@ cleanall:
 	@echo -e "$(col_INFO)  Press "Y" and enter to continue, any other key will terminate.$(col_NORMAL)"
 	$(Q)read choice; \
 	if [ "$$choice" = "Y" ] || [ "$$choice" = "y" ]; then \
-	    $(subst @if, if, $(call cleancode)); \
+	    $(call cleancode); \
 	    $(subst @echo, echo, $(call heading, info, $(col_FALSE)Cleaning buildroot)); \
 	    $(MAKE) -C "$(src_dir_buildroot)" clean $(OUT) || exit 1; \
 	    echo -e ""; \
