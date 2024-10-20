@@ -6,8 +6,8 @@
 # MarkedRain | 16th of June, 2024 at 20:46 like someone cares
 #
 
-# MarkedRain directories
-bin/
+# MarkedRain directories & symlinks
+bin
 builds/
 
 # MarkedRain files
