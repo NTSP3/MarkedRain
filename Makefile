@@ -235,9 +235,9 @@ main:
 	    $(call warn, .config file is not found. Settings in menuconfig may not reflect the current settings.)
     endif
     ifeq ($(shell [ -f ".config.mk" ] && echo y), y)
-	    @echo "$(col_TRUE)               !**              Configuration file found              **!               $(col_NORMAL)"
+	    @echo "$(col_TRUE)         !**                   Configuration file found                   **!         $(col_NORMAL)"
     else
-	    @echo "$(col_FALSE)               !**           Configuration file isn't found           **!               $(col_NORMAL)"
+	    @echo "$(col_FALSE)         !**                Configuration file isn't found                **!         $(col_NORMAL)"
 	    $(call stop, .config.mk is not found. Run 'make menuconfig', save it & try again)
     endif
     ifeq ($(shell [ -f "$(bin_dir_iso)" ] && [ "$(ISO)" = "y" ] && [ "$(bool_do_timeout)" = "y" ] && echo y), y)
