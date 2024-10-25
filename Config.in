@@ -215,22 +215,27 @@ menu "Destination configuration"
             It is located within the memory-based folder
             located in variable bin_dir by default.
 
+    config bin_dir_tmp_squashfs
+        string "Location to put SquashFS temporary archive"
+        default "$[bin_dir]/squashfs"
+        help
+            This variable contains the location where
+            the files used to create the SquashFS image
+            specified in sys_dir_squashfs reside.
+
+            It is located within the memory-based folder
+            located in variable bin_dir by default.
+
     config bool_clean_dir_tmp
         bool "Clean the directory of temporary contents"
         default y
         help
             Enable this if you want MRain to automatically
-            remove all contents of bin_dir_tmp, which may
-            free up some memory. If you are trying to diagnose
-            any issues of the final product, then you may want
-            to set this to N.
+            remove all contents of bin_dir_tmp &
+            bin_dir_tmp_squashfs, which may free up some memory.
+            If you are trying to diagnose any issues of the final
+            product, then you may want to set this to N.
 
-    comment "System paths & program target directories           "
-    comment "----------------------------------------------------"
-    comment "If you edit any of the path names for directories,  "
-    comment "you must update source/configs/dir.txt with the new "
-    comment "directory name, otherwise it will complain about it "
-    comment "not existing.                                       "
     config sys_dir_apps
         string "Programs directory"
         default "/Program Files"
@@ -284,6 +289,15 @@ menu "Destination configuration"
         help
             Enter the location to copy the initramfs into in the iso
             image.
+            
+    config sys_dir_squashfs
+        string "SquashFS archive location"
+        default "/boot/system.squashfs"
+        help
+            Enter the location to create the SquashFS archive in the iso
+            image. SquashFS is a compressed read-only format that serves
+            as the lower layer for overlayfs, which is used to create a
+            system that is stored on memory.
 
     config bool_move_root
         bool "Move root directories into system directory"
