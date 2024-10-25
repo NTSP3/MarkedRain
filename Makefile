@@ -18,8 +18,6 @@ col_ERROR				:= \e[1;91m
 col_IMP					:= \e[1;37;41m
 col_NORMAL				:= \e[0m
 export col_HEADING col_SUBHEADING col_INFOHEADING col_INFO col_TRUE col_FALSE col_DONE col_ERROR col_IMP col_NORMAL
-#  --[ Command shell ]-- #
-SHELL					:= /bin/bash
 #  --[ Others ]--  #
 val_target				:= $(MAKECMDGOALS)#    # Gets the target that the user invoked
 val_current_dir			:= $(shell pwd)#       # Gets the current working director
@@ -51,16 +49,16 @@ endef
 
 #  --[ Exceptional message printers ]--  #
 define stop
-	@echo -e "\n$(col_IMP)STOP:$(col_NORMAL)$(col_ERROR) $(strip $(1))$(col_NORMAL)\n" >&2
+	@echo "\n$(col_IMP)STOP:$(col_NORMAL)$(col_ERROR) $(strip $(1))$(col_NORMAL)\n" >&2
 	$(Q)false
 endef
 
 define warn
-	@echo -e "$(col_ERROR)  Warning:$(col_NORMAL)$(col_FALSE) $(strip $(1))$(col_NORMAL)" >&2
+	@echo "$(col_ERROR)  Warning:$(col_NORMAL)$(col_FALSE) $(strip $(1))$(col_NORMAL)" >&2
 endef
 
 define ok
-	@echo -e "$(col_DONE)$(1)$(col_NORMAL)"
+	@echo "$(col_DONE)$(1)$(col_NORMAL)"
 endef
 
 #  --[ Common message printers ]--  #
@@ -73,7 +71,7 @@ define stat
 	else \
 	    val_temp2=$$(((60 - (val_temp2)) / 2)); \
 	    val_temp2=$$(printf '%*s' "$$val_temp2"); \
-	    echo -e "$(col_INFO)         !** $$val_temp2$$val_temp$$val_temp2 **!         $(col_NORMAL)"; \
+	    echo "$(col_INFO)         !** $$val_temp2$$val_temp$$val_temp2 **!         $(col_NORMAL)"; \
 	fi
 endef
 
@@ -89,7 +87,7 @@ define true
 	else \
 	    val_temp2=$$(((60 - (val_temp2 + 4 + 14)) / 2)); \
 	    val_temp2=$$(printf '%*s' "$$val_temp2"); \
-	    echo -e "$(col_TRUE)         !** $$val_temp2$$val_temp ($$val_temp3) is set to true$$val_temp2 **!         $(col_NORMAL)"; \
+	    echo "$(col_TRUE)         !** $$val_temp2$$val_temp ($$val_temp3) is set to true$$val_temp2 **!         $(col_NORMAL)"; \
 	fi
 endef
 
@@ -105,22 +103,22 @@ define false
 	else \
 	    val_temp2=$$(((60 - (val_temp2 + 4 + 8)) / 2)); \
 	    val_temp2=$$(printf '%*s' "$$val_temp2"); \
-	    echo -e "$(col_FALSE)         !** $$val_temp2$$val_temp ($$val_temp3) is false$$val_temp2 **!         $(col_NORMAL)"; \
+	    echo "$(col_FALSE)         !** $$val_temp2$$val_temp ($$val_temp3) is false$$val_temp2 **!         $(col_NORMAL)"; \
 	fi
 endef
 
 ifeq ($(bool_use_old_headings), y)
     define script_heading
 	    if [ "<type>" = "imp" ]; then \
-	        echo -e "\e[1;37;41m    !! <message> !!    \e[0m"; \
+	        echo "\e[1;37;41m    !! <message> !!    \e[0m"; \
 	    elif [ "<type>" = "main" ]; then \
-	        echo -e "\e[95m    // <message> //\e[0m"; \
+	        echo "\e[95m    // <message> //\e[0m"; \
 	    elif [ "<type>" = "sub" ]; then \
-	        echo -e "\e[38;5;206m     / <message> /\e[0m"; \
+	        echo "\e[38;5;206m     / <message> /\e[0m"; \
 	    elif [ "<type>" = "sub2" ]; then \
-	        echo -e "$(col_SUBHEADING)  -+ <message> +-  $(col_NORMAL)"; \
+	        echo "$(col_SUBHEADING)  -+ <message> +-  $(col_NORMAL)"; \
 	    elif [ "<type>" = "info" ]; then \
-	        echo -e "\e[36m    // <message>\e[36m //\e[0m"; \
+	        echo "\e[36m    // <message>\e[36m //\e[0m"; \
 	    else \
 	        $(subst @echo, echo, $(call warn, Definition \"script_heading\" doesn't know what '<type>' means.)); \
 	    fi
@@ -128,15 +126,15 @@ ifeq ($(bool_use_old_headings), y)
 else
     define script_heading
 	    if [ "<type>" = "imp" ]; then \
-	        echo -e "$(col_IMP) !! <message> !! $(col_NORMAL)"; \
+	        echo "$(col_IMP) !! <message> !! $(col_NORMAL)"; \
 	    elif [ "<type>" = "main" ]; then \
-	        echo -e "$(col_HEADING)---[ <message> ]---$(col_NORMAL)"; \
+	        echo "$(col_HEADING)---[ <message> ]---$(col_NORMAL)"; \
 	    elif [ "<type>" = "sub" ]; then \
-	        echo -e "$(col_SUBHEADING) --+ <message> +-- $(col_NORMAL)"; \
+	        echo "$(col_SUBHEADING) --+ <message> +-- $(col_NORMAL)"; \
 	    elif [ "<type>" = "sub2" ]; then \
-	        echo -e "$(col_SUBHEADING)  -+ <message> +-  $(col_NORMAL)"; \
+	        echo "$(col_SUBHEADING)  -+ <message> +-  $(col_NORMAL)"; \
 	    elif [ "<type>" = "info" ]; then \
-	        echo -e "$(col_INFOHEADING) ++ <message>$(col_NORMAL)$(col_INFOHEADING) ++ $(col_NORMAL)"; \
+	        echo "$(col_INFOHEADING) ++ <message>$(col_NORMAL)$(col_INFOHEADING) ++ $(col_NORMAL)"; \
 	    else \
 	        $(subst @echo, echo, $(call warn, Definition \"script_heading\" doesn't know what '<type>' means.)); \
 	    fi
@@ -151,7 +149,7 @@ define heading
 endef
 
 # ---[ Global ]--- #
-$(info $(shell echo -e "$(col_INFO)         ++++++++++++++++++++++ MRain Operating System ++++++++++++++++++++++         $(col_NORMAL)"))
+$(info $(shell echo "$(col_INFO)         ++++++++++++++++++++++ MRain Operating System ++++++++++++++++++++++         $(col_NORMAL)"))
 ifeq ($(bool_show_cmd), y)
     $(info $(shell $(subst @echo, echo, $(call true, ShowCommand, bool_show_cmd))))
     export Q :=
@@ -219,14 +217,14 @@ all: main
 	@echo ""
     ifeq ($(ISO), y)
 	    $(call ok,    // The ISO is now ready. You can find it in '$(bin_dir_iso)' //    )
-	    @echo -e "$(col_FALSE)    // 'make run' & 'make runs' do not have support for ISO image in '$(bin_dir_iso)' by default //    $(col_NORMAL)"
+	    @echo "$(col_FALSE)    // 'make run' & 'make runs' do not have support for ISO image in '$(bin_dir_iso)' by default //    $(col_NORMAL)"
     else
 	    $(call ok,    // The temporary image is now ready. You can find it as '$(bin_dir)/boot.iso' //    )
 	    $(call ok,    // Use 'make run' if you want to run this ISO image now  //    )
 	    $(call ok,    // Use 'make runs' if you want to automatically open the ISO in $(util_vm) //    )
 	    @echo ""
 	    $(call ok,    // Run 'make' with parameter 'ISO=y' if you want to create a persistant ISO image in '$(bin_dir_iso)' //    )
-		@echo -e "$(col_FALSE)    // 'make run' & 'make runs' do not have support for ISO image in '$(bin_dir_iso)' by default //    $(col_NORMAL)"
+		@echo "$(col_FALSE)    // 'make run' & 'make runs' do not have support for ISO image in '$(bin_dir_iso)' by default //    $(col_NORMAL)"
     endif
 	@echo ""
 
@@ -237,28 +235,28 @@ main:
 	    $(call warn, .config file is not found. Settings in menuconfig may not reflect the current settings.)
     endif
     ifeq ($(shell [ -f ".config.mk" ] && echo y), y)
-	    @echo -e "$(col_TRUE)               !**              Configuration file found              **!               $(col_NORMAL)"
+	    @echo "$(col_TRUE)               !**              Configuration file found              **!               $(col_NORMAL)"
     else
-	    @echo -e "$(col_FALSE)               !**           Configuration file isn't found           **!               $(col_NORMAL)"
+	    @echo "$(col_FALSE)               !**           Configuration file isn't found           **!               $(col_NORMAL)"
 	    $(call stop, .config.mk is not found. Run 'make menuconfig', save it & try again)
     endif
     ifeq ($(shell [ -f "$(bin_dir_iso)" ] && [ "$(ISO)" = "y" ] && [ "$(bool_do_timeout)" = "y" ] && echo y), y)
 	    $(call true, Wait a minute, bool_do_timeout)
-	    @echo -e ""
-	    @echo -e "$(col_INFO) The file specified in 'bin_dir_iso' is '$(bin_dir_iso)', which is a file that already exists."
-	    @echo -e " Some grace time has been given for you, if you need to save the current file for whatever purpose."
-	    @echo -e " Press $(col_NORMAL)$(col_ERROR)CTRL-C$(col_NORMAL)$(col_INFO) to cancel NOW. Pressing literally any other key will skip this countdown."
-	    @echo -e ""
-	    @echo -e " You can turn this off by setting 'bool_do_timeout' to false, or you can set 'val_timeout_num'"
-		@echo -e " to a lower number, if you find this annoying (which it probably is, but I want it)."
-	    @echo -e "$(col_NORMAL)"
+	    @echo ""
+	    @echo "$(col_INFO) The file specified in 'bin_dir_iso' is '$(bin_dir_iso)', which is a file that already exists."
+	    @echo " Some grace time has been given for you, if you need to save the current file for whatever purpose."
+	    @echo " Press $(col_NORMAL)$(col_ERROR)CTRL-C$(col_NORMAL)$(col_INFO) to cancel NOW. Pressing literally any other key will skip this countdown."
+	    @echo ""
+	    @echo " You can turn this off by setting 'bool_do_timeout' to false, or you can set 'val_timeout_num'"
+		@echo " to a lower number, if you find this annoying (which it probably is, but I want it)."
+	    @echo "$(col_NORMAL)"
 	    $(Q)for i in $$(seq $(val_timeout_num) -1 1); do \
-	        echo -en "\r$(col_INFO) You have $(col_NORMAL)$(col_ERROR)$$i$(col_NORMAL)$(col_INFO) seconds left $(col_NORMAL)"; \
+	        echo -n "\r$(col_INFO) You have $(col_NORMAL)$(col_ERROR)$$i$(col_NORMAL)$(col_INFO) seconds left $(col_NORMAL)"; \
 	        if ( read -n 1 -t 1 key </dev/tty 2>/dev/null ); then \
 	            break; \
 	        fi; \
 	    done
-	    @echo -e ""
+	    @echo ""
     else
 	    $(call false, Wait a minute, bool_do_timeout)
     endif
@@ -274,11 +272,12 @@ main:
 	$(call heading, info, $(col_OK)Setting up temporary directories)
 	$(Q)mkdir -p "/dev/shm/mrain-bin"
 	$(Q)ln -s /dev/shm/mrain-bin "$(bin_dir)"
-	$(Q)mkdir -p "$(bin_dir_tmp)"
+	$(Q)mkdir -p "$(bin_dir_tmp)" "$(bin_dir_tmp_squashfs)"
 	$(call heading, main, Creating system directories)
-	$(Q)"$(src_dir_scripts)/mk_sys_dir.sh" "$(src_dir_conf)/dir.txt" "$(bin_dir_tmp)"
+	$(Q)mkdir -p "$(bin_dir_tmp)/boot" "$(bin_dir_tmp)/boot/grub" "$(bin_dir_tmp)/boot/syslinux"
+	$(Q)"$(src_dir_scripts)/mk_sys_dir.sh" "$(src_dir_conf)/dir.txt" "$(bin_dir_tmp_squashfs)"
 #  -- Buildroot --  #
-	@echo -e ""
+	@echo ""
 	$(call heading, main, Adding buildroot into the image)
     # Delete .recombr if it exists
     ifeq ($(shell [ -f ".recombr" ] && echo y), y)
@@ -296,7 +295,7 @@ main:
 	            $(MAKE) -C "$(src_dir_buildroot)" "$${val_temp2}-reconfigure"; \
 	            continue; \
 	        fi; \
-	        echo -en "$(col_FALSE)[Version changed] $(col_INFO)Do you want to re-compile package '$$val_temp2'? $(col_NORMAL)[$(col_DONE)[Y]es$(col_NORMAL)/$(col_FALSE)[N]o$(col_NORMAL)/$(col_INFO)[A]ll$(col_NORMAL)]"; \
+	        echo -n "$(col_FALSE)[Version changed] $(col_INFO)Do you want to re-compile package '$$val_temp2'? $(col_NORMAL)[$(col_DONE)[Y]es$(col_NORMAL)/$(col_FALSE)[N]o$(col_NORMAL)/$(col_INFO)[A]ll$(col_NORMAL)]"; \
 	        while true; do \
 	            read choice; \
 	            if [ "$$choice" = "N" ] || [ "$$choice" = "n" ]; then \
@@ -310,7 +309,7 @@ main:
 	                fi; \
 	                break; \
 	            fi; \
-	            echo -en "$(col_FALSE)Invalid option. Available options: $(col_NORMAL)[$(col_DONE)[Y]es$(col_NORMAL)/$(col_FALSE)[N]o$(col_NORMAL)/$(col_INFO)[A]ll$(col_NORMAL)]"; \
+	            echo -n "$(col_FALSE)Invalid option. Available options: $(col_NORMAL)[$(col_DONE)[Y]es$(col_NORMAL)/$(col_FALSE)[N]o$(col_NORMAL)/$(col_INFO)[A]ll$(col_NORMAL)]"; \
 	        done; \
 	    done; \
 	fi
@@ -339,10 +338,10 @@ main:
     ifeq ($(shell [ -f ".recombr" ] && echo y), y)
 	    $(Q)rm ".recombr"
     endif
-	$(call heading, sub, Extracting rootfs archive to '$(bin_dir_tmp)')
-	$(Q)pv -i 0.01 "$(src_dir_buildroot)/output/images/rootfs.tar" | tar -xf "-" -C "$(bin_dir_tmp)"
+	$(call heading, sub, Extracting rootfs archive to '$(bin_dir_tmp_squashfs)')
+	$(Q)pv -i 0.01 "$(src_dir_buildroot)/output/images/rootfs.tar" | tar -xf "-" -C "$(bin_dir_tmp_squashfs)"
 #  -- Kernel --  #
-	@echo -e ""
+	@echo ""
 	$(call heading, main, Adding the linux kernel)
     ifneq ($(shell [ -f "$(src_dir_linux)" ] && echo y), y)
 	    $(call stop, Kernel file doesn't exist in $(src_dir_linux). Ensure you gave the correct path to it by running menuconfig.)
@@ -357,34 +356,30 @@ main:
 	$(call heading, sub, Copying kernel as '$(bin_dir_tmp)$(sys_dir_linux)')
 	$(Q)cp "$(src_dir_linux)" "$(bin_dir_tmp)$(sys_dir_linux)" $(OUT)
 #  -- Initramfs --  #
-	@echo -e ""
+	@echo ""
 	$(call heading, main, Adding initramfs)
-	$(call heading, sub, Checking hashes and file existance)
-    ifneq ($(shell [ -f "$(src_dir_initramfs)/init.cpio.zst" ] && [ "$(shell $(call get_hash_dir, $(src_dir_initramfs)/source))" = "$(shell "$(src_dir_scripts)/get_var.sh" "hash_initramfs" "$(src_dir_conf)/hashes.txt")" ] && echo y),y)
-	    $(call heading, sub, Creating/re-creating init.cpio.zst)
-	    $(Q)cd "$(src_dir_initramfs)/source"; \
-	    find . | cpio -o -H newc --quiet | pv -i 0.01 -s $$(du -sb . | awk '{print $$1}') | zstd --force --quiet -o "../init.cpio.zst"
-	    $(call save_hash_dir, hash_initramfs, $(src_dir_initramfs)/source)
-	    $(eval bool_do_update_count := y)
-	    $(eval val_changes += init.cpio.zst did not exist or hash of source/ changed\n)
-    endif
-	$(call heading, sub, Copying init.cpio.zst as '$(bin_dir_tmp)$(sys_dir_initramfs)')
-	$(Q)cp "$(src_dir_initramfs)/init.cpio.zst" "$(bin_dir_tmp)$(sys_dir_initramfs)"
+	$(call heading, sub, Generating 'init')
+	$(Q)export sys_dir_squashfs="$(sys_dir_squashfs)"; \
+	"$(src_dir_mktext)/initramfs_init.sh" > "$(src_dir_initramfs)/source/init"
+	$(Q)chmod +x "$(src_dir_initramfs)/source/init"
+	$(call heading, sub, Creating init archive)
+	$(Q)cd "$(src_dir_initramfs)/source"; \
+	find . | cpio -o -H newc --quiet | pv -i 0.01 -s $$(du -sb . | awk '{print $$1}') | zstd --force --quiet -o "$(val_current_dir)/$(bin_dir_tmp)$(sys_dir_initramfs)"
 #  -- Applications --  #
-	@echo -e ""
+	@echo ""
 	$(call heading, main, Installing applications)
     ifneq ($(app_dir_ohmyzsh),)
 	    $(call heading, sub, Installing OhMyZSH)
-	    $(Q)ZSH="$(app_dir_ohmyzsh)" src_dir_ohmyzsh="$(val_current_dir)/$(src_dir_ohmyzsh)" sh cd $(bin_dir_tmp) && $(src_dir_ohmyzsh)/tools/install.sh $(OUT)
+	    $(Q)ZSH="$(app_dir_ohmyzsh)" src_dir_ohmyzsh="$(val_current_dir)/$(src_dir_ohmyzsh)" sh cd $(bin_dir_tmp_squashfs) && $(src_dir_ohmyzsh)/tools/install.sh $(OUT)
     endif
 #  -- Finalization --  #
-	@echo -e ""
+	@echo ""
 	$(call heading, main, Doing finalization procedures)
 #   - Convenient aliases & Functions -   #
     ifeq ($(bool_include_aliases), y)
 	    $(call heading, sub, Convenient aliases & functions)
 	    $(call heading, sub2, Functions)
-	    $(Q)echo -e "\
+	    $(Q)echo "\
 	    marked-rain-list-not-hidden-function() { \n\
 	        # Check if .hidden exists \n\
 	        if [ -f .hidden ]; then \n\
@@ -416,9 +411,9 @@ main:
 	        fi \n\
 	    }\n"\
 	    | sed 's/^    //' \
-	    | tee -a "$(bin_dir_tmp)/etc/profile" $(OUT)
+	    | tee -a "$(bin_dir_tmp_squashfs)/etc/profile" $(OUT)
 	    $(call heading, sub2, Command aliases)
-	    $(Q)echo -e "\
+	    $(Q)echo "\
 	    # Great command aliases \n\
 	    alias cd.='cd .' \n\
 	    alias cd..='cd ..' \n\
@@ -439,14 +434,14 @@ main:
 	    alias rd='rm -ri' \n\
 	    alias vdir='vdir --color=auto' \n"\
 	    | sed 's/^    //' \
-	    | tee -a "$(bin_dir_tmp)/etc/profile" $(OUT)
+	    | tee -a "$(bin_dir_tmp_squashfs)/etc/profile" $(OUT)
     endif
 #   - zsh conf -   #
 	$(call heading, sub, Zsh config)
-	$(Q)echo "[[ -f /etc/profile ]] && source /etc/profile" | tee -a "$(bin_dir_tmp)/etc/zshenv" $(OUT)
+	$(Q)echo "[[ -f /etc/profile ]] && source /etc/profile" | tee -a "$(bin_dir_tmp_squashfs)/etc/zshenv" $(OUT)
 #   - GNU/Grub conf -   #
 	$(call heading, sub, Grub boot config)
-	$(Q)echo -e "\
+	$(Q)echo "\
 	default=$(val_grub-boot_default) \n\
 	timeout=$(val_grub-boot_timeout) \n\
 	gfxpayload=$(val_grub-boot_resolution) \n\
@@ -458,7 +453,7 @@ main:
 	| tee "$(bin_dir_tmp)/boot/grub/grub.cfg" $(OUT)
 #   - Syslinux conf -   #
 	$(call heading, sub, Syslinux config)
-	$(Q)echo -e "\
+	$(Q)echo "\
 	DEFAULT $(val_grub-boot_default) \n\
 	PROMPT 1" \
 	| tee $(bin_dir_tmp)/boot/syslinux/syslinux.cfg $(OUT)
@@ -467,15 +462,18 @@ main:
 	else \
 	    bash -c 'echo "TIMEOUT 01" >> $(bin_dir_tmp)/boot/syslinux/syslinux.cfg'; \
 	fi
-	$(Q)echo -e "\
+	$(Q)echo "\
 	LABEL $(val_grub-boot_default) \n\
 	    MENU LABEL $(val_grub-entry-one_name) \n\
 	    KERNEL \"$(sys_dir_linux)\" \n\
 	    INITRD \"$(sys_dir_initramfs)\" \n\
 	    APPEND root=$(val_grub-entry-one_li_root) $(val_grub-entry-one_li_params) vga=$(val_sylin-entry-one_li_vga_mode)\n" \
 	| tee -a "$(bin_dir_tmp)/boot/syslinux/syslinux.cfg" $(OUT)
+#  -- Create SquashFS image --  #
+	$(call heading, main, Generating compressed SquashFS image)
+	$(Q)mksquashfs "$(bin_dir_tmp_squashfs)" "$(bin_dir_tmp)$(sys_dir_squashfs)" -noappend -quiet -comp zstd $(OUT)
 #  -- Installing GRUB --  #
-	@echo -e ""
+	@echo ""
 	$(call heading, main, Creating new disc image with GRUB)
     ifeq (ISO, y)
 	    $(Q)grub-mkrescue -o "$(bin_dir_iso)" "$(bin_dir_tmp)" $(OUT)
@@ -490,35 +488,35 @@ main:
 	    "$(src_dir_scripts)/set_var.sh" "ver_previous_mrain-sys" "$(MRAIN_VERSION)" "$(src_dir_conf)/variables.txt"; \
 	fi
 	$(Q)if [ "$(bool_do_update_count)" = "y" ] || [ "$(update)" = "true" ]; then \
-	    echo -e "$(col_TRUE)Summary of items changed"; \
-	    echo -e "$(col_TRUE)--------------------------$(col_NORMAL)"; \
-	    echo -en " $(val_changes)"; \
+	    echo "$(col_TRUE)Summary of items changed"; \
+	    echo "$(col_TRUE)--------------------------$(col_NORMAL)"; \
+	    echo -n " $(val_changes)"; \
 	    if [ "$(update)" = "true" ]; then \
-	        echo -e "$(col_INFO)Variable 'update' is set to true."; \
+	        echo "$(col_INFO)Variable 'update' is set to true."; \
 	    fi; \
 	    "$(src_dir_scripts)/count_increment.sh" "latest_next" "$(src_dir_conf)/bcount.txt"; \
 	fi
-	@echo -e ""
+	@echo ""
 #  -- Automatic cleaning --  #
     ifeq ($(bool_clean_dir_tmp), y)
 	    $(call true, Wipe temporary directory, bool_clean_dir_tmp)
 	    $(call heading, info, $(col_FALSE)Cleaning temporary files)
-	    $(Q)rm -rf "$(bin_dir_tmp)"/*
+	    $(Q)rm -rf "$(bin_dir_tmp)"/* "$(bin_dir_tmp_squashfs)"
     else
-	    $(call false, Clean temporary directory, bool_clean_dir_tmp)
+	    $(call false, Wipe temporary directory, bool_clean_dir_tmp)
     endif
 
 # --- Run --- #
 .PHONY: run runs
 run:
     ifeq ($(shell [ -f "$(bin_dir)/boot.iso" ] && echo y), y)
-	    @echo -e ""
+	    @echo ""
 	    $(call ok,    // Now running '$(bin_dir)/boot.iso' using '$(util_vm)' and parameters '$(util_vm_params)' //    )
 	    $(Q)"$(util_vm)" "$(bin_dir)/boot.iso" $(shell echo -n $(util_vm_params))
     else
 	    $(call stop, Supplied file '$(bin_dir)/boot.iso' doesn't exist. Make sure you ran 'make', and try again.)
     endif
-	@echo -e ""
+	@echo ""
 
 runs: main run
 
@@ -535,24 +533,24 @@ endef
 # --- Clean all stuff --- #
 .PHONY: cleanall
 cleanall:
-	@echo -e ""
+	@echo ""
 	$(call warn, Doing 'cleanall' will run clean on ALL of the source files and may take longer to compile.)
-	@echo -e ""
-	@echo -e "$(col_INFO)  Press "Y" and enter to continue, any other key will terminate.$(col_NORMAL)"
+	@echo ""
+	@echo "$(col_INFO)  Press "Y" and enter to continue, any other key will terminate.$(col_NORMAL)"
 	$(Q)read choice; \
 	if [ "$$choice" = "Y" ] || [ "$$choice" = "y" ]; then \
 	    $(call cleancode); \
 	    $(subst @echo, echo, $(call heading, info, $(col_FALSE)Cleaning buildroot)); \
 	    $(MAKE) -C "$(src_dir_buildroot)" clean $(OUT) || exit 1; \
-	    echo -e ""; \
+	    echo ""; \
 	    $(subst @echo, echo, $(call heading, info, $(col_FALSE)Removing preinit binary)); \
 	    rm $(src_dir_preinit)/preinit; \
-	    echo -e ""; \
+	    echo ""; \
 	    $(subst @echo, echo, $(call ok,  Done. Run 'make' to re-compile. Be prepared to wait a long time.  )); \
-	    echo -e ""; \
+	    echo ""; \
 	else \
 	    $(subst @echo, echo, $(call ok,  Cancelled.  )); \
-	    echo -e ""; \
+	    echo ""; \
 	fi
 
 # ---[ Developer testing stuff + more ]--- #
@@ -560,7 +558,7 @@ cleanall:
 .PHONY: yo dev_stop wipe
 # --- Stuff --- #
 yo:
-	@echo -e "yo the dir is $(val_current_dir)"
+	@echo "yo the dir is $(val_current_dir)"
 
 dev_stop:
 	false
