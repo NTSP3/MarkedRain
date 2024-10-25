@@ -552,16 +552,3 @@ cleanall:
 	    $(subst @echo, echo, $(call ok,  Cancelled.  )); \
 	    echo ""; \
 	fi
-
-# ---[ Developer testing stuff + more ]--- #
-# +++ Dev phony +++ #
-.PHONY: yo dev_stop wipe
-# --- Stuff --- #
-yo:
-	@echo "yo the dir is $(val_current_dir)"
-
-dev_stop:
-	false
-
-wipe: clean
-	$(Q)clear
