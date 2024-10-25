@@ -1,0 +1,17 @@
+-This folder contains /bin/sh scripts
+
+-These scripts are used to generate text files deemed long for use in main Makefile
+
+-These scripts can substituite exported Makefile variable values for use in the generated text files
+
+-To properly create a script, follow these guidelines
+
+  + Put '#!/bin/sh' and 'cat <<EOF' at the start, and 'EOF' at the last line.
+  + Use '\$' wherever you want '$' to be in the final text
+  + Use '$' for variables whose value have already been exported from Makefile.
+
+-Makefile is expected to capture the output of these scripts and redirect them to its destination.
+
+
+
+25 - 10 - 2024 | 17:49
