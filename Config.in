@@ -169,6 +169,14 @@ menu "Source configuration"
         help
             The scripting directory has scripts that are
             used while making the operating system.
+
+    config src_dir_mktext
+        string "Text-creating scripts directory"
+        default "$[src_dir]/mktext"
+        help
+            The text creating-scripts directory has scripts 
+            that generate text files while substituting
+            Makefile variables within the new file.
 endmenu
 
 menu "Destination configuration"
