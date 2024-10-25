@@ -14,7 +14,6 @@ builds/
 dotconfig.busybox
 source/configs/hashes.txt
 source/initramfs/source/init
-source/initramfs/init.cpio.zst
 
 # make menuconfig tmp & usr cfg
 .config
