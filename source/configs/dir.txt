@@ -1,16 +1,17 @@
 # Uses script "mk_sys_dir.sh"
 # 20th of May, 2024 21:00
+# Edit: 20th of October, 2024 15:40
 #
 # This file contains the folders to be created during
-# the making of MarkedRain Operating System. The format
-# is as follows:
+# the making of MarkedRain Operating System's Squashfs
+# image file. The format is as follows:
 #
 #       root/<directory>
 #
 # where "directory" is the name of the dir you want to
 # create. All entries must begin with "root". It will get
-# replaced with whatever the root directory is, as
-# defined in the makefile "bin_dir_raw" variable.
+# replaced with the location of temporary output directory
+# defined in Makefile variable 'bin_dir_tmp_squashfs'
 #
 # Directores with spaces in them should look like this:
 #
@@ -22,10 +23,10 @@
 # part of the folder's name.
 #
 
-root/
-root/boot
-root/boot/grub
-root/boot/syslinux
+#root/
+#root/boot
+#root/boot/grub
+#root/boot/syslinux
 #root/boot/ksysboot
 #root/Program Files
 #root/Program Files/system
