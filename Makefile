@@ -378,63 +378,7 @@ main:
 #   - Convenient aliases & Functions -   #
     ifeq ($(bool_include_aliases), y)
 	    $(call heading, sub, Convenient aliases & functions)
-	    $(call heading, sub2, Functions)
-	    $(Q)echo "\
-	    marked-rain-list-not-hidden-function() { \n\
-	        # Check if .hidden exists \n\
-	        if [ -f .hidden ]; then \n\
-	            # Get list of files, replace spaces with '\\\\ ', and convert to hex \n\
-	            list=\$$(command ls -F | sed 's/ /\\\\\\\\ /g' | xxd -p | tr -d '\\\\n') \n\
-	            list=\"0a\$$list\" \n\
-	    \n\
-	            # Read .hidden line-by-line \n\
-	            while IFS= read -r word; do \n\
-	                # Convert word to hex \n\
-	                word=\$$(printf \"%s\" \"\$$word\" | xxd -p | tr -d '\\\\n') \n\
-	    \n\
-	                # Check if word exists in list (might save some cycles) \n\
-	                if [[ \"\$$list\" =~ \"0a\$$word\" ]]; then \n\
-	                    # Remove patterns \n\
-	                    for symbol in '2a' '2f' '3d' '3e' '40' '7c'; do \n\
-	                        list=\"\$${list//0a\$$word\$$symbol/}\" \n\
-	                    done \n\
-	                fi \n\
-	            done < .hidden \n\
-	    \n\
-	            # Convert hex to ASCII and replace newlines with spaces & remove '/' \n\
-	            list=\$$(printf \"%s\" \"\$$list\" | xxd -r -p | tr '\\\\n' ' ' | tr -d '/') \n\
-	    \n\
-	            # Execute the command with the modified list \n\
-	            eval command ls \"\$$@\" -d \$$list \n\
-	        else \n\
-	            command ls \"\$$@\" \n\
-	        fi \n\
-	    }\n"\
-	    | sed 's/^    //' \
-	    | tee -a "$(bin_dir_tmp_squashfs)/etc/profile" $(OUT)
-	    $(call heading, sub2, Command aliases)
-	    $(Q)echo "\
-	    # Great command aliases \n\
-	    alias cd.='cd .' \n\
-	    alias cd..='cd ..' \n\
-	    alias cls='clear' \n\
-	    alias copy='cp' \n\
-	    alias del='rm -i' \n\
-	    alias dir='ls -l' \n\
-	    alias egrep='egrep --color=auto' \n\
-	    alias fgrep='fgrep --color=auto' \n\
-	    alias grep='grep --color=auto' \n\
-	    alias l='ls -CF' \n\
-	    alias la='ls -A' \n\
-	    alias ll='ls -alF' \n\
-	    alias ls='marked-rain-list-not-hidden-function --color=auto' \n\
-	    alias md='mkdir' \n\
-	    alias move='mv' \n\
-	    alias pause='read' \n\
-	    alias rd='rm -ri' \n\
-	    alias vdir='vdir --color=auto' \n"\
-	    | sed 's/^    //' \
-	    | tee -a "$(bin_dir_tmp_squashfs)/etc/profile" $(OUT)
+	    $(Q)"$(src_dir_mktext)/aliases.sh" >> "$(bin_dir_tmp_squashfs)/etc/profile"
     endif
 #   - zsh conf -   #
 	$(call heading, sub, Zsh config)
