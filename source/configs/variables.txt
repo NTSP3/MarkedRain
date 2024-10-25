@@ -3,3 +3,4 @@
 #
 
 ver_previous_mrain-sys=0.0.3.83-none
+old_sys_dir_squashfs=/boot/system.squashfs
