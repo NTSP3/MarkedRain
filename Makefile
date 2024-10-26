@@ -108,45 +108,40 @@ define false
 endef
 
 ifeq ($(bool_use_old_headings), y)
-    define script_heading
-	    if [ "<type>" = "imp" ]; then \
-	        echo "\e[1;37;41m    !! <message> !!    \e[0m"; \
-	    elif [ "<type>" = "main" ]; then \
-	        echo "\e[95m    // <message> //\e[0m"; \
-	    elif [ "<type>" = "sub" ]; then \
-	        echo "\e[38;5;206m     / <message> /\e[0m"; \
-	    elif [ "<type>" = "sub2" ]; then \
-	        echo "$(col_SUBHEADING)  -+ <message> +-  $(col_NORMAL)"; \
-	    elif [ "<type>" = "info" ]; then \
-	        echo "\e[36m    // <message>\e[36m //\e[0m"; \
+    define heading
+	    @echo -n; \
+	    if [ "$(strip $(1))" = "imp" ]; then \
+	        echo "\e[1;37;41m    !! $(strip $(2)) !!    \e[0m"; \
+	    elif [ "$(strip $(1))" = "main" ]; then \
+	        echo "\e[95m    // $(strip $(2)) //\e[0m"; \
+	    elif [ "$(strip $(1))" = "sub" ]; then \
+	        echo "\e[38;5;206m     / $(strip $(2)) /\e[0m"; \
+	    elif [ "$(strip $(1))" = "sub2" ]; then \
+	        echo "$(col_SUBHEADING)  -+ $(strip $(2)) +-  $(col_NORMAL)"; \
+	    elif [ "$(strip $(1))" = "info" ]; then \
+	        echo "\e[36m    // $(strip $(2))\e[36m //\e[0m"; \
 	    else \
-	        $(subst @echo, echo, $(call warn, Definition \"script_heading\" doesn't know what '<type>' means.)); \
+	        $(subst @echo, echo, $(call warn, Definition \"$(0)\" doesn't know what '$(strip $(1))' means.)); \
 	    fi
     endef
 else
-    define script_heading
-	    if [ "<type>" = "imp" ]; then \
-	        echo "$(col_IMP) !! <message> !! $(col_NORMAL)"; \
-	    elif [ "<type>" = "main" ]; then \
-	        echo "$(col_HEADING)---[ <message> ]---$(col_NORMAL)"; \
-	    elif [ "<type>" = "sub" ]; then \
-	        echo "$(col_SUBHEADING) --+ <message> +-- $(col_NORMAL)"; \
-	    elif [ "<type>" = "sub2" ]; then \
-	        echo "$(col_SUBHEADING)  -+ <message> +-  $(col_NORMAL)"; \
-	    elif [ "<type>" = "info" ]; then \
-	        echo "$(col_INFOHEADING) ++ <message>$(col_NORMAL)$(col_INFOHEADING) ++ $(col_NORMAL)"; \
+    define heading
+	    @echo -n; \
+	    if [ "$(strip $(1))" = "imp" ]; then \
+	        echo "$(col_IMP) !! $(strip $(2)) !! $(col_NORMAL)"; \
+	    elif [ "$(strip $(1))" = "main" ]; then \
+	        echo "$(col_HEADING)---[ $(strip $(2)) ]---$(col_NORMAL)"; \
+	    elif [ "$(strip $(1))" = "sub" ]; then \
+	        echo "$(col_SUBHEADING) --+ $(strip $(2)) +-- $(col_NORMAL)"; \
+	    elif [ "$(strip $(1))" = "sub2" ]; then \
+	        echo "$(col_SUBHEADING)  -+ $(strip $(2)) +-  $(col_NORMAL)"; \
+	    elif [ "$(strip $(1))" = "info" ]; then \
+	        echo "$(col_INFOHEADING) ++ $(strip $(2))$(col_NORMAL)$(col_INFOHEADING) ++ $(col_NORMAL)"; \
 	    else \
-	        $(subst @echo, echo, $(call warn, Definition \"script_heading\" doesn't know what '<type>' means.)); \
+	        $(subst @echo, echo, $(call warn, Definition \"$(0)\" doesn't know what '$(strip $(1))' means.)); \
 	    fi
     endef
 endif
-# For scripts
-export script_heading
-# Normal
-define heading
-	@echo -n; \
-	$(subst script_heading,$(0),$(subst <message>,$(strip $(2)),$(subst <type>,$(strip $(1)),$(call script_heading))))
-endef
 
 # ---[ Global ]--- #
 $(info $(shell echo "$(col_INFO)         ++++++++++++++++++++++ MRain Operating System ++++++++++++++++++++++         $(col_NORMAL)"))
@@ -267,7 +262,7 @@ main:
 	    $(eval bool_ver_change := y)
     endif
 #  -- Clean --  #
-	@$(call cleancode)
+	$(Q)$(call cleancode)
 #  -- Directories --  #
 	$(call heading, info, $(col_OK)Setting up temporary directories)
 	$(Q)mkdir -p "/dev/shm/mrain-bin"
@@ -415,14 +410,13 @@ main:
 	| tee -a "$(bin_dir_tmp)/boot/syslinux/syslinux.cfg" $(OUT)
 #  -- Create SquashFS image --  #
 	$(call heading, main, Generating compressed SquashFS image)
-	$(Q)mksquashfs "$(bin_dir_tmp_squashfs)" "$(bin_dir_tmp)$(sys_dir_squashfs)" -noappend -quiet -comp zstd $(OUT)
+	$(Q)mksquashfs "$(bin_dir_tmp_squashfs)" "$(bin_dir_tmp)$(sys_dir_squashfs)" -noappend -quiet -comp zstd
 #  -- Installing GRUB --  #
 	@echo ""
 	$(call heading, main, Creating new disc image with GRUB)
     ifeq (ISO, y)
 	    $(Q)grub-mkrescue -o "$(bin_dir_iso)" "$(bin_dir_tmp)" $(OUT)
     else
-	    $(Q)mkdir -p "builds"
 	    $(Q)grub-mkrescue -o "$(bin_dir)/boot.iso" "$(bin_dir_tmp)" $(OUT)
     endif
 #  -- Version updation --  #
@@ -440,7 +434,6 @@ main:
 	    fi; \
 	    "$(src_dir_scripts)/count_increment.sh" "latest_next" "$(src_dir_conf)/bcount.txt"; \
 	fi
-	@echo ""
 #  -- Automatic cleaning --  #
     ifeq ($(bool_clean_dir_tmp), y)
 	    $(call true, Wipe temporary directory, bool_clean_dir_tmp)
