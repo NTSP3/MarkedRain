@@ -9,22 +9,21 @@
 
 # Fancy output functions
 heading() {
-    val_temp=${script_heading//<type>/$1}
-    val_temp=${val_temp//<message>/$2}
-    eval "${val_temp}"
+    # Double substituting to account for double '\\'
+    echo -e `echo -e ${col_SUBHEADING}`$1 `echo -e ${col_NORMAL}`::`echo -e ${col_INFO}` ${me} `echo -e ${col_NORMAL}`
 }
 
 info() {
     if [ "$2" = "wait" ]; then
-        eval echo -en '${col_INFO}$1... ${col_NORMAL}' ${OUT}
+        echo -en `echo -e ${col_INFO}`$1... `echo -e ${col_NORMAL}` ${OUT}
     elif [ "$1" = "ok" ]; then
         if [ -z $2 ]; then
-            eval echo -e '${col_DONE}OK${col_NORMAL}' ${OUT}
+            echo -e `echo -e ${col_DONE}`OK`echo -e ${col_NORMAL}` ${OUT}
         else
-            eval echo -e '${col_DONE}OK: $2${col_NORMAL}' ${OUT}
+            echo -e `echo -e ${col_DONE}`OK: $2`echo -e ${col_NORMAL}` ${OUT}
         fi
     elif [ "$3" = "stop" ]; then
-        eval echo -e '${col_ERROR}Fail${col_NORMAL}' ${OUT}
+        echo -e `echo -e ${col_ERROR}`Fail`echo -e ${col_NORMAL}` ${OUT}
         error "$1" "$2"
     else
         error "Specify an argument to me!" "info"
@@ -32,11 +31,11 @@ info() {
 }
 
 ok() {
-    eval echo -e '$1: ${col_DONE}OK${col_NORMAL}' ${OUT}
+    echo -e $1: `echo -e ${col_DONE}`OK`echo -e ${col_NORMAL}` ${OUT}
 }
 
 error() {
-    eval echo -e '${me}: $2: ${col_ERROR}$1${col_NORMAL}' >&2
+    echo -e ${me}: $2: `echo -e ${col_ERROR}`$1`echo -e ${col_NORMAL}` >&2
     exit 1
 }
 
@@ -46,7 +45,7 @@ src_file="$1"
 dmp_folder="$2"
 
 # Check if the variables are empty
-heading "sub" "Checking arguments for nullified values"
+heading "Checking arguments for nullified values"
 if [ -z "$src_file" ]; then
     error "Variable cannot be empty. Check the first argument." "src_file"
 else
@@ -59,7 +58,7 @@ else
 fi
 
 # Check if the file & folder exist
-heading "sub" "Checking for file & folder existence"
+heading "Checking for file & folder existence"
 if [ -f "$src_file" ]; then
     ok "src_file"
     if [ -d "$dmp_folder" ]; then
@@ -86,7 +85,7 @@ done <<< "$lines"
 info "ok"
 
 # Start creating the directories
-heading "sub" "Creating directories"
+heading "Creating directories"
 for dir in "${dirs[@]}"; do
     eval ${val_superuser} mkdir -p "\"$dir\""
     ret=$?
