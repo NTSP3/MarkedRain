@@ -15,15 +15,15 @@ heading() {
 
 info() {
     if [ "$2" = "wait" ]; then
-        echo -en `echo -e ${col_INFO}`$1... `echo -e ${col_NORMAL}` ${OUT}
+        echo -en `echo -e ${col_INFO}`$1... `echo -e ${col_NORMAL}`
     elif [ "$1" = "ok" ]; then
         if [ -z $2 ]; then
-            echo -e `echo -e ${col_DONE}`OK`echo -e ${col_NORMAL}` ${OUT}
+            echo -e `echo -e ${col_DONE}`OK`echo -e ${col_NORMAL}`
         else
-            echo -e `echo -e ${col_DONE}`OK: $2`echo -e ${col_NORMAL}` ${OUT}
+            echo -e `echo -e ${col_DONE}`OK: $2`echo -e ${col_NORMAL}`
         fi
     elif [ "$3" = "stop" ]; then
-        echo -e `echo -e ${col_ERROR}`Fail`echo -e ${col_NORMAL}` ${OUT}
+        echo -e `echo -e ${col_ERROR}`Fail`echo -e ${col_NORMAL}`
         error "$1" "$2"
     else
         error "Specify an argument to me!" "info"
@@ -31,7 +31,7 @@ info() {
 }
 
 ok() {
-    echo -e $1: `echo -e ${col_DONE}`OK`echo -e ${col_NORMAL}` ${OUT}
+    echo -e $1: `echo -e ${col_DONE}`OK`echo -e ${col_NORMAL}`
 }
 
 error() {
