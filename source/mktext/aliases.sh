@@ -7,30 +7,30 @@ marked-rain-list-not-hidden-function() {
     # Check if .hidden exists
     if [ -f .hidden ]; then
         # Get list of files, replace spaces with '\ ', and convert to hex
-        list=$(command ls -F | sed 's/ /\\ /g' | xxd -p | tr -d '\n')
-        list="0a$list"
+        list=\$(command ls -F | sed 's/ /\\ /g' | xxd -p | tr -d '\n')
+        list="0a\$list"
 
         # Read .hidden line-by-line
         while IFS= read -r word; do
             # Convert word to hex
-            word=$(printf "%s" "$word" | xxd -p | tr -d '\n')
+            word=\$(printf "%s" "\$word" | xxd -p | tr -d '\n')
 
             # Check if word exists in list (might save some cycles)
-            if [[ "$list" =~ "0a$word" ]]; then
+            if [[ "\$list" =~ "0a\$word" ]]; then
                 # Remove patterns
                 for symbol in '2a' '2f' '3d' '3e' '40' '7c'; do
-                    list="${list//0a$word$symbol/}"
+                    list="\${list//0a\$word\$symbol/}"
                 done
             fi
         done < .hidden
 
         # Convert hex to ASCII and replace newlines with spaces & remove '/'
-        list=$(printf "%s" "$list" | xxd -r -p | tr '\n' ' ' | tr -d '/')
+        list=\$(printf "%s" "\$list" | xxd -r -p | tr '\n' ' ' | tr -d '/')
 
         # Execute the command with the modified list
-        eval command ls "$@" -d $list
+        eval command ls "\$@" -d \$list
     else
-        command ls "$@"
+        command ls "\$@"
     fi
 }
 
