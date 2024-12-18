@@ -49,8 +49,8 @@ endef
 
 #  --[ Exceptional message printers ]--  #
 define stop
-	@echo "\n$(col_IMP)STOP:$(col_NORMAL)$(col_ERROR) $(strip $(1))$(col_NORMAL)\n" >&2
-	$(Q)false
+	@echo "\n$(col_IMP)STOP:$(col_NORMAL)$(col_ERROR) $(strip $(1))$(col_NORMAL)\n" >&2; \
+	false
 endef
 
 define warn
@@ -179,11 +179,18 @@ ifeq ($(filter $(val_target),$(val_unmain_sect)),)
         $(eval EXTRAVERSION = 0)
     endif
     ifneq ($(and $(val_target), $(filter %config,$(val_target)), $(val_target)), )
+        # menuconfig
         $(info $(shell $(subst @echo, echo, $(call stat, Preparing config manager))))
         export srctree := $(if $(KBUILD_SRC),$(KBUILD_SRC),$(CURDIR))
         export HOSTCC := gcc
         include $(srctree)/make/Kbuild.include
+    else
+        # non-menuconfig
+        $(info $(shell $(subst @echo, echo, $(call heading, info, Sanitizing PATH))))
+        export PATH := $(shell echo $$PATH | tr -d '[:space:]') # Remove paths with spaces in variable PATH
+        -include $(src_dir_apps)/applications.mk
     endif
+    # Put stuff meant for menuconfig and non-menuconfig here
     $(info $(shell $(subst @echo, echo, $(call heading, info, Exporting MRain System version))))
     export MRAIN_VERSION := $(VERSION).$(PATCHLEVEL).$(SUBLEVEL).$(EXTRAVERSION)-$(RELEASE_TAG)
 endif
@@ -350,12 +357,33 @@ main:
     endif
 	$(call heading, sub, Copying kernel as '$(bin_dir_tmp)$(sys_dir_linux)')
 	$(Q)cp "$(src_dir_linux)" "$(bin_dir_tmp)$(sys_dir_linux)" $(OUT)
+#  -- Modules --  #
+	@echo ""
+	$(call heading, main, Adding modules)
+	$(Q)cp -r "$(src_dir_modules)" "$(bin_dir_tmp_squashfs)/usr/lib"
+#  -- Text files --  #
+	@echo ""
+	$(call heading, main, Generating/Appending to text files in the InitRamFS archive)
+	$(Q)export sys_dir_squashfs="$(sys_dir_squashfs)"; \
+	"$(src_dir_scripts)/make_text_files.sh" "$(src_dir_mktext)/init" "$(src_dir_initramfs)/source"
+	@echo ""
+	$(call heading, main, Generating/Appending to text files in the SquashFS image)
+	$(Q)"$(src_dir_scripts)/make_text_files.sh" "$(src_dir_mktext)/root" "$(bin_dir_tmp_squashfs)"
+	@echo ""
+	$(call heading, main, Generating/Appending to text files in the final image)
+	$(Q)export boot_resolution="$(val_grub-boot_resolution)"; \
+	export boot_default="$(val_grub-boot_default)"; \
+	export boot_timeout="$(val_grub-boot_timeout)"; \
+	export entry_name="$(val_grub-entry-one_name)"; \
+	export sys_dir_linux="$(sys_dir_linux)"; \
+	export linux_root="$(val_grub-entry-one_li_root)"; \
+	export linux_params=$(val_grub-entry-one_li_params); \
+	export sys_dir_initramfs="$(sys_dir_initramfs)"; \
+	"$(src_dir_scripts)/make_text_files.sh" "$(src_dir_mktext)/image" "$(bin_dir_tmp)"
 #  -- Initramfs --  #
 	@echo ""
 	$(call heading, main, Adding initramfs)
-	$(call heading, sub, Generating 'init')
-	$(Q)export sys_dir_squashfs="$(sys_dir_squashfs)"; \
-	"$(src_dir_mktext)/initramfs_init.sh" > "$(src_dir_initramfs)/source/init"
+	$(call heading, sub, Making 'init' executable)
 	$(Q)chmod +x "$(src_dir_initramfs)/source/init"
 	$(call heading, sub, Creating init archive)
 	$(Q)cd "$(src_dir_initramfs)/source"; \
@@ -363,9 +391,11 @@ main:
 #  -- Applications --  #
 	@echo ""
 	$(call heading, main, Installing applications)
-    ifneq ($(app_dir_ohmyzsh),)
-	    $(call heading, sub, Installing OhMyZSH)
-	    $(Q)ZSH="$(app_dir_ohmyzsh)" src_dir_ohmyzsh="$(val_current_dir)/$(src_dir_ohmyzsh)" sh cd $(bin_dir_tmp_squashfs) && $(src_dir_ohmyzsh)/tools/install.sh $(OUT)
+	$(call applications)
+    ifneq ($(shell "$(src_dir_scripts)/get_var.sh" "hash_apps" "$(src_dir_conf)/hashes.txt"), $(shell $(call get_hash_dir, $(src_dir_apps))))
+	    $(call save_hash_dir, hash_apps, $(src_dir_apps))
+	    $(eval bool_do_update_count := y)
+	    $(eval val_changes += Applications directory changed\n)
     endif
 #  -- Finalization --  #
 	@echo ""
@@ -375,39 +405,9 @@ main:
 	    $(call heading, sub, Convenient aliases & functions)
 	    $(Q)"$(src_dir_mktext)/aliases.sh" >> "$(bin_dir_tmp_squashfs)/etc/profile"
     endif
-#   - zsh conf -   #
-	$(call heading, sub, Zsh config)
-	$(Q)echo "[[ -f /etc/profile ]] && source /etc/profile" | tee -a "$(bin_dir_tmp_squashfs)/etc/zshenv" $(OUT)
-#   - GNU/Grub conf -   #
-	$(call heading, sub, Grub boot config)
-	$(Q)echo "\
-	default=$(val_grub-boot_default) \n\
-	timeout=$(val_grub-boot_timeout) \n\
-	gfxpayload=$(val_grub-boot_resolution) \n\
-	\n\
-	menuentry \"$(val_grub-entry-one_name)\" { \n\
-	    linux \"$(sys_dir_linux)\" root=$(val_grub-entry-one_li_root) $(val_grub-entry-one_li_params) \n\
-	    initrd \"$(sys_dir_initramfs)\" \n\
-	}\n"\
-	| tee "$(bin_dir_tmp)/boot/grub/grub.cfg" $(OUT)
-#   - Syslinux conf -   #
-	$(call heading, sub, Syslinux config)
-	$(Q)echo "\
-	DEFAULT $(val_grub-boot_default) \n\
-	PROMPT 1" \
-	| tee $(bin_dir_tmp)/boot/syslinux/syslinux.cfg $(OUT)
-	$(Q)if [ $(val_grub-boot_timeout) -gt 0 ]; then \
-	    bash -c 'echo "TIMEOUT $(val_grub-boot_timeout)0" >> $(bin_dir_tmp)/boot/syslinux/syslinux.cfg'; \
-	else \
-	    bash -c 'echo "TIMEOUT 01" >> $(bin_dir_tmp)/boot/syslinux/syslinux.cfg'; \
-	fi
-	$(Q)echo "\
-	LABEL $(val_grub-boot_default) \n\
-	    MENU LABEL $(val_grub-entry-one_name) \n\
-	    KERNEL \"$(sys_dir_linux)\" \n\
-	    INITRD \"$(sys_dir_initramfs)\" \n\
-	    APPEND root=$(val_grub-entry-one_li_root) $(val_grub-entry-one_li_params) vga=$(val_sylin-entry-one_li_vga_mode)\n" \
-	| tee -a "$(bin_dir_tmp)/boot/syslinux/syslinux.cfg" $(OUT)
+#   - OpenRC Bootlogging -   #
+	$(call heading, sub, OpenRC bootlogging services)
+	$(Q)sed -i 's/^#\?rc_logger=.*$$/rc_logger="YES"/' "$(bin_dir_tmp_squashfs)/etc/rc.conf"
 #  -- Create SquashFS image --  #
 	$(call heading, main, Generating compressed SquashFS image)
 	$(Q)mksquashfs "$(bin_dir_tmp_squashfs)" "$(bin_dir_tmp)$(sys_dir_squashfs)" -noappend -quiet -comp zstd
@@ -446,13 +446,13 @@ main:
 # --- Run --- #
 .PHONY: run runs
 run:
-    ifeq ($(shell [ -f "$(bin_dir)/boot.iso" ] && echo y), y)
-	    @echo ""
-	    $(call ok,    // Now running '$(bin_dir)/boot.iso' using '$(util_vm)' and parameters '$(util_vm_params)' //    )
-	    $(Q)"$(util_vm)" "$(bin_dir)/boot.iso" $(shell echo -n $(util_vm_params))
-    else
-	    $(call stop, Supplied file '$(bin_dir)/boot.iso' doesn't exist. Make sure you ran 'make', and try again.)
-    endif
+	$(Q)if [ -f "$(bin_dir)/boot.iso" ]; then \
+	    echo ""; \
+	    $(subst @echo, echo, $(call ok,    // Now running "$(bin_dir)/boot.iso" using "$(util_vm)" and parameters "$(util_vm_params)" //    )); \
+	    "$(util_vm)" "$(bin_dir)/boot.iso" $(shell echo -n $(util_vm_params)); \
+	else \
+	    $(subst @echo, echo, $(call stop, Supplied file "$(bin_dir)/boot.iso" doesn't exist. Make sure you ran "make"; and try again.)); \
+	fi
 	@echo ""
 
 runs: main run
@@ -464,7 +464,7 @@ clean:
 
 define cleancode
 	$(subst @echo, echo, $(call heading, info, $(col_FALSE)Deleting directories and image)); \
-	rm -rf "$(bin_dir_tmp)" "$(bin_dir)/boot.iso" "$(bin_dir)"
+	rm -rf "$(bin_dir_tmp)" "$(bin_dir)/boot.iso" "$(bin_dir)"/* "$(bin_dir)"
 endef
 
 # --- Clean all stuff --- #
