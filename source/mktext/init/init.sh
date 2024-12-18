@@ -1,5 +1,5 @@
 #!/bin/sh
-# Text file creation: 'source/initramfs/source/init'
+# Text file creation: '<src>/initramfs/source/init'
 
 cat <<EOF
 #!/bin/sh
@@ -27,12 +27,12 @@ cmd() {
 }
 
 error() {
-    echo "\e[1;91mError: \$1\e[0m"
+    echo "Error: \$1"
     exit 1
 }
 
 info() {
-    echo "\e[1;32m\$1\e[0m"
+    echo "-> \$1"
 }
 
 #
@@ -82,7 +82,7 @@ esac
 #
 
 info "Preparing to transfer control"
-cmd "mount -t squashfs -o ro \"$sys_dir_squashfs\" /mnt/lower" "Failed mounting SquashFS image on /mnt/lower"
+cmd "mount -t squashfs -o ro \"/mnt/sda/$sys_dir_squashfs\" /mnt/lower" "Failed mounting SquashFS image on /mnt/lower"
 cmd "mount -t tmpfs -o rw tmpfs /mnt/upper" "Failed to mount /mnt/upper as tmpfs"
 cmd "mkdir /mnt/upper/upper" "Failed to create /mnt/upper/upper"
 cmd "mkdir /mnt/upper/work" "Failed to create /mnt/upper/work"

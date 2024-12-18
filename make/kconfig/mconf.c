@@ -18,23 +18,11 @@
 #include <strings.h>
 #include <signal.h>
 #include <unistd.h>
-#include <stdio.h> // MRain system function specific 31-5-2024 8:31 pm
 
 #include "lkc.h"
 #include "lxdialog/dialog.h"
 
 static const char mconf_readme[] =
-"MarkedRain\n"
-"----------\n"
-"You should put $[<var>] where <var> is intended to be replaced by its\n"
-"value in Makefile.\n"
-"\n"
-"Example:\n"
-"    (source) Source directory\n"
-"    ($[src_dir]/kernel) Kernel file\n"
-"Output:\n"
-"    kernel_file=source/kernel\n"
-"\n"
 "Overview\n"
 "--------\n"
 "This interface lets you select features and parameters for the build.\n"
@@ -1043,8 +1031,8 @@ int main(int ac, char **av)
 	}
 
 	if (init_dialog(NULL)) {
-		fprintf(stderr, "\nBig lad Menuconfig is too fat to fit in yo display!\n");
-		fprintf(stderr, "Invest some time into it and make it 19 lines by 80 columns (at least).\n\n");
+		fprintf(stderr, "Your display is too small to run Menuconfig!\n");
+		fprintf(stderr, "It must be at least 19 lines by 80 columns.\n");
 		return 1;
 	}
 

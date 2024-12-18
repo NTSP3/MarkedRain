@@ -10,8 +10,10 @@
   + Use '\$' wherever you want '$' to be in the final text
   + Use '$' for variables whose value have already been exported from Makefile.
 
--Makefile is expected to capture the output of these scripts and redirect them to its destination.
+-Makefile (or some other program) is expected to capture the output of these scripts and redirect them to its destination.
 
-
+-You can do any calculations or other stuff within the script to get the necessary values before the 'cat <<EOF' bit.
 
 25 - 10 - 2024 | 17:49
+Edit 26 - 11 - 2024 | 16:55
+     17 - 12 - 2024 | 11:48

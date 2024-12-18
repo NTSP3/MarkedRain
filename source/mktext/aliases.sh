@@ -1,5 +1,5 @@
 #!/bin/sh
-# Text file appending: 'etc/profile'
+# Text file appending: '<os>/etc/profile'
 
 cat <<EOF
 

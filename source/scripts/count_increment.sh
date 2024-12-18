@@ -12,9 +12,8 @@
 
 # Fancy output functions
 heading() {
-    val_temp=${script_heading//<type>/$1}
-    val_temp=${val_temp//<message>/$2}
-    eval ${val_temp} >&2
+    # Double substituting to account for double '\\'
+    echo -e `echo -e ${col_SUBHEADING}`$1 `echo -e ${col_NORMAL}`::`echo -e ${col_INFO}` ${me} `echo -e ${col_NORMAL}`
 }
 
 info() {
@@ -64,7 +63,7 @@ fi
 
 # Display what is happening
 echo ""
-heading "info" "Invoking build number updater"
+heading "Invoking build number updater"
 
 # Increment the value
 new_number=$((current_number + 1))

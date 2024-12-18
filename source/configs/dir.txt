@@ -24,7 +24,7 @@
 #
 
 #root/
-#root/boot
+root/boot
 #root/boot/grub
 #root/boot/syslinux
 #root/boot/ksysboot

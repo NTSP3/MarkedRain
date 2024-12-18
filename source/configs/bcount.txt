@@ -5,7 +5,13 @@
 # 23-6-2024 21:22
 #
 
-latest_next=83
+latest_next=89
+88 - 2024-12-18 12:51:41 : Load module 'mousedev'
+87 - 2024-12-17 20:26:21 : v86d & Nano-X added
+86 - 2024-12-14 16:45:59 : Buildroot libgtk3 testing
+85 - 2024-10-31 10:46:20 : Libfreetype added
+84 - 2024-10-31 10:34:17 : Libpng add
+83 - 2024-10-27 13:42:56 : psplash test
 82 - 2024-10-19 18:58:37 : Initramfs edit 3
 81 - 2024-10-18 21:56:57 : Initramfs edit 2
 80 - 2024-10-18 21:51:17 : Initramfs recreated
