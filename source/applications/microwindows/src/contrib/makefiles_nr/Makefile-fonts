@@ -1,0 +1,31 @@
+# Microwindows libfonts.a library makefile for DJGPP
+# by Georg Potthast June 2011
+# based on makefile by Greg Haerr and V. Rogachev
+#
+
+LIB=libfonts.a
+
+OBJECTS = \
+	compiled/rom8x16.o \
+	compiled/rom8x8.o \
+	compiled/winFreeSansSerif11x13.o \
+	compiled/winFreeSystem14x16.o \
+	compiled/X6x13.o
+
+#OBJECTS += compiled/helvB10.o compiled/helvB12.o compiled/helvR10.o
+#OBJECTS += compiled/symb18.o compiled/lubI24.o compiled/timBI18.bdf compiled/X5x7.o
+
+all: tools/convbdf $(LIB)
+
+clean:
+	rm -f *.o *.a tools/convbdf
+
+# compile for host not target
+tools/convbdf: tools/convbdf.c
+	$(HOSTCC) $(HOSTCFLAGS) tools/convbdf.c $(LIBS) -o tools/convbdf
+
+$(LIB): $(OBJECTS)
+#	$(AR) rcs $(MW_DIR_SRC)/lib/$(LIB) $(OBJECTS)
+
+%.c: %.bdf
+	tools/convbdf $< > $@

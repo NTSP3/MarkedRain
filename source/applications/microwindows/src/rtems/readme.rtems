@@ -1,0 +1,81 @@
+#
+# $Id: readme.rtems,v 2010/01/08 roxana Exp $
+#
+
+RTEMS Setup
+===========
+
+This file provide instructions on how to configure and build Nano-X
+for RTEMS.  It is assumed that you are familiar enough with RTEMS and
+Microwindows, and have an RTEMS development environment that works.
+If you do not have an RTEMS development environment installed, then
+you will not be building this package for RTEMS.  It is encouraged
+to play around with each one these packages first, separately, before
+you start mixing them together. 
+
+a) RTEMS --- Patching & Building
+=================================
+This assumes tool RPMs are installed.
+
+Get the latest RTEMS source tree from www.rtems.org and build for
+your prefered BSP. Nano-X currently builds for i386-pc386 and for 
+arm-gumstix.  In general, a BSP needs to support a frame buffer 
+(e.g. LCD/CRT) and a pointing device (e.g. mouse or touch screen).
+
+You will want to build RTEMS with POSIX and TCP/IP enabled.  Install 
+RTEMS and then move on to building Nano-X.
+
+You will need to be able to write into the rtems build directory. Download the 
+rtems-graphics-toolkit and follow the instruction in the README to build the
+supporting libraries.
+
+b) Microwindows --- Patching & Building
+=======================================
+
+  + Downloaded Microwindows source from www.microwindows.org.
+    - 8 Jan 2010: CVS preferred for RTEMS 4.10 until new Nano-X release
+  + Make a build directory
+  + Untar microwindows
+    - If not using CVS.
+  + Find readme.rtems in microwin source:
+
+  bash$ find . -name "readme.rtems"
+  ./src/rtems/readme.rtems
+
+Per src/rtems/readme.rtems use config.rtems for Nano-X.
+
+Depending on the BSP that you are building Nano-X for you will have to edit
+the color palette in the config.rtems/config file between lines 96-100.
+
+Now build microwindows:
+
+  cd microwin/src
+  cp rtems/Makefile.rtems .
+  RTEMS_MAKEFILE_PATH=[build directory/prefix]/[target]/[rtemsbsp]/ \
+    CONFIG=`pwd`/Configs/config.rtems \
+      make -f Makefile.rtems clean all
+
+NOTE: In contrast to previous instructions, you do not have to overwrite the
+      file src/config.
+  
+e.g.:
+  RTEMS_MAKEFILE_PATH=/home/roxana/rtems-work/build-i386/i386-rtems4.10/pc386/ \
+    CONFIG=`pwd`/Configs/config.rtems \
+    make -f Makefile.rtems clean all
+
+If that all works, you should have a few demo executables in src/bin.
+
+NOTE2: Everything added to add_to_root folder will be built into the image
+       and moved into the filesystem on startup
+
+Credits
+=======
+
+I'd like to thank Joel Sherrill for going over the original notes, and
+providing me with his own notes to be merged here.
+
+If you have problems ask on the RTEMS list.
+
+Good Luck !!!
+
+Rosimildo & Roxana 

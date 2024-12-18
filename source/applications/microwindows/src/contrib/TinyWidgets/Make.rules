@@ -1,0 +1,33 @@
+# Make.rules.in
+# A top level configuration script for TinyWidgets
+# Written by Jordan Crouse
+
+CC=gcc
+AR=ar
+RANLIB=ranlib
+
+LIBDIR=$(TOP)/lib
+INCDIR=$(TOP)/include
+
+TWLIB=$(LIBDIR)/libtnW.a
+
+CFLAGS=
+ifeq ($(DEBUG), Y)
+CFLAGS += -g
+else
+CFLAGS += -O2
+endif
+CFLAGS += -Wall -I../../../include -I$(INCDIR)
+
+LIBS=-ltnW -L../../../lib -lnano-X $(LDFLAGS)
+#$(info LIBS $(LIBS))
+
+# Common rules that everyone uses 
+
+%.o: %.c
+	@ echo "Compiling $<..."
+	@ $(CC) $(CFLAGS) -o $@ -c $<
+
+%.d: %.c
+	@ $(CC) -M $(CFLAGS) $< > $@
+	@ $(CC) -M $(CFLAGS) $< | sed s/\\.o/.d/ >> $@
