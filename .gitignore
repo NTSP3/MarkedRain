@@ -14,6 +14,8 @@ builds/
 dotconfig.busybox
 source/configs/hashes.txt
 source/initramfs/source/init
+source/buildroot/package/pkg-generic.mk
+changelog
 
 # make menuconfig tmp & usr cfg
 .config
