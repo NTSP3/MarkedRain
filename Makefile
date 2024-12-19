@@ -423,6 +423,15 @@ main:
 #   - OpenRC Bootlogging -   #
 	$(call heading, sub, OpenRC bootlogging services)
 	$(Q)sed -i 's/^#\?rc_logger=.*$$/rc_logger="YES"/' "$(bin_dir_tmp_squashfs)/etc/rc.conf"
+#   - Watchdog daemon startup script fix -   #
+	$(call heading, sub, Watchdog daemon script (if exist) timer delay)
+	$(Q)file="bin/squashfs/etc/init.d/S15watchdog"; \
+	if [ -f "$$file" ]; then \
+			delay_time=$$(awk '/^[[:space:]]*watchdog/ && /-t [0-9]+/ { for (i=1; i<=NF; i++) if ($$i == "-t") print $$(i+1) }' "$$file"); \
+			if [ -n "$$delay_time" ]; then \
+					sed -i 's/ -t [0-9]*//g' "$$file"; \
+			fi; \
+	fi
 #  -- Create SquashFS image --  #
 	$(call heading, main, Generating compressed SquashFS image)
 	$(Q)mksquashfs "$(bin_dir_tmp_squashfs)" "$(bin_dir_tmp)$(sys_dir_squashfs)" -noappend -quiet -comp zstd
