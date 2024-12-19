@@ -14,23 +14,26 @@
 
 # Fancy output functions
 heading() {
-    # Double substituting to account for double '\\'
-    echo -e `echo -e ${col_SUBHEADING}`$1 `echo -e ${col_NORMAL}`::`echo -e ${col_INFO}` ${me} `echo -e ${col_NORMAL}`
+    echo -e ${col_SUBHEADING}$1 ${col_NORMAL}::${col_INFO} ${me} ${col_NORMAL}
 }
 
 ok() {
-    echo -e $1: `echo -e ${col_DONE}`OK`echo -e ${col_NORMAL}`
+    echo -e $1: ${col_DONE}OK${col_NORMAL}
 }
 
 error() {
-    echo -e ${me}: $2: `echo -e ${col_ERROR}`$1`echo -e ${col_NORMAL}` >&2
+    echo -e ${me}: $2: ${col_ERROR}$1${col_NORMAL} >&2
     exit 1
 }
 
 # Gather arguments
 me="$0"
+me_dir="$(dirname "$0")"
 src_folder="$1"
 dmp_folder="$2"
+
+# Source main
+source "${me_dir}/main"
 
 # Check if the variables are empty
 heading "Checking arguments for nullified values"

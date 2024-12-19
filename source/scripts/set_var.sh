@@ -9,20 +9,24 @@
 
 # Fancy output functions
 info() {
-    eval echo -e '${col_INFO} ++ ${1} ++${col_NORMAL}  ::  ${col_FALSE}${me}${col_NORMAL}'
+    echo -e ${col_INFO} ++ ${1} ++${col_NORMAL}  ::  ${col_FALSE}${me}${col_NORMAL}
 }
 
 error() {
-    eval echo -e '${me}: $2: ${col_ERROR}$1${col_NORMAL}'
+    echo -e ${me}: $2: ${col_ERROR}$1${col_NORMAL}
     exit 1
 }
 
 # Set variables
 me="$0"
+me_dir"$(dirname "$0")"
 variable="$1"
 value="$2"
 out_file="$3"
 time=$(date '+%Y-%m-%d %H:%M:%S')
+
+# Source main
+source "${me_dir}/main"
 
 # Check if the variables are empty
 if [ -z "$variable" ]; then

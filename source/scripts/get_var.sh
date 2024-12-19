@@ -10,15 +10,18 @@
 
 # Fancy output functions
 error() {
-    # colours aint showing in $(info) in makefile bruh
-    eval echo -e '${me}: $2: ${col_ERROR}$1${col_NORMAL}'
+    echo -e ${me}: $2: ${col_ERROR}$1${col_NORMAL}
     exit 1
 }
 
 # Gather arguments
 me="$0"
+me_dir="$(dirname "$0")"
 variable="$1"
 src_file="$2"
+
+# Source main
+source "${me_dir}/main"
 
 # Check if the variables are empty
 if [ -z "$src_file" ]; then

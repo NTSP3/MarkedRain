@@ -5,23 +5,22 @@
 # file specified by <argument-2>. It also asks for the build's
 # description.
 #
-# This file expects 'get_var.sh' to be in the same dir as this one is.
+# This file expects the script files to be in the same dir as this one is.
 #
 # Part of the MRain scripts source code.
 #
 
 # Fancy output functions
 heading() {
-    # Double substituting to account for double '\\'
-    echo -e `echo -e ${col_SUBHEADING}`$1 `echo -e ${col_NORMAL}`::`echo -e ${col_INFO}` ${me} `echo -e ${col_NORMAL}`
+    echo -e ${col_SUBHEADING}$1 ${col_NORMAL}::${col_INFO} ${me} ${col_NORMAL}
 }
 
 info() {
-    eval echo -e '${col_INFO} ++ $1 ++${col_NORMAL}  ::  ${col_FALSE}${me}${col_NORMAL}'
+    echo -e ${col_INFO} ++ $1 ++${col_NORMAL}  ::  ${col_FALSE}${me}${col_NORMAL}
 }
 
 error() {
-    eval echo -e '${me}: $2: ${col_ERROR}$1${col_NORMAL}'
+    echo -e ${me}: $2: ${col_ERROR}$1${col_NORMAL}
     exit 1
 }
 
@@ -29,8 +28,11 @@ error() {
 me="$0"
 src_str="$1"
 out_file="$2"
-me_dir=$(dirname "$0")
+me_dir="$(dirname "$0")"
 time=$(date '+%Y-%m-%d %H:%M:%S')
+
+# Source main
+source "${me_dir}/main"
 
 # Check if the variables are empty
 if [ -z "$src_str" ]; then
@@ -53,7 +55,7 @@ if ! [[ $current_number =~ ^[0-9]+$ ]]; then
 fi
 
 echo ""
-eval echo -ne " ${col_INFO} Build description ${col_NORMAL}[${col_FALSE}NULL = Cancel${col_NORMAL}] : " >&2
+echo -ne ${col_INFO} Build description ${col_NORMAL}[${col_FALSE}NULL = Cancel${col_NORMAL}] : >&2
 read desc
 
 if [ -z "$desc" ]; then
