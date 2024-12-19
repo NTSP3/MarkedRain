@@ -1,0 +1,14 @@
+# This file contains stuff that is common for shell files who source it.
+
+
+# Color escaping
+col_HEADING="`echo -e ${col_HEADING}`"
+col_SUBHEADING="`echo -e ${col_SUBHEADING}`"
+col_INFOHEADING="`echo -e ${col_INFOHEADING}`"
+col_INFO="`echo -e ${col_INFO}`"
+col_TRUE="`echo -e ${col_TRUE}`"
+col_FALSE="`echo -e ${col_FALSE}`"
+col_DONE="`echo -e ${col_DONE}`"
+col_ERROR="`echo -e ${col_ERROR}`"
+col_IMP="`echo -e ${col_IMP}`"
+col_NORMAL="`echo -e ${col_NORMAL}`"
