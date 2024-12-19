@@ -26,8 +26,10 @@ changelog
 *.o
 include/
 
-# my linux src
+# Random
+config.h
 linux/
+test/
 
 # gitignore of Buildroot
 source/buildroot/output
