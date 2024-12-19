@@ -5,7 +5,8 @@
 # 23-6-2024 21:22
 #
 
-latest_next=89
+latest_next=90
+89 - 2024-12-18 21:31:13 : Double substituting to account for double ''
 88 - 2024-12-18 12:51:41 : Load module 'mousedev'
 87 - 2024-12-17 20:26:21 : v86d & Nano-X added
 86 - 2024-12-14 16:45:59 : Buildroot libgtk3 testing
