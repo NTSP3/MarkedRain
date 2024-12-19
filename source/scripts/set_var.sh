@@ -19,7 +19,7 @@ error() {
 
 # Set variables
 me="$0"
-me_dir"$(dirname "$0")"
+me_dir="$(dirname "$0")"
 variable="$1"
 value="$2"
 out_file="$3"
