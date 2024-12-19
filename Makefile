@@ -364,13 +364,28 @@ main:
 #  -- Text files --  #
 	@echo ""
 	$(call heading, main, Generating/Appending to text files in the InitRamFS archive)
+    ifneq ($(shell "$(src_dir_scripts)/get_var.sh" "hash_mktext_init" "$(src_dir_conf)/hashes.txt"), $(shell $(call get_hash_dir, $(src_dir_mktext)/init)))
+	    $(call save_hash_dir, hash_mktext_init, $(src_dir_mktext)/init)
+	    $(eval bool_do_update_count := y)
+	    $(eval val_changes += Text files created in [init archive] changed\n)
+    endif
 	$(Q)export sys_dir_squashfs="$(sys_dir_squashfs)"; \
 	"$(src_dir_scripts)/make_text_files.sh" "$(src_dir_mktext)/init" "$(src_dir_initramfs)/source"
 	@echo ""
 	$(call heading, main, Generating/Appending to text files in the SquashFS image)
+    ifneq ($(shell "$(src_dir_scripts)/get_var.sh" "hash_mktext_root" "$(src_dir_conf)/hashes.txt"), $(shell $(call get_hash_dir, $(src_dir_mktext)/root)))
+	    $(call save_hash_dir, hash_mktext_root, $(src_dir_mktext)/root)
+	    $(eval bool_do_update_count := y)
+	    $(eval val_changes += Text files created in [SquashFS archive] changed\n)
+    endif
 	$(Q)"$(src_dir_scripts)/make_text_files.sh" "$(src_dir_mktext)/root" "$(bin_dir_tmp_squashfs)"
 	@echo ""
 	$(call heading, main, Generating/Appending to text files in the final image)
+    ifneq ($(shell "$(src_dir_scripts)/get_var.sh" "hash_mktext_image" "$(src_dir_conf)/hashes.txt"), $(shell $(call get_hash_dir, $(src_dir_mktext)/image)))
+	    $(call save_hash_dir, hash_mktext_image, $(src_dir_mktext)/image)
+	    $(eval bool_do_update_count := y)
+	    $(eval val_changes += Text files created in [Final ISO image] changed\n)
+    endif
 	$(Q)export boot_resolution="$(val_grub-boot_resolution)"; \
 	export boot_default="$(val_grub-boot_default)"; \
 	export boot_timeout="$(val_grub-boot_timeout)"; \
