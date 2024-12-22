@@ -430,6 +430,28 @@ menu "Operating System configuration"
             such as 'del' for 'rm', 'ren' for renaming files,
             'ls --color' for colored directory listings, and others.
 
+    config bool_use_drive_letters
+        bool "Use drive letters for partitions (zsh)"
+        default y
+        help
+            This option enables the use of drive letters for partitions in the shell.
+            When enabled, the user can switch to mountpoints by typing a drive letter
+            followed by a colon (e.g., 'C:'), provided that a corresponding folder
+            exists in /mnt. This allows a simplified method of navigating mountpoints
+            using familiar drive letter notation.
+
+            Example:
+                If the user types "C:" and the folder "/mnt/C:" exists, the shell
+                will automatically change the current directory to "/mnt/C:".
+
+    config val_disks_path
+        string "Path to track for disk mounting"
+        default "/disks"
+        depends on bool_use_drive_letters
+        help
+            Path where disks (C:, D:, E:, ...) will get mounted onto as directories
+            like "/disks/c:" for "C:" or something.
+
     menu "System version information"
         config VERSION
             int "Major release number [VERSION]"
@@ -456,7 +478,7 @@ menu "Operating System configuration"
 
         config RELEASE_TAG
             string "Version release tag"
-            default "none"
+            default "ColdStar"
             help
                 This variable contains the release 'tag' of the version string,
                 which looks like "<major>.<minor>.<sub-minor>.<count>-<tag>".
@@ -521,6 +543,17 @@ menu "Utilities"
             The VM software is used to run the iso image created with
             make. If you change this to anything other than QEMU, change
             the parameters too to make it work with that software.
+
+    config bool_use_qemu_kvm
+        bool "Use QEMU KVM Acceleration"
+        default y
+        help
+            Enabling the QEMU KVM acceleration can give exceptional performance to
+            the VM launched. You may enable this ONLY if the VM software is QEMU,
+            as it passes the parameters '-enable-kvm -cpu host'.
+
+            This only works if KVM itself is enabled and used on your computer.
+            Makefile automatically runs 'kvm-ok'.
 
     config util_vm_params
         string "Parameters to be sent to the Virtualization software"
