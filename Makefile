@@ -294,7 +294,7 @@ main:
 	    for val_temp2 in $$val_temp; do \
 	        if [ "$$repeat" = "y" ]; then \
 	            $(subst @echo, echo, $(call heading, sub, Re-making package: $$val_temp2)); \
-	            $(MAKE) -C "$(src_dir_buildroot)" "$${val_temp2}-reconfigure"; \
+	            fakeroot $(MAKE) -C "$(src_dir_buildroot)" "$${val_temp2}-reconfigure"; \
 	            continue; \
 	        fi; \
 	        echo -n "$(col_FALSE)[Version changed] $(col_INFO)Do you want to re-compile package '$$val_temp2'? $(col_NORMAL)[$(col_DONE)[Y]es$(col_NORMAL)/$(col_FALSE)[N]o$(col_NORMAL)/$(col_INFO)[A]ll$(col_NORMAL)]"; \
@@ -304,7 +304,7 @@ main:
 	                break; \
 	            elif [ "$$choice" = "Y" ] || [ "$$choice" = "y" ] || [ "$$choice" = "A" ] || [ "$$choice" = "a" ]  ; then \
 	                $(subst @echo, echo, $(call heading, sub, Re-making package: $$val_temp2)); \
-	                $(MAKE) -C "$(src_dir_buildroot)" "$${val_temp2}-reconfigure"; \
+	                fakeroot $(MAKE) -C "$(src_dir_buildroot)" "$${val_temp2}-reconfigure"; \
 	                echo > .recombr; \
 	                if [ "$$choice" = "A" ] || [ "$$choice" = "a" ] ; then \
 	                    repeat=y; \
@@ -317,7 +317,7 @@ main:
 	fi
     ifneq ($(shell [ -f "$(src_dir_buildroot)/output/images/rootfs.tar" ] && echo y), y)
 	    $(call heading, sub, rootfs.tar does not exist; making Buildroot)
-	    $(Q)$(MAKE) -C "$(src_dir_buildroot)" $(OUT) || exit 1
+	    $(Q)fakeroot $(MAKE) -C "$(src_dir_buildroot)" $(OUT) || exit 1
 	    $(call save_hash, hash_buildroot, $(src_dir_buildroot)/.config)
 	    $(eval bool_do_update_count := y)
 	    $(eval val_changes += rootfs.tar did not exist\n)
@@ -325,7 +325,7 @@ main:
 	    $(call heading, sub, Comparing .config hash)
         ifneq ($(shell "$(src_dir_scripts)/get_var.sh" "hash_buildroot" "$(src_dir_conf)/hashes.txt"),$(shell $(call get_hash, $(src_dir_buildroot)/.config)))
 	        $(call heading, sub, Hashes didn't match; making Buildroot)
-	        $(Q)$(MAKE) -C "$(src_dir_buildroot)" $(OUT) || exit 1
+	        $(Q)fakeroot $(MAKE) -C "$(src_dir_buildroot)" $(OUT) || exit 1
 	        $(call save_hash, hash_buildroot, $(src_dir_buildroot)/.config)
 	        $(eval bool_do_update_count := y)
 	        $(eval val_changes += Buildroot's configuration (.config) changed\n)
@@ -333,7 +333,7 @@ main:
             # Invoke BR make if version changed & all other checks are clear
             ifeq ($(shell [ -f ".recombr" ] && echo y), y)
 	            $(call heading, sub, Making Buildroot (version changed))
-	            $(MAKE) -C "$(src_dir_buildroot)" $(OUT) || exit 1
+	            $(Q)fakeroot $(MAKE) -C "$(src_dir_buildroot)" $(OUT) || exit 1
             endif
         endif
     endif
