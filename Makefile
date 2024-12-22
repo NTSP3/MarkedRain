@@ -187,7 +187,7 @@ ifeq ($(filter $(val_target),$(val_unmain_sect)),)
     else
         # non-menuconfig
         $(info $(shell $(subst @echo, echo, $(call heading, info, Sanitizing PATH))))
-        export PATH := $(shell echo $$PATH | tr -d '[:space:]') # Remove paths with spaces in variable PATH
+        export PATH := $(shell echo $$PATH | tr -d '[:space:]')# Remove paths with spaces in variable PATH
         -include $(src_dir_apps)/applications.mk
     endif
     # Put stuff meant for menuconfig and non-menuconfig here
