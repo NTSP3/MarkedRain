@@ -513,9 +513,6 @@ cleanall:
 	    $(subst @echo, echo, $(call heading, info, $(col_FALSE)Cleaning buildroot)); \
 	    $(MAKE) -C "$(src_dir_buildroot)" clean $(OUT) || exit 1; \
 	    echo ""; \
-	    $(subst @echo, echo, $(call heading, info, $(col_FALSE)Removing preinit binary)); \
-	    rm $(src_dir_preinit)/preinit; \
-	    echo ""; \
 	    $(subst @echo, echo, $(call ok,  Done. Run 'make' to re-compile. Be prepared to wait a long time.  )); \
 	    echo ""; \
 	else \
