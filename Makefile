@@ -420,6 +420,12 @@ main:
 	    $(call heading, sub, Convenient aliases & functions)
 	    $(Q)"$(src_dir_mktext)/aliases.sh" >> "$(bin_dir_tmp_squashfs)/etc/profile"
     endif
+#   - Drive letters -   #
+    ifeq ($(bool_use_drive_letters), y)
+	    $(call heading, sub, Drive letters)
+	    $(Q)export val_disks_path="$(val_disks_path)"; \
+	    "$(src_dir_mktext)/drive_letters.sh" >> "$(bin_dir_tmp_squashfs)/etc/zprofile"
+    endif
 #   - OpenRC Bootlogging -   #
 	$(call heading, sub, OpenRC bootlogging services)
 	$(Q)sed -i 's/^#\?rc_logger=.*$$/rc_logger="YES"/' "$(bin_dir_tmp_squashfs)/etc/rc.conf"
@@ -470,6 +476,9 @@ main:
 # --- Run --- #
 .PHONY: run runs
 run:
+    ifeq ($(bool_use_qemu_kvm), y)
+	    $(eval util_vm_params += -enable-kvm -cpu host)
+    endif
 	$(Q)if [ -f "$(bin_dir)/boot.iso" ]; then \
 	    echo ""; \
 	    $(subst @echo, echo, $(call ok,    // Now running "$(bin_dir)/boot.iso" using "$(util_vm)" and parameters "$(util_vm_params)" //    )); \
