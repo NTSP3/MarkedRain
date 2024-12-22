@@ -317,7 +317,7 @@ main:
 	fi
     ifneq ($(shell [ -f "$(src_dir_buildroot)/output/images/rootfs.tar" ] && echo y), y)
 	    $(call heading, sub, rootfs.tar does not exist; making Buildroot)
-	    $(Q)fakeroot $(MAKE) -C "$(src_dir_buildroot)" $(OUT) || exit 1
+	    $(Q)fakeroot $(MAKE) -C "$(src_dir_buildroot)" -j$(nproc) $(OUT) || exit 1
 	    $(call save_hash, hash_buildroot, $(src_dir_buildroot)/.config)
 	    $(eval bool_do_update_count := y)
 	    $(eval val_changes += rootfs.tar did not exist\n)
@@ -325,7 +325,7 @@ main:
 	    $(call heading, sub, Comparing .config hash)
         ifneq ($(shell "$(src_dir_scripts)/get_var.sh" "hash_buildroot" "$(src_dir_conf)/hashes.txt"),$(shell $(call get_hash, $(src_dir_buildroot)/.config)))
 	        $(call heading, sub, Hashes didn't match; making Buildroot)
-	        $(Q)fakeroot $(MAKE) -C "$(src_dir_buildroot)" $(OUT) || exit 1
+	        $(Q)fakeroot $(MAKE) -C "$(src_dir_buildroot)" -j$(nproc) $(OUT) || exit 1
 	        $(call save_hash, hash_buildroot, $(src_dir_buildroot)/.config)
 	        $(eval bool_do_update_count := y)
 	        $(eval val_changes += Buildroot's configuration (.config) changed\n)
@@ -333,7 +333,7 @@ main:
             # Invoke BR make if version changed & all other checks are clear
             ifeq ($(shell [ -f ".recombr" ] && echo y), y)
 	            $(call heading, sub, Making Buildroot (version changed))
-	            $(Q)fakeroot $(MAKE) -C "$(src_dir_buildroot)" $(OUT) || exit 1
+	            $(Q)fakeroot $(MAKE) -C "$(src_dir_buildroot)" -j$(nproc) $(OUT) || exit 1
             endif
         endif
     endif
