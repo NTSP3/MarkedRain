@@ -5,7 +5,12 @@
 # 23-6-2024 21:22
 #
 
-latest_next=90
+latest_next=95
+94 - 2024-12-22 12:46:20 : Drive letters added
+93 - 2024-12-21 17:21:29 : Drive letter test 3
+92 - 2024-12-20 17:19:51 : Drive letters test 2
+91 - 2024-12-19 22:04:02 : Drive letter PS1 test
+90 - 2024-12-19 20:21:58 : [DEL] key fixed
 89 - 2024-12-18 21:31:13 : Double substituting to account for double ''
 88 - 2024-12-18 12:51:41 : Load module 'mousedev'
 87 - 2024-12-17 20:26:21 : v86d & Nano-X added
