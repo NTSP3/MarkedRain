@@ -57,6 +57,4 @@ command_not_found_handler () {
     fi
 }
 
-# Switch to main drive automatically
-C:
 EOF
