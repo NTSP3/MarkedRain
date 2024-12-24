@@ -56,4 +56,7 @@ command_not_found_handler () {
         return 127
     fi
 }
+
+# Switch to main drive automatically
+C:
 EOF
