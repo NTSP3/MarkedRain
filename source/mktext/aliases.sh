@@ -54,4 +54,13 @@ alias pause='read'
 alias rd='rm -ri'
 alias vdir='vdir --color=auto'
 
+# Display version
+ver() {
+    echo -n "Operating System: "
+    grep PRETTY_NAME /etc/os-release | cut -d '"' -f 2
+    echo -n "Kernel release: "
+    uname --kernel-release
+    echo ""
+}
+
 EOF
