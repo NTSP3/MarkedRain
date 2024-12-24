@@ -5,7 +5,8 @@
 # 23-6-2024 21:22
 #
 
-latest_next=95
+latest_next=96
+95 - 2024-12-24 20:51:52 : Added 'ver' command
 94 - 2024-12-22 12:46:20 : Drive letters added
 93 - 2024-12-21 17:21:29 : Drive letter test 3
 92 - 2024-12-20 17:19:51 : Drive letters test 2
