@@ -16,6 +16,7 @@ source/configs/hashes.txt
 source/initramfs/source/init
 source/buildroot/package/pkg-generic.mk
 changelog
+mwx11/
 
 # make menuconfig tmp & usr cfg
 .config
