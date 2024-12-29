@@ -42,7 +42,7 @@ precmd() {
 
 # If the command wasn't found (file with some name like 'c:' or something)
 # & begins with '<letter>:', then execute whatever is after it.
-command_not_found_handler () {
+command_not_found_handler() {
     local string="\$*"
     if [[ \$string =~ ^[a-zA-Z]: ]]; then
         # Skip the '<letter>:' bit
@@ -55,6 +55,18 @@ command_not_found_handler () {
         echo "Bad command -" \${string}
         return 127
     fi
+}
+
+# new cd() command that doesn't go beyond drive letter
+function cd() {
+    # Check if the user requested to go up 1 level AND if we are in a drive mountpoint
+    if [[ "\$1" == ".." && "\$(pwd)" =~ '^/disks/[A-Z]:\$' ]]; then
+        if mountpoint -q "\$(pwd)"; then
+            return 0
+        fi
+    fi
+    # Call 'cd' for other cases
+    builtin cd "\$@"
 }
 
 EOF
