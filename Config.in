@@ -431,7 +431,7 @@ menu "Operating System configuration"
             'ls --color' for colored directory listings, and others.
 
     config bool_use_drive_letters
-        bool "Use drive letters for partitions (zsh)"
+        bool "Use drive letters for partitions (zsh) [Experimental]"
         default y
         help
             This option enables the use of drive letters for partitions in the shell.
@@ -443,6 +443,13 @@ menu "Operating System configuration"
             Example:
                 If the user types "C:" and the folder "/mnt/C:" exists, the shell
                 will automatically change the current directory to "/mnt/C:".
+
+            What this is: An easy way to switch between drives
+            What this is NOT: A compatible way of communicating between parititons
+                              in software (eg. "nano C:/some_file.txt" will NOT open
+                              '/mnt/C:/some_file.txt').
+
+            Only works with ZSH.
 
     config val_disks_path
         string "Path to track for disk mounting"
