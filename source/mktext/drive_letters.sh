@@ -69,4 +69,6 @@ function cd() {
     builtin cd "\$@"
 }
 
+cd "\$disk_path/C:"
+
 EOF
