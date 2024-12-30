@@ -37,6 +37,25 @@ while [ "$i" -gt 7 ]; do
     row="${i} ${row}"
 done
 
+# Text to display progress
+text_kernel="Loading kernel..."
+text_initrd="Loading initial ramdisk..."
+text_boot="Booting system..."
+
+# Gather number of spaces needed for text to be centered
+space_kernel=${#text_kernel}                    # Text's length
+space_kernel=$((total_column - space_kernel))   # Subtract length of text
+space_kernel=$((space_kernel / 2))              # Half of remaining space
+space_kernel=$(splitnum $space_kernel)          # Split the numbers
+space_initrd=${#text_initrd}
+space_initrd=$((total_column - space_initrd))
+space_initrd=$((space_initrd / 2))
+space_initrd=$(splitnum $space_initrd)
+space_boot=${#text_boot}
+space_boot=$((total_column - space_boot))
+space_boot=$((space_boot / 2))
+space_boot=$(splitnum $space_boot)
+
 cat << EOF
 default=$boot_default
 timeout=$boot_timeout
@@ -47,27 +66,59 @@ insmod gfxterm
 insmod all_video
 terminal_output gfxterm
 
-# This function works as 'progress "<text>" "<num-of-bars-to-fill>" "<num-of-remaining-bars>"'
+# This function works as 'progress "<text>" "<num-of-spaces-to-make-text-centered>" "<num-of-bars-to-fill>" "<num-of-remaining-bars>"'
 function progress {
-    clear
     for line in $row; do
         echo ""
     done
-    echo \${1}...
-    for column in \${2}; do
+    for space in \${2}; do
+        echo -n " "
+    done
+    echo \${1}
+    for column in \${3}; do
         echo -n "█"
     done
-    for column in \${3}; do
+    for column in \${4}; do
         echo -n "▐"
     done
 }
 
 menuentry "$entry_name" {
-    progress "Loading kernel" "$kernel_progress" "$kernel_remain"
-    linux "$sys_dir_linux" root=$linux_root $linux_params
-    progress "Loading initial ramdisk" "$initrd_progress" "$initrd_remain"
+    clear
+    progress "$text_kernel" "$space_kernel" "$kernel_progress" "$kernel_remain"
+    linux "$sys_dir_linux" root=$linux_root $linux_params quiet
+    clear
+    progress "$text_initrd" "$space_initrd" "$initrd_progress" "$initrd_remain"
     initrd "$sys_dir_initramfs"
-    progress "Booting system" "$full_progress" ""
+    clear
+    progress "$text_boot" "$space_boot" "$full_progress" ""
+}
+
+menuentry "$entry_name [Verbose]" {
+    clear
+    echo -n "Kernel location at '$sys_dir_linux', parameters '$linux_params verbose' "
+    progress "$text_kernel" "$space_kernel" "$kernel_progress" "$kernel_remain"
+    linux "$sys_dir_linux" root=$linux_root $linux_params verbose
+    clear
+    echo -n "InitRD location at '$sys_dir_initramfs'"
+    progress "$text_initrd" "$space_initrd" "$initrd_progress" "$initrd_remain"
+    initrd "$sys_dir_initramfs"
+    clear
+    echo -n "Booting"
+    progress "$text_boot" "$space_boot" "$full_progress" ""
+}
+
+menuentry "Boot from Floppy Disk" {
+    set root=(fd0)
+    chainloader +1
+}
+
+menuentry "Re-start your system" {
+    reboot
+}
+
+menuentry "Shutdown your system" {
+    halt
 }
 
 EOF
