@@ -11,7 +11,7 @@ bin
 builds/
 
 # MarkedRain files
-dotconfig.busybox
+help/
 source/configs/hashes.txt
 source/initramfs/source/init
 source/buildroot/package/pkg-generic.mk
