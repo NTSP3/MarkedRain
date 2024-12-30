@@ -1,5 +1,7 @@
 # "MarkedRain" Operating System
 
+![Logogram](media/Logograms/Full.png)
+
 The "MarkedRain" is a new linux OS sthat uses buildroot wssith OpenRC as init. It is really easy to work with. There was an older system based on Os2020, but working with nothing proved difficult.
 
 ## Showcase
