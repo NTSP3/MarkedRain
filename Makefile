@@ -338,7 +338,7 @@ main:
         endif
     endif
     ifeq ($(shell [ -f ".recombr" ] && echo y), y)
-	    $(Q)rm ".recombr"
+	    $(Q)rm .recombr
     endif
 	$(call heading, sub, Extracting rootfs archive to '$(bin_dir_tmp_squashfs)')
 	$(Q)pv -i 0.01 "$(src_dir_buildroot)/output/images/rootfs.tar" | tar -xf "-" -C "$(bin_dir_tmp_squashfs)"
@@ -415,6 +415,9 @@ main:
 #  -- Finalization --  #
 	@echo ""
 	$(call heading, main, Doing finalization procedures)
+#   - Branding -   #
+	$(call heading, sub, Adding branding image)
+	$(Q)cp "$(src_dir_media)/branding/flat.png" "$(bin_dir_tmp_squashfs)/usr/share/branding/mrain-flat.png"
 #   - Convenient aliases & Functions -   #
     ifeq ($(bool_include_aliases), y)
 	    $(call heading, sub, Convenient aliases & functions)
