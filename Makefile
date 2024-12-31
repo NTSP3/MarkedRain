@@ -242,26 +242,6 @@ main:
 	    @echo "$(col_FALSE)         !**                Configuration file isn't found                **!         $(col_NORMAL)"
 	    $(call stop, .config.mk is not found. Run 'make menuconfig', save it & try again)
     endif
-    ifeq ($(shell [ -f "$(bin_dir_iso)" ] && [ "$(ISO)" = "y" ] && [ "$(bool_do_timeout)" = "y" ] && echo y), y)
-	    $(call true, Wait a minute, bool_do_timeout)
-	    @echo ""
-	    @echo "$(col_INFO) The file specified in 'bin_dir_iso' is '$(bin_dir_iso)', which is a file that already exists."
-	    @echo " Some grace time has been given for you, if you need to save the current file for whatever purpose."
-	    @echo " Press $(col_NORMAL)$(col_ERROR)CTRL-C$(col_NORMAL)$(col_INFO) to cancel NOW. Pressing literally any other key will skip this countdown."
-	    @echo ""
-	    @echo " You can turn this off by setting 'bool_do_timeout' to false, or you can set 'val_timeout_num'"
-		@echo " to a lower number, if you find this annoying (which it probably is, but I want it)."
-	    @echo "$(col_NORMAL)"
-	    $(Q)for i in $$(seq $(val_timeout_num) -1 1); do \
-	        echo -n "\r$(col_INFO) You have $(col_NORMAL)$(col_ERROR)$$i$(col_NORMAL)$(col_INFO) seconds left $(col_NORMAL)"; \
-	        if ( read -n 1 -t 1 key </dev/tty 2>/dev/null ); then \
-	            break; \
-	        fi; \
-	    done
-	    @echo ""
-    else
-	    $(call false, Wait a minute, bool_do_timeout)
-    endif
 #  -- Compare MRain version --  #
 	$(call stat, Comparing MarkedRain version)
     ifneq ($(shell "$(src_dir_scripts)/get_var.sh" "ver_previous_mrain-sys" "$(src_dir_conf)/variables.txt"), $(MRAIN_VERSION))
@@ -448,7 +428,7 @@ main:
 #  -- Installing GRUB --  #
 	@echo ""
 	$(call heading, main, Creating new disc image with GRUB)
-    ifeq (ISO, y)
+    ifeq ($(ISO), y)
 	    $(Q)grub-mkrescue -o "$(bin_dir_iso)" "$(bin_dir_tmp)" $(OUT)
     else
 	    $(Q)grub-mkrescue -o "$(bin_dir)/boot.iso" "$(bin_dir_tmp)" $(OUT)
