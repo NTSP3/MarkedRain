@@ -155,6 +155,13 @@ menu "Source configuration"
             the kernel directory or the bzImage file,
             change this value to point to that file.
 
+    config src_dir_media
+        string "Media directory"
+        default "$[src_dir]/media"
+        help
+            The media directory contains pictures, videos,
+            and audio items used by MRain OS.
+
     config src_dir_modules
         string "Modules directory"
         default "$[src_dir]/kernel/modules"
