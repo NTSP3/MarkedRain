@@ -5,7 +5,8 @@
 # 23-6-2024 21:22
 #
 
-latest_next=102
+latest_next=103
+102 - 2024-12-31 13:04:03 : neofetch added, edit & about alias
 101 - 2024-12-30 19:58:44 : Auto-switch to C:
 100 - 2024-12-30 19:53:39 : Centered text improved
 99 - 2024-12-30 19:16:31 : Bootmenu floppy disk item & poweroff-reboot item
