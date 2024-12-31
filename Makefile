@@ -466,7 +466,7 @@ run:
 	$(Q)if [ -f "$(bin_dir)/boot.iso" ]; then \
 	    echo ""; \
 	    $(subst @echo, echo, $(call ok,    // Now running "$(bin_dir)/boot.iso" using "$(util_vm)" and parameters "$(util_vm_params)" //    )); \
-	    "$(util_vm)" "$(bin_dir)/boot.iso" $(shell echo -n $(util_vm_params)); \
+	    "$(util_vm)" $(shell echo -n $(util_vm_params)); \
 	else \
 	    $(subst @echo, echo, $(call stop, Supplied file "$(bin_dir)/boot.iso" doesn't exist. Make sure you ran "make"; and try again.)); \
 	fi
