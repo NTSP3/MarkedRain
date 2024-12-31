@@ -44,3 +44,5 @@ root/boot
 #root/System/sysconf
 #root/System/temp
 #root/System/variable
+#
+root/usr/share/branding
