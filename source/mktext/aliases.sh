@@ -35,12 +35,14 @@ marked-rain-list-not-hidden-function() {
 }
 
 # Great command aliases
+alias about='neofetch'
 alias cd.='cd .'
 alias cd..='cd ..'
 alias cls='clear'
 alias copy='cp'
 alias del='rm -i'
 alias dir='ls -l'
+alias edit='nano'
 alias egrep='egrep --color=auto'
 alias fgrep='fgrep --color=auto'
 alias grep='grep --color=auto'
