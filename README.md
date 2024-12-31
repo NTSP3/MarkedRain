@@ -6,15 +6,14 @@ The "MarkedRain" is a new linux OS sthat uses buildroot wssith OpenRC as init. I
 
 ## Showcase
 
-
-![Preview 1](media/preview1.png "MarkedRain OS preview 1")
+![Preview 1](media/preview1.gif "MarkedRain OS preview 1")
 
 ![Preview 2](media/preview2.png "MarkedRain OS preview 2")
-
-![Preview 3](media/preview3.gif "MarkedRain OS preview 3")
 
 ## Compiling
 
 Install dependencies for 'make' & 'menuconfig', then run "make menuconfig". Configure as per you desire, then you can either do "make" on the root directory, or go to "source/buildroot" and run menuconfig there, to configure its options, and then run "make" on the root directory, not on buildroot's directory.
 
 View "docs/building.md" for other make options.
+
+![Compiling](media/preview3.gif "MarkedRain compiling preview")
