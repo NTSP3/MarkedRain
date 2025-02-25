@@ -83,7 +83,7 @@ function progress {
     done
 }
 
-menuentry "$entry_name" {
+menuentry "$entry_name [Pretty]" {
     clear
     progress "$text_kernel" "$space_kernel" "$kernel_progress" "$kernel_remain"
     linux "$sys_dir_linux" root=$linux_root $linux_params quiet
@@ -94,18 +94,27 @@ menuentry "$entry_name" {
     progress "$text_boot" "$space_boot" "$full_progress" ""
 }
 
-menuentry "$entry_name [Verbose]" {
+menuentry "$entry_name [Noisy]" {
     clear
-    echo -n "Kernel location at '$sys_dir_linux', parameters '$linux_params verbose' "
+    echo -n "Kernel location at '$sys_dir_linux', parameters '$linux_params console=ttyS0 console=tty0' "
     progress "$text_kernel" "$space_kernel" "$kernel_progress" "$kernel_remain"
-    linux "$sys_dir_linux" root=$linux_root $linux_params verbose
+    linux "$sys_dir_linux" root=$linux_root $linux_params console=ttyS0 console=tty0
     clear
     echo -n "InitRD location at '$sys_dir_initramfs'"
     progress "$text_initrd" "$space_initrd" "$initrd_progress" "$initrd_remain"
     initrd "$sys_dir_initramfs"
     clear
-    echo -n "Booting"
+    echo -n "Kernel output mirrored to Serial port. Booting..."
     progress "$text_boot" "$space_boot" "$full_progress" ""
+}
+
+menuentry "$entry_name [Control from Serial/Terminal]" {
+    echo ":: View ttyS0 for output & control."
+    linux "$sys_dir_linux" root=$linux_root $linux_params console=ttyS0
+    echo ">> Loaded linux kernel"
+    initrd "$sys_dir_initramfs"
+    echo ">> Loaded initramfs"
+    echo ">> Booting"
 }
 
 menuentry "Boot from Floppy Disk" {
