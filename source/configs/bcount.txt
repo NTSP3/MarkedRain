@@ -5,7 +5,13 @@
 # 23-6-2024 21:22
 #
 
-latest_next=103
+latest_next=109
+108 - 2025-02-24 23:52:38 : Kernel filepath manipulation test
+107 - 2025-02-24 21:39:50 : Removed printk overly debug messages
+106 - 2025-02-23 22:17:55 : Removed 'verbose' parameter
+105 - 2025-02-23 22:13:37 : New entry for serial control
+104 - 2025-02-23 21:50:40 : OpenRC & Kernel rebuilding
+103 - 2025-01-04 20:27:47 : [CSystemd init system test
 102 - 2024-12-31 13:04:03 : neofetch added, edit & about alias
 101 - 2024-12-30 19:58:44 : Auto-switch to C:
 100 - 2024-12-30 19:53:39 : Centered text improved
