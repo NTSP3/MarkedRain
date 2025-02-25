@@ -1,0 +1,14 @@
+
+This folder contains the files modified
+for use with MarkedRain.
+
+In order to rebuild the linux kernel
+successfully, you must download the
+appropriate kernel version (specified
+in the file "VER"), then execute the
+.patch files located source/ directory
+over the kernel source directory, then
+copy the config.txt file to .config,
+then run 'make' in the kernel directory.
+
+Read more at <docs-folder>/kernel.md
