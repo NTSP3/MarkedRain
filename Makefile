@@ -242,6 +242,8 @@ main:
 	    @echo "$(col_FALSE)         !**                Configuration file isn't found                **!         $(col_NORMAL)"
 	    $(call stop, .config.mk is not found. Run 'make menuconfig', save it & try again)
     endif
+#  -- Update no. of times Make has been run --  #
+	$(Q)"$(src_dir_scripts)/base_count_increment.sh" "latest_next" "$(src_dir_conf)/mcount.txt"
 #  -- Compare MRain version --  #
 	$(call stat, Comparing MarkedRain version)
     ifneq ($(shell "$(src_dir_scripts)/get_var.sh" "ver_previous_mrain-sys" "$(src_dir_conf)/variables.txt"), $(MRAIN_VERSION))
@@ -409,9 +411,6 @@ main:
 	    $(Q)export val_disks_path="$(val_disks_path)"; \
 	    "$(src_dir_mktext)/drive_letters.sh" >> "$(bin_dir_tmp_squashfs)/etc/zprofile"
     endif
-#   - OpenRC Bootlogging -   #
-	$(call heading, sub, OpenRC bootlogging services)
-	$(Q)sed -i 's/^#\?rc_logger=.*$$/rc_logger="YES"/' "$(bin_dir_tmp_squashfs)/etc/rc.conf"
 #   - Watchdog daemon startup script fix -   #
 	$(call heading, sub, Watchdog daemon script (if exist) timer delay)
 	$(Q)file="bin/squashfs/etc/init.d/S15watchdog"; \
