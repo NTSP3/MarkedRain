@@ -1,0 +1,35 @@
+--- namei.c	2025-02-25 11:18:46.067057700 +0000
++++ namei.c	2025-02-25 11:27:30.200533200 +0000
+@@ -44,6 +44,9 @@
+ #include "internal.h"
+ #include "mount.h"
+ 
++#include <linux/ctype.h> // MarkedRain edit
++#include <linux/string.h> // MarkedRain edit
++
+ /* [Feb-1997 T. Schoebel-Theuer]
+  * Fundamental changes in the pathname lookup mechanisms (namei)
+  * were necessary because of omirr.  The reason is that omirr needs
+@@ -2425,7 +2428,21 @@
+ static const char *path_init(struct nameidata *nd, unsigned flags)
+ {
+ 	int error;
+-	const char *s = nd->name->name;
++	const char *old_path = nd->name->name; // MarkedRain edit begin
++	const char *path_prefix = "/boot/disks/"; // <-- Fixed path of disks with drive letters assigned
++	size_t maximum_potential_memory = strlen(path_prefix) + strlen(old_path) + 1;
++        char *s = kmalloc(maximum_potential_memory, GFP_KERNEL); // Allocate appropriate memory
++        strcpy(s, old_path);
++
++	// Check if the path begins in format 'A:' to 'z:'
++	if (isalpha(s[0]) && s[1] == ':') {
++		char *buffer = kmalloc(maximum_potential_memory, GFP_KERNEL); // Allocate buffer
++		strcpy(buffer, path_prefix); // Prepend drive path
++		strcat(buffer, s); // Append path with drive letter
++		buffer[strlen(path_prefix)] = toupper(buffer[strlen(path_prefix)]); // Uppercase the drive letter
++		strcpy(s, buffer);
++		kfree(buffer); // Unallocate buffer
++	} // MarkedRain edit end
+ 
+ 	/* LOOKUP_CACHED requires RCU, ask caller to retry */
+ 	if ((flags & (LOOKUP_RCU | LOOKUP_CACHED)) == LOOKUP_CACHED)
