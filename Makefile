@@ -20,8 +20,10 @@ col_NORMAL				:= \e[0m
 export col_HEADING col_SUBHEADING col_INFOHEADING col_INFO col_TRUE col_FALSE col_DONE col_ERROR col_IMP col_NORMAL
 #  --[ Others ]--  #
 val_target				:= $(MAKECMDGOALS)#    # Gets the target that the user invoked
-val_current_dir			:= $(shell pwd)#       # Gets the current working director
+val_mkfile_dir			:= $(shell pwd)#       # Gets the current working director
+val_unmain_sect			:= help#               # Default sections to not include in global code
 val_temp				:=#                    # Temporary variable
+S					= $(Q)$(src_dir_scripts)/functions.sh
 #  --[ User's configuration (overrides vars with same name) ]--  #
 -include .config.mk#                           # Include .config.mk
 # Extraversion is here - read the comment in its previous location #
@@ -188,7 +190,18 @@ ifeq ($(filter $(val_target),$(val_unmain_sect)),)
         # non-menuconfig
         $(info $(shell $(subst @echo, echo, $(call heading, info, Sanitizing PATH))))
         export PATH := $(shell echo $$PATH | tr -d '[:space:]')# Remove paths with spaces in variable PATH
-        -include $(src_dir_apps)/applications.mk
+        ifneq ($(shell [ -f ".config" ] && echo y), y)
+            $(info $(shell $(call warn, .config file is not found. Settings in menuconfig may not reflect the current settings.)))
+        endif
+        ifeq ($(shell [ -f ".config.mk" ] && echo y), y)
+            $(info $(shell echo "$(col_TRUE)         !**                   Configuration file found                   **!         $(col_NORMAL)"))
+        else
+            $(info $(shell echo  "$(col_FALSE)         !**                Configuration file isn't found                **!         $(col_NORMAL)"))
+            $(info $(shell $(call stop, .config.mk is not found. Run 'make menuconfig', save it & try again)))
+        endif
+        include $(src_dir_scripts)/scripts.mk#                 # Makefile scripts
+        export HOME=$(val_mkfile_dir)/$(bin_dir)/home#         # Home dir replacement
+        export val_mkfile_dir                                  # Current mkfile dir
     endif
     # Put stuff meant for menuconfig and non-menuconfig here
     $(info $(shell $(subst @echo, echo, $(call heading, info, Exporting MRain System version))))
@@ -209,7 +222,7 @@ config:
 
 # --- Default --- #
 .PHONY: all
-all: main
+all: main prepare-iso final-touch
 	@echo ""
 	@width=$$(tput cols); \
 	for i in $$(seq 1 $$width); do \
@@ -221,7 +234,7 @@ all: main
 	    $(call ok,    // The ISO is now ready. You can find it in '$(bin_dir_iso)' //    )
 	    @echo "$(col_FALSE)    // 'make run' & 'make runs' do not have support for ISO image in '$(bin_dir_iso)' by default //    $(col_NORMAL)"
     else
-	    $(call ok,    // The temporary image is now ready. You can find it as '$(bin_dir)/boot.iso' //    )
+	    $(call ok,    // The temporary ISO image is now ready. You can find it as '$(bin_dir)/boot.iso' //    )
 	    $(call ok,    // Use 'make run' if you want to run this ISO image now  //    )
 	    $(call ok,    // Use 'make runs' if you want to automatically open the ISO in $(util_vm) //    )
 	    @echo ""
@@ -233,15 +246,6 @@ all: main
 # --- Main compiling procedure --- #
 .PHONY: main
 main:
-    ifneq ($(shell [ -f ".config" ] && echo y), y)
-	    $(call warn, .config file is not found. Settings in menuconfig may not reflect the current settings.)
-    endif
-    ifeq ($(shell [ -f ".config.mk" ] && echo y), y)
-	    @echo "$(col_TRUE)         !**                   Configuration file found                   **!         $(col_NORMAL)"
-    else
-	    @echo "$(col_FALSE)         !**                Configuration file isn't found                **!         $(col_NORMAL)"
-	    $(call stop, .config.mk is not found. Run 'make menuconfig', save it & try again)
-    endif
 #  -- Update no. of times Make has been run --  #
 	$(Q)"$(src_dir_scripts)/base_count_increment.sh" "latest_next" "$(src_dir_conf)/mcount.txt"
 #  -- Compare MRain version --  #
@@ -256,9 +260,9 @@ main:
 	$(call heading, info, $(col_OK)Setting up temporary directories)
 	$(Q)mkdir -p "/dev/shm/mrain-bin"
 	$(Q)ln -s /dev/shm/mrain-bin "$(bin_dir)"
-	$(Q)mkdir -p "$(bin_dir_tmp)" "$(bin_dir_tmp_squashfs)"
+	$(Q)mkdir -p "$(bin_dir_tmp)" "$(bin_dir_tmp_squashfs)" "$$HOME"
 	$(call heading, main, Creating system directories)
-	$(Q)mkdir -p "$(bin_dir_tmp)/boot" "$(bin_dir_tmp)/boot/grub" "$(bin_dir_tmp)/boot/syslinux"
+	$(Q)mkdir -p "$(bin_dir_tmp)/boot" "$(bin_dir_tmp)/boot/grub"
 	$(Q)"$(src_dir_scripts)/mk_sys_dir.sh" "$(src_dir_conf)/dir.txt" "$(bin_dir_tmp_squashfs)"
 #  -- Buildroot --  #
 	@echo ""
@@ -324,6 +328,14 @@ main:
     endif
 	$(call heading, sub, Extracting rootfs archive to '$(bin_dir_tmp_squashfs)')
 	$(Q)pv -i 0.01 "$(src_dir_buildroot)/output/images/rootfs.tar" | tar -xf "-" -C "$(bin_dir_tmp_squashfs)"
+#  -- Applications --  #
+	@echo ""
+	$(call applications)
+    ifneq ($(shell "$(src_dir_scripts)/get_var.sh" "hash_apps" "$(src_dir_conf)/hashes.txt"), $(shell $(call get_hash_dir, $(src_dir_apps))))
+	    $(call save_hash_dir, hash_apps, $(src_dir_apps))
+	    $(eval bool_do_update_count := y)
+	    $(eval val_changes += Applications directory changed\n)
+    endif
 #  -- Kernel --  #
 	@echo ""
 	$(call heading, main, Adding the linux kernel)
@@ -339,11 +351,21 @@ main:
     endif
 	$(call heading, sub, Copying kernel as '$(bin_dir_tmp)$(sys_dir_linux)')
 	$(Q)cp "$(src_dir_linux)" "$(bin_dir_tmp)$(sys_dir_linux)" $(OUT)
+	$(call heading, sub, Copying kernel as '$(bin_dir_tmp_squashfs)$(sys_dir_linux)')
+	$(Q)cp "$(src_dir_linux)" "$(bin_dir_tmp_squashfs)$(sys_dir_linux)" $(OUT)
 #  -- Modules --  #
 	@echo ""
 	$(call heading, main, Adding modules)
 	$(Q)cp -r "$(src_dir_modules)" "$(bin_dir_tmp_squashfs)/usr/lib"
 #  -- Text files --  #
+	@echo ""
+	$(call heading, main, Generating/Appending to text files in the SquashFS/System image)
+    ifneq ($(shell "$(src_dir_scripts)/get_var.sh" "hash_mktext_root" "$(src_dir_conf)/hashes.txt"), $(shell $(call get_hash_dir, $(src_dir_mktext)/root)))
+	    $(call save_hash_dir, hash_mktext_root, $(src_dir_mktext)/root)
+	    $(eval bool_do_update_count := y)
+	    $(eval val_changes += Text files created in [SquashFS/System archive] changed\n)
+    endif
+	$(Q)"$(src_dir_scripts)/make_text_files.sh" "$(src_dir_mktext)/root" "$(bin_dir_tmp_squashfs)"
 	@echo ""
 	$(call heading, main, Generating/Appending to text files in the InitRamFS archive)
     ifneq ($(shell "$(src_dir_scripts)/get_var.sh" "hash_mktext_init" "$(src_dir_conf)/hashes.txt"), $(shell $(call get_hash_dir, $(src_dir_mktext)/init)))
@@ -354,26 +376,17 @@ main:
 	$(Q)export sys_dir_squashfs="$(sys_dir_squashfs)"; \
 	"$(src_dir_scripts)/make_text_files.sh" "$(src_dir_mktext)/init" "$(src_dir_initramfs)/source"
 	@echo ""
-	$(call heading, main, Generating/Appending to text files in the SquashFS image)
-    ifneq ($(shell "$(src_dir_scripts)/get_var.sh" "hash_mktext_root" "$(src_dir_conf)/hashes.txt"), $(shell $(call get_hash_dir, $(src_dir_mktext)/root)))
-	    $(call save_hash_dir, hash_mktext_root, $(src_dir_mktext)/root)
-	    $(eval bool_do_update_count := y)
-	    $(eval val_changes += Text files created in [SquashFS archive] changed\n)
-    endif
-	$(Q)"$(src_dir_scripts)/make_text_files.sh" "$(src_dir_mktext)/root" "$(bin_dir_tmp_squashfs)"
-	@echo ""
 	$(call heading, main, Generating/Appending to text files in the final image)
     ifneq ($(shell "$(src_dir_scripts)/get_var.sh" "hash_mktext_image" "$(src_dir_conf)/hashes.txt"), $(shell $(call get_hash_dir, $(src_dir_mktext)/image)))
 	    $(call save_hash_dir, hash_mktext_image, $(src_dir_mktext)/image)
 	    $(eval bool_do_update_count := y)
-	    $(eval val_changes += Text files created in [Final ISO image] changed\n)
+	    $(eval val_changes += Text files created in [Root of image] changed\n)
     endif
 	$(Q)export boot_resolution="$(val_grub-boot_resolution)"; \
 	export boot_default="$(val_grub-boot_default)"; \
 	export boot_timeout="$(val_grub-boot_timeout)"; \
 	export entry_name="$(val_grub-entry-one_name)"; \
 	export sys_dir_linux="$(sys_dir_linux)"; \
-	export linux_root="$(val_grub-entry-one_li_root)"; \
 	export linux_params=$(val_grub-entry-one_li_params); \
 	export sys_dir_initramfs="$(sys_dir_initramfs)"; \
 	"$(src_dir_scripts)/make_text_files.sh" "$(src_dir_mktext)/image" "$(bin_dir_tmp)"
@@ -384,16 +397,7 @@ main:
 	$(Q)chmod +x "$(src_dir_initramfs)/source/init"
 	$(call heading, sub, Creating init archive)
 	$(Q)cd "$(src_dir_initramfs)/source"; \
-	find . | cpio -o -H newc --quiet | pv -i 0.01 -s $$(du -sb . | awk '{print $$1}') | zstd --force --quiet -o "$(val_current_dir)/$(bin_dir_tmp)$(sys_dir_initramfs)"
-#  -- Applications --  #
-	@echo ""
-	$(call heading, main, Installing applications)
-	$(call applications)
-    ifneq ($(shell "$(src_dir_scripts)/get_var.sh" "hash_apps" "$(src_dir_conf)/hashes.txt"), $(shell $(call get_hash_dir, $(src_dir_apps))))
-	    $(call save_hash_dir, hash_apps, $(src_dir_apps))
-	    $(eval bool_do_update_count := y)
-	    $(eval val_changes += Applications directory changed\n)
-    endif
+	find . | cpio -o -H newc --quiet | pv -i 0.01 -s $$(du -sb . | awk '{print $$1}') | zstd --force --quiet -o "$(val_mkfile_dir)/$(bin_dir_tmp)$(sys_dir_initramfs)"
 #  -- Finalization --  #
 	@echo ""
 	$(call heading, main, Doing finalization procedures)
@@ -411,6 +415,21 @@ main:
 	    $(Q)export val_disks_path="$(val_disks_path)"; \
 	    "$(src_dir_mktext)/drive_letters.sh" >> "$(bin_dir_tmp_squashfs)/etc/zprofile"
     endif
+#   - OpenRC Getty tty2,3,4,5,6 symlinks -   #
+    ifeq ($(bool_tty_expansion), y)
+	    $(call heading, sub, OpenRC getty on tty2 - tty6 symlinks)
+	    $(Q)cd "$(bin_dir_tmp_squashfs)"; \
+	    ln -s "/etc/init.d/agetty" "etc/init.d/agetty.tty2"; \
+	    ln -s "/etc/init.d/agetty" "etc/init.d/agetty.tty3"; \
+	    ln -s "/etc/init.d/agetty" "etc/init.d/agetty.tty4"; \
+	    ln -s "/etc/init.d/agetty" "etc/init.d/agetty.tty5"; \
+	    ln -s "/etc/init.d/agetty" "etc/init.d/agetty.tty6"; \
+	    ln -s "/etc/init.d/agetty.tty2" "etc/runlevels/default/agetty.tty2"; \
+	    ln -s "/etc/init.d/agetty.tty3" "etc/runlevels/default/agetty.tty3"; \
+	    ln -s "/etc/init.d/agetty.tty4" "etc/runlevels/default/agetty.tty4"; \
+	    ln -s "/etc/init.d/agetty.tty5" "etc/runlevels/default/agetty.tty5"; \
+	    ln -s "/etc/init.d/agetty.tty6" "etc/runlevels/default/agetty.tty6"
+    endif
 #   - Watchdog daemon startup script fix -   #
 	$(call heading, sub, Watchdog daemon script (if exist) timer delay)
 	$(Q)file="bin/squashfs/etc/init.d/S15watchdog"; \
@@ -420,18 +439,10 @@ main:
 					sed -i 's/ -t [0-9]*//g' "$$file"; \
 			fi; \
 	fi
-#  -- Create SquashFS image --  #
-	@echo ""
-	$(call heading, main, Generating compressed SquashFS image)
-	$(Q)mksquashfs "$(bin_dir_tmp_squashfs)" "$(bin_dir_tmp)$(sys_dir_squashfs)" -noappend -quiet -comp zstd
-#  -- Installing GRUB --  #
-	@echo ""
-	$(call heading, main, Creating new disc image with GRUB)
-    ifeq ($(ISO), y)
-	    $(Q)grub-mkrescue -o "$(bin_dir_iso)" "$(bin_dir_tmp)" $(OUT)
-    else
-	    $(Q)grub-mkrescue -o "$(bin_dir)/boot.iso" "$(bin_dir_tmp)" $(OUT)
-    endif
+
+# --- Final touches --- #
+.PHONY: final-touch
+final-touch:
 #  -- Version updation --  #
     # Makefile's 'ifeq' conditions ain't working here for some reason
 	$(Q)if [ "$(bool_ver_change)" = "y" ]; then \
@@ -456,22 +467,116 @@ main:
 	    $(call false, Wipe temporary directory, bool_clean_dir_tmp)
     endif
 
+# --- ISO Image --- #
+.PHONY: iso prepare-iso
+iso: all
+prepare-iso:
+#  -- Create SquashFS image --  #
+	@echo ""
+	$(call heading, main, Generating compressed SquashFS image)
+	$(Q)mksquashfs "$(bin_dir_tmp_squashfs)" "$(bin_dir_tmp)$(sys_dir_squashfs)" -noappend -quiet -comp zstd
+#  -- Generate disc image using GRUB --  #
+	@echo ""
+	$(call heading, main, Creating new disc image with GRUB)
+    ifeq ($(ISO), y)
+	    $(Q)grub-mkrescue -o "$(bin_dir_iso)" "$(bin_dir_tmp)" $(OUT)
+    else
+	    $(Q)grub-mkrescue -o "$(bin_dir)/boot.iso" "$(bin_dir_tmp)" $(OUT)
+    endif
+
+# --- Disk Image --- #
+.PHONY: image prepare-image
+image: main prepare-image final-touch
+	@echo ""
+	@width=$$(tput cols); \
+	for i in $$(seq 1 $$width); do \
+	    printf "$(col_DONE)-"; \
+	done; \
+	printf "$(col_NORMAL)\n"
+	@echo ""
+    ifeq ($(ISO), y)
+	    $(call ok,    // The Disk Image is now ready. You can find it in '$(bin_dir_iso)' //    )
+	    @echo "$(col_FALSE)    // 'make run' & 'make runs' do not have support for ISO image in '$(bin_dir_iso)' by default //    $(col_NORMAL)"
+    else
+	    $(call ok,    // The temporary Disk Image image is now ready. You can find it as '$(bin_dir)/boot.iso' //    )
+	    $(call ok,    // Use 'make ir' or 'make imagerun' if you want to run this ISO image now  //    )
+	    $(call ok,    // Use 'make irs' or 'make imageruns' if you want to automatically open the Disk Image in $(util_vm) //    )
+	    @echo ""
+	    $(call ok,    // Run 'make' with parameter 'ISO=y' if you want to create a persistant ISO image in '$(bin_dir_iso)' //    )
+		@echo "$(col_FALSE)    // 'make run' & 'make runs' do not have support for ISO image in '$(bin_dir_iso)' by default //    $(col_NORMAL)"
+    endif
+	@echo ""
+
+prepare-image:
+#  -- Move root files into image dir --  #
+	$(call heading, main, Moving contents of $(bin_dir_tmp) into $(bin_dir_tmp_squashfs))
+	$(Q)rsync -a --ignore-existing "$(bin_dir_tmp)/" "$(bin_dir_tmp_squashfs)/"
+#  -- Make writable image --  #
+	$(call heading, main, Creating the writable & portable image)
+	$(call heading, sub, Creating an empty file ($(val_portable_size)MB))
+	$(Q)truncate -s $$(expr $$(sudo du -sB1 "$(bin_dir_tmp_squashfs)" | awk '{print int($$1 / 1024 / 1024)}') + 1 + $(val_portable_size_extension))M "$(bin_dir)/boot.iso" $(OUT)
+	$(call heading, imp, Please provide password to perform operations on this image)
+	$(Q)sudo losetup -fP --show "$(bin_dir)/boot.iso" > "$(bin_dir)/.tmp"
+	$(call heading, sub, Creating partition table)
+	$(Q)echo ',,83,*' | sudo sfdisk "$$(cat $(bin_dir)/.tmp)"
+	$(Q)sudo partprobe "$$(cat $(bin_dir)/.tmp)"
+	$(call heading, sub, Formatting using the ext4 filesystem)
+	$(Q)sudo mkfs.ext4 "$$(cat $(bin_dir)/.tmp)p1" | grep -oP 'UUID: \K[\w-]+' > "$(bin_dir)/.uuid"
+	$(call heading, sub, Mounting partition)
+	$(Q)sudo mount "$$(cat $(bin_dir)/.tmp)p1" "$(bin_dir_tmp)"
+	$(call heading, sub, Installing GRUB Bootloader)
+	$(Q)sudo grub-install --target=i386-pc --boot-directory="$(bin_dir_tmp)/boot" "$$(cat $(bin_dir)/.tmp)"
+	$(call heading, sub2, Updating root= value)
+	$(Q)sed -i "s/root=auto_cd/root=UUID=$$(cat '$(bin_dir)/.uuid')/g" "$(bin_dir_tmp_squashfs)/boot/grub/grub.cfg"
+	$(call heading, sub, Copying system into the image)
+	$(Q)sudo cp -r "$(bin_dir_tmp_squashfs)/"* "$(bin_dir_tmp)"
+	$(call heading, sub, Unmounting image)
+	$(Q)sudo umount "$(bin_dir_tmp)"
+	$(call heading, sub, Deleting loopback device and temporary files)
+	$(Q)sudo losetup -d "$$(cat $(bin_dir)/.tmp)"
+	$(Q)rm "$(bin_dir)/.tmp" "$(bin_dir)/.uuid"
+    ifeq ($(ISO), y)
+		$(call heading, main, Creating persistant image)
+	    $(Q)cp "$(bin_dir)/boot.iso" "$(bin_dir_iso)"
+    endif
+
 # --- Run --- #
-.PHONY: run runs
+.PHONY: run runs imagerun imageruns ir irs
+#  -- ISO9660 --  #
 run:
     ifeq ($(bool_use_qemu_kvm), y)
 	    $(eval util_vm_params += -enable-kvm -cpu host)
     endif
+	$(eval util_vm_params += -cdrom $(bin_dir)/boot.iso)
 	$(Q)if [ -f "$(bin_dir)/boot.iso" ]; then \
 	    echo ""; \
-	    $(subst @echo, echo, $(call ok,    // Now running "$(bin_dir)/boot.iso" using "$(util_vm)" and parameters "$(util_vm_params)" //    )); \
+	    $(subst @echo, echo, $(call ok,    // Now running CD image "$(bin_dir)/boot.iso" using "$(util_vm)" and parameters "$(util_vm_params)" //    )); \
 	    "$(util_vm)" $(shell echo -n $(util_vm_params)); \
 	else \
 	    $(subst @echo, echo, $(call stop, Supplied file "$(bin_dir)/boot.iso" doesn't exist. Make sure you ran "make"; and try again.)); \
 	fi
 	@echo ""
 
-runs: main run
+runs: main prepare-iso final-touch run
+
+#  -- ext4 img --  #
+imagerun:
+    ifeq ($(bool_use_qemu_kvm), y)
+	    $(eval util_vm_params += -enable-kvm -cpu host)
+    endif
+	$(eval util_vm_params += -hda $(bin_dir)/boot.iso)
+	$(Q)if [ -f "$(bin_dir)/boot.iso" ]; then \
+	    echo ""; \
+	    $(subst @echo, echo, $(call ok,    // Now running hdd image "$(bin_dir)/boot.iso" using "$(util_vm)" and parameters "$(util_vm_params)" //    )); \
+	    "$(util_vm)" $(shell echo -n $(util_vm_params)); \
+	else \
+	    $(subst @echo, echo, $(call stop, Supplied file "$(bin_dir)/boot.iso" doesn't exist. Make sure you ran "make"; and try again.)); \
+	fi
+	@echo ""
+
+ir: imagerun
+imageruns: main prepare-image final-touch imagerun
+irs: imageruns
 
 # --- Clean --- #
 .PHONY: clean
@@ -479,6 +584,10 @@ clean:
 	@$(call cleancode)
 
 define cleancode
+	if mountpoint -q "$(bin_dir_tmp)"; then \
+	    $(subst @echo, echo, $(call heading, info, $(col_FALSE)Unmounting image)); \
+    	sudo umount "$(bin_dir_tmp)"; \
+	fi; \
 	$(subst @echo, echo, $(call heading, info, $(col_FALSE)Deleting directories and image)); \
 	rm -rf "$(bin_dir_tmp)" "$(bin_dir)/boot.iso" "$(bin_dir)"/* "$(bin_dir)"
 endef
@@ -502,3 +611,31 @@ cleanall:
 	    $(subst @echo, echo, $(call ok,  Cancelled.  )); \
 	    echo ""; \
 	fi
+
+# --- Help --- #
+.PHONY: help
+
+help:
+help:
+	@echo "Build targets for ISO9660 iso:"
+	@echo "  (default)     - Creates a temporary ISO image that loads into memory. All changes are lost after poweroff."
+	@echo "  run           - Runs the pre-made ISO image from the <bin> directory."
+	@echo "  runs          - Auto-runs the iso image after building."
+	@echo ""
+	@echo "Build targets for ext4 iso:"
+	@echo "  image         - Creates a temporary disk image that saves user changes."
+	@echo "  ir/imagerun   - Runs the pre-made disk image from the <bin> directory."
+	@echo "  irs/imageruns - Auto-runs the disk image after building."
+	@echo ""
+	@echo "Variables:"
+	@echo "  ISO=[y]       - Creates a persistant ISO image in <bin_dir_iso>."
+	@echo ""
+	@echo "Configuration targets:"
+	@echo "  menuconfig    - Opens the configuration menu."
+	@echo ""
+	@echo "Cleaning targets:"
+	@echo "  clean         - Clears the temporary directory and removes the ISO image."
+	@echo "  cleanall      - Clears all generated output, similar to Buildroot cleanup."
+	@echo ""
+	@echo "Others:"
+	@echo "  help          - Displays this help text"
