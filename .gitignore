@@ -16,7 +16,6 @@ source/configs/hashes.txt
 source/initramfs/source/init
 source/buildroot/package/pkg-generic.mk
 changelog
-mwx11/
 
 # make menuconfig tmp & usr cfg
 .config
@@ -31,6 +30,7 @@ include/
 config.h
 linux/
 test/
+mwx11/
 
 # gitignore of Buildroot
 source/buildroot/output
@@ -44,3 +44,8 @@ source/buildroot/*.orig
 source/buildroot/*.rej
 source/buildroot/*~
 source/buildroot/*.pyc
+
+# Applications output directory
+source/applications/*
+!source/applications/*.mk
+
