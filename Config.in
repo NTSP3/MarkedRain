@@ -32,7 +32,7 @@ menu "Makefile customizations"
 
     config val_unmain_sect
         string "Targets to exclude from global code"
-        default "run clean cleanall wipe"
+        default "run clean cleanall imagerun ir "
         help
             Specify targets that will skip over the global variable
             declarations and exportings. This is a space-separated list of
@@ -202,7 +202,7 @@ menu "Destination configuration"
             This will only be used if 'ISO=y' is passed to make.
 
     config bin_dir_tmp
-        string "Location to put temporary contents"
+        string "Location to put temporary contents/mount onto"
         default "$[bin_dir]/temp"
         help
             This variable contains the location where
@@ -213,8 +213,11 @@ menu "Destination configuration"
             It is located within the memory-based folder
             located in variable bin_dir by default.
 
+            On portable images, this folder will be used
+            for mounting the image to copy stuff into it.
+
     config bin_dir_tmp_squashfs
-        string "Location to put SquashFS temporary archive"
+        string "Location to put SquashFS archive/System contents"
         default "$[bin_dir]/squashfs"
         help
             This variable contains the location where
@@ -223,6 +226,9 @@ menu "Destination configuration"
 
             It is located within the memory-based folder
             located in variable bin_dir by default.
+
+            On portable images, this folder will contain
+            an extracted version of the image.
 
     config bool_clean_dir_tmp
         bool "Clean the directory of temporary contents"
@@ -233,6 +239,21 @@ menu "Destination configuration"
             bin_dir_tmp_squashfs, which may free up some memory.
             If you are trying to diagnose any issues of the final
             product, then you may want to set this to N.
+
+    config val_portable_size_extension
+        int "Additional file size to extend portable image (MB)"
+        default 50
+        help
+            Specify how much the portable image (built using make ir
+            or make image) will extend. This will give the image
+            free space of the amount specified.
+
+            Usually, the image will be of the total size of the
+            contents in bin_dir_tmp_squashfs with an additional
+            1MB added onto it. This variable extends that in order
+            to provide free space the user can write onto.
+
+            The unit is Megabytes (MB).
 
     config sys_dir_apps
         string "Programs directory"
@@ -386,14 +407,6 @@ menu "Operating System configuration"
                 name. Will not get seen if timeout is zero, or the menu is
                 hidden for whatever reason.
 
-        config val_grub-entry-one_li_root
-            string "Device to mount as root"
-            default "/dev/sr0"
-            help
-                This is the device that the linux kernel mounts as
-                root during boot as "root=<value>". Do not change
-                unless you are having problems relating to root.
-
         config val_grub-entry-one_li_params
             string "Additional parameters to pass to kernel"
             default "rw"
@@ -412,6 +425,13 @@ menu "Operating System configuration"
             such as 'del' for 'rm', 'ren' for renaming files,
             'ls --color' for colored directory listings, and others.
 
+    config bool_tty_expansion
+        bool "Spawn login prompts (getty) on tty2 - tty6"
+        default y
+        help
+            Enable this option to install an OpenRC service that enables the use
+            of tty2, tty3, tty4, tty5, and tty6 by executing the agetty service.
+
     config bool_use_drive_letters
         bool "Use drive letters for partitions (zsh) [Experimental]"
         default y
@@ -419,27 +439,19 @@ menu "Operating System configuration"
             This option enables the use of drive letters for partitions in the shell.
             When enabled, the user can switch to mountpoints by typing a drive letter
             followed by a colon (e.g., 'C:'), provided that a corresponding folder
-            exists in /mnt. This allows a simplified method of navigating mountpoints
-            using familiar drive letter notation.
+            exists in /boot/disks. This allows a simplified method of navigating
+            mountpoints using familiar drive letter notation.
 
             Example:
-                If the user types "C:" and the folder "/mnt/C:" exists, the shell
-                will automatically change the current directory to "/mnt/C:".
-
-            What this is: An easy way to switch between drives
-            What this is NOT: A compatible way of communicating between parititons
-                              in software (eg. "nano C:/some_file.txt" will NOT open
-                              '/mnt/C:/some_file.txt').
+                If the user types "C:" and the folder "/boot/disks/C:" exists, the shell
+                will automatically change the current directory to "/boot/disks/C:".
 
             Only works with ZSH.
 
-    config val_disks_path
-        string "Path to track for disk mounting"
-        default "/disks"
-        depends on bool_use_drive_letters
-        help
-            Path where disks (C:, D:, E:, ...) will get mounted onto as directories
-            like "/disks/c:" for "C:" or something.
+            Note: To remove drive letters fully, you MUST re-compile the linux kernel
+                  without applying the namei.c patch, because the kernel is the one
+                  who transforms stuff like 'nano c:/log.txt' into
+                  'nano /boot/disks/C:/log.txt'
 
     menu "System version information"
         config VERSION
@@ -482,11 +494,13 @@ menu "OS Applications configuration"
             Specify the source directory where all the applications to be
             added are located.
 
-    comment "-----------"
+    comment "-------------------------------------------"
+    comment "To not include an app, leave its dir blank."
+    comment "-------------------------------------------"
 
     config app_dir_microwindows
         string "Nano-X/Microwindows"
-        default "$[src_dir_apps]/microwindows/src"
+        default "$[src_dir_apps]/microwindows"
         help
             Microwindows or Nano-X is a small graphical windowing system that implements
             both Win32 and Nano-X (X11-like) APIs for clipped graphics drawing in windows
@@ -546,7 +560,7 @@ menu "Utilities"
 
     config util_vm_params
         string "Parameters to be sent to the Virtualization software"
-        default "-m 256M -serial stdio -cdrom $[bin_dir]/boot.iso"
+        default "-m 256M -serial stdio"
         help
             These parameters will be directly sent to the VM software
             by appending it to the end of its filename. Different
