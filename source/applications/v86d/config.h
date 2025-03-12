@@ -1,3 +1,0 @@
-#undef CONFIG_DEBUG
-#undef CONFIG_KLIBC
-#define CONFIG_X86EMU
