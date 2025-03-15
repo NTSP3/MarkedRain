@@ -1,5 +1,4 @@
 #!/bin/sh
-# Text file appending: '<img>/boot/grub/grub.cfg'
 
 # Function
 splitnum() {
@@ -84,35 +83,47 @@ function progress {
 }
 
 menuentry "$entry_name [Pretty]" {
+    linux_file="$sys_dir_linux"
+    linux_parameters="root=auto_cd $linux_params"
+    initrd_file="$sys_dir_initramfs"
+
     clear
     progress "$text_kernel" "$space_kernel" "$kernel_progress" "$kernel_remain"
-    linux "$sys_dir_linux" root=$linux_root $linux_params quiet
+    linux "\$linux_file" \$linux_parameters quiet
     clear
     progress "$text_initrd" "$space_initrd" "$initrd_progress" "$initrd_remain"
-    initrd "$sys_dir_initramfs"
+    initrd "\$initrd_file"
     clear
     progress "$text_boot" "$space_boot" "$full_progress" ""
 }
 
 menuentry "$entry_name [Noisy]" {
+    linux_file="$sys_dir_linux"
+    linux_parameters="root=auto_cd $linux_params console=ttyS0 console=tty0"
+    initrd_file="$sys_dir_initramfs"
+
     clear
-    echo -n "Kernel location at '$sys_dir_linux', parameters '$linux_params console=ttyS0 console=tty0' "
+    echo -n "Kernel location at '\$linux_file', parameters '\$linux_parameters' "
     progress "$text_kernel" "$space_kernel" "$kernel_progress" "$kernel_remain"
-    linux "$sys_dir_linux" root=$linux_root $linux_params console=ttyS0 console=tty0
+    linux "$linux_file" \$linux_parameters
     clear
-    echo -n "InitRD location at '$sys_dir_initramfs'"
+    echo -n "InitRD location at '\$initrd_file'"
     progress "$text_initrd" "$space_initrd" "$initrd_progress" "$initrd_remain"
-    initrd "$sys_dir_initramfs"
+    initrd "\$initrd_file"
     clear
-    echo -n "Kernel output mirrored to Serial port. Booting..."
+    echo -n "Kernel output is mirrored to Serial port. Booting..."
     progress "$text_boot" "$space_boot" "$full_progress" ""
 }
 
 menuentry "$entry_name [Control from Serial/Terminal]" {
+    linux_file="$sys_dir_linux"
+    linux_parameters="root=auto_cd $linux_params console=ttyS0"
+    initrd_file="$sys_dir_initramfs"
+
     echo ":: View ttyS0 for output & control."
-    linux "$sys_dir_linux" root=$linux_root $linux_params console=ttyS0
+    linux "\$linux_file" \$linux_parameters
     echo ">> Loaded linux kernel"
-    initrd "$sys_dir_initramfs"
+    initrd "\$initrd_file"
     echo ">> Loaded initramfs"
     echo ">> Booting"
 }

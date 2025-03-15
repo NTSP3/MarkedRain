@@ -27,13 +27,22 @@ cmd() {
 }
 
 error() {
+    echo ""
     echo "Error: \$1"
-    exit 1
+    echo "Launching busybox emergency init system..."
+    echo ""
+    exec /sbin/init
 }
 
 info() {
     echo "-> \$1"
 }
+
+#
+# Make directories
+#
+
+mkdir -p /dev /proc /sys /mnt /mnt/lower /mnt/upper /mnt/disk /mnt/overlay
 
 #
 # Mount required directories (proc, dev, sys)
@@ -63,11 +72,40 @@ done
 
 case "\$root" in
     /dev/*)
-        cmd "mount \"\$root\" \"/mnt/sda\"" "Failed mounting device '\$root' on /mnt/sda."
+        cmd "mount \"\$root\" \"/mnt/disk\"" "Failed mounting device '\$root' on /mnt/disk."
         ;;
     UUID=*)
         uuid=\${root#UUID=}
-        cmd "mount \"/dev/disk/by-uuid/\$uuid\" \"/mnt/sda\"" "Failed mounting disk UUID '\$uuid' on /mnt/sda."
+        cmd "mount \"/dev/disk/by-uuid/\$uuid\" \"/mnt/disk\"" "Failed mounting disk UUID '\$uuid' on /mnt/disk."
+        ;;
+    auto_cd)
+        info "Detecting intended boot CD-ROM..."
+
+        found_root=""
+        tmp_mount="/mnt/tmpcd"
+        mkdir -p "\$tmp_mount"
+
+        for dev in /dev/sr* /dev/cdrom /dev/dvd /dev/scd*; do
+            if [ -b "\$dev" ] && blkid -t TYPE="iso9660" "\$dev" >/dev/null 2>&1; then
+                # Temporarily mount to check for system image
+                if mount -o ro "\$dev" "\$tmp_mount"; then
+                    if [ -f "\$tmp_mount/boot/system.squashfs" ]; then
+                        found_root="\$dev"
+                        umount "\$tmp_mount"
+                        break
+                    fi
+                    umount "\$tmp_mount"
+                fi
+            fi
+        done
+
+        if [ -z "$\found_root" ]; then
+            error "Could not find boot CD-ROM containing the required system.squashfs file."
+        fi
+
+        root="\$found_root"
+        info "Mounting device: \$root"
+        cmd "mount \\"\$root\\" \\"/mnt/disk\\"" "Failed mounting device '\$root' on /mnt/disk."
         ;;
     *)
         error "Value of 'root' (\$root) does not start with '/dev/', or is an invalid UUID."
@@ -82,7 +120,7 @@ esac
 #
 
 info "Preparing to transfer control"
-cmd "mount -t squashfs -o ro \"/mnt/sda/$sys_dir_squashfs\" /mnt/lower" "Failed mounting SquashFS image on /mnt/lower"
+cmd "mount -t squashfs -o ro \"/mnt/disk/$sys_dir_squashfs\" /mnt/lower" "Failed mounting SquashFS image on /mnt/lower"
 cmd "mount -t tmpfs -o rw tmpfs /mnt/upper" "Failed to mount /mnt/upper as tmpfs"
 cmd "mkdir /mnt/upper/upper" "Failed to create /mnt/upper/upper"
 cmd "mkdir /mnt/upper/work" "Failed to create /mnt/upper/work"
