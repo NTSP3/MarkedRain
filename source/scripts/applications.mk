@@ -1,9 +1,9 @@
 define applicationsah5
-	$(call heading, main, Installing applications)
+	$(call heading, Installing applications)
 	$(S) clone https://github.com/ghaerr/microwindows.git "$(app_dir_microwindows)"
-    $(call heading, sub, Nano-X Window System)
+    $(call sub, Nano-X Window System)
 	$(Q)cp "$(app_dir_microwindows)/bin"/* "$(bin_dir_tmp_squashfs)/bin/"
-	$(call heading, sub, v86d)
+	$(call sub, v86d)
 	$(Q)"$(app_dir_v86d)/configure" --default $(OUT)
 	$(Q)cp "$(app_dir_v86d)/v86d" "$(bin_dir_tmp_squashfs)/sbin"
 endef
@@ -20,6 +20,6 @@ endef
 
 # This function will execute download_and_compile_application_MAIN for every .mk file found in src_dir_apps
 define applications
-	$(call heading, main, Installing applications)
+	$(call heading, Installing applications)
 	$(foreach file,$(wildcard $(src_dir_apps)/*.mk),$(call download_and_compile_application_MAIN,$(file)))
 endef
