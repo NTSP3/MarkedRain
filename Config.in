@@ -30,71 +30,17 @@ menu "Makefile customizations"
                 commands, hiding every possible output of a command, including
                 error messages. Enable it so you can see these important messages.
 
-    config val_unmain_sect
-        string "Targets to exclude from global code"
-        default "run clean cleanall imagerun ir "
+    config bool_hide_mkfile_dir_entry
+        bool "Hide Makefile's 'Entering directory' messages"
+        default y
         help
-            Specify targets that will skip over the global variable
-            declarations and exportings. This is a space-separated list of
-            target names. If a target in this list is detected in MAKECMDGOALS,
-            'global' will not execute code other than bool_show_cmd and
-            bool_show_cmd_out.
-
-    config bool_use_old_headings
-        bool "Use legacy style for headings"
-        default n
-        help
-            Set this option to true if you want to replace the
-            newer style of showing headings as "---[]---"
-            with the older style "// //" (Does not have old
-            versions for newer features, like "  -[]-  ").
-
-        menu "Message ANSI escape sequence"
-        depends on !bool_use_old_headings
-            config col_HEADING
-                string "Heading"
-                default "\\e[1;37;45m"
-
-            config col_SUBHEADING
-                string "Sub-heading"
-                default "\\e[1;35;40m"
-
-            config col_INFOHEADING
-                string "Informative Heading"
-                default "\\e[37;44m"
-
-            config col_INFO
-                string "Regular Information"
-                default "\\e[36m"
-
-            config col_TRUE
-                string "Variable is TRUE"
-                default "\\e[32m"
-
-            config col_FALSE
-                string "Variable is FALSE"
-                default "\\e[91m"
-
-            config col_DONE
-                string "OK Message"
-                default "\\e[92m"
-
-            config col_ERROR
-                string "Error Message"
-                default "\\e[1;91m"
-
-            config col_IMP
-                string "Important Message"
-                default "\\e[1;37;41m"
-
-            config col_NORMAL
-                string "Default terminal color"
-                default "\\e[0m"
-        endmenu
+            If checked, this adds "--no-print-directory" to MAKECMDGOALS,
+            which will hide the 'make[N]: Entering directory <d>' messages
+            when MAKE is invoked on a directory.
 endmenu
 
 menu "Source configuration"
-    config src_dir
+    config SRC
         string "Project's source directory"
         default "source"
         help
@@ -107,14 +53,14 @@ menu "Source configuration"
 
     config src_dir_buildroot
         string "Buildroot source directory"
-        default "$[src_dir]/buildroot"
+        default "\$(SRC)/buildroot"
         help
             The buildroot source directory contains source
             code for various buildroot utilites.
 
-    config src_dir_conf
+    config CONF
         string "Configurations directory"
-        default "$[src_dir]/configs"
+        default "\$(SRC)/configs"
         help
             The configurations directory contains files
             that are used for the compiling and using
@@ -122,7 +68,7 @@ menu "Source configuration"
 
     config src_dir_initramfs
         string "Initramfs source directory"
-        default "$[src_dir]/initramfs"
+        default "\$(SRC)/initramfs"
         help
             The initramfs is a compressed, temporary root filesystem
             loaded into memory during boot which provides some
@@ -130,7 +76,7 @@ menu "Source configuration"
 
     config src_dir_linux
         string "Linux kernel directory (bzImage file)"
-        default "$[src_dir]/kernel/bzImage"
+        default "\$(SRC)/kernel/bzImage"
         help
             The linux kernel directory contains the kernel
             image that's used in MRain OS. If you renamed
@@ -139,30 +85,30 @@ menu "Source configuration"
 
     config src_dir_media
         string "Media directory"
-        default "$[src_dir]/media"
+        default "\$(SRC)/media"
         help
             The media directory contains pictures, videos,
             and audio items used by MRain OS.
 
     config src_dir_modules
         string "Modules directory"
-        default "$[src_dir]/kernel/modules"
+        default "\$(SRC)/kernel/modules"
         help
             The linux kernel modules are drivers-like thing that can be loaded on-demand
             using 'insmod' or 'modprobe'. The specified modules directory will be copied
             over to the squashFS image, and everything ending in *.ko will be loaded at
             bootup.
 
-    config src_dir_scripts
+    config SCRIPTS
         string "Scripting directory"
-        default "$[src_dir]/scripts"
+        default "\$(SRC)/scripts"
         help
             The scripting directory has scripts that are
             used while making the operating system.
 
     config src_dir_mktext
         string "Text-creating scripts directory"
-        default "$[src_dir]/mktext"
+        default "\$(SRC)/mktext"
         help
             The text creating-scripts directory has scripts 
             that generate text files while substituting
@@ -203,7 +149,7 @@ menu "Destination configuration"
 
     config bin_dir_tmp
         string "Location to put temporary contents/mount onto"
-        default "$[bin_dir]/temp"
+        default "\$(bin_dir)/temp"
         help
             This variable contains the location where
             temporary files will reside. This location
@@ -218,7 +164,7 @@ menu "Destination configuration"
 
     config bin_dir_tmp_squashfs
         string "Location to put SquashFS archive/System contents"
-        default "$[bin_dir]/squashfs"
+        default "\$(bin_dir)/squashfs"
         help
             This variable contains the location where
             the files used to create the SquashFS image
@@ -262,7 +208,7 @@ menu "Destination configuration"
         help
             Enter the location of the users directory.
             This value can be used in Makefile using
-            $[sys_dir_usr]. This directory houses the
+            \$(sys_dir_usr). This directory houses the
             user's files and customizations.
 
     config sys_dir_usr
@@ -272,7 +218,7 @@ menu "Destination configuration"
         help
             Enter the location of the users directory.
             This value can be used in Makefile using
-            $[sys_dir_usr]. This directory houses the
+            \$(sys_dir_usr). This directory houses the
             user's files and customizations.
 
     config sys_dir_sys
@@ -282,7 +228,7 @@ menu "Destination configuration"
         help
             Enter the location of the system directory.
             This value can be used in Makefile using
-            $[sys_dir_sys]. This directory houses many
+            \$(sys_dir_sys). This directory houses many
             important files that are used by MRain OS.
 
     config sys_dir_linux
@@ -325,47 +271,47 @@ menu "Destination configuration"
         depends on bool_move_root
             config sys_dir_newroot_etc
                 string "/etc"
-                default "$[sys_dir_sys]/sysconf"
+                default "\$(sys_dir_sys)/sysconf"
 
             config sys_dir_newroot_opt
                 string "/opt"
-                default "$[sys_dir_sys]/addons"
+                default "\$(sys_dir_sys)/addons"
 
             config sys_dir_newroot_root
                 string "/root"
-                default "$[sys_dir_usr]/Administrator"
+                default "\$(sys_dir_usr)/Administrator"
 
             config sys_dir_newroot_tmp
                 string "/tmp"
-                default "$[sys_dir_sys]/temp"
+                default "\$(sys_dir_sys)/temp"
 
             config sys_dir_newroot_bin
                 string "/usr/bin"
-                default "$[sys_dir_apps]/system"
+                default "\$(sys_dir_apps)/system"
 
             config sys_dir_newroot_lib
                 string "/usr/lib"
-                default "$[sys_dir_sys]/library"
+                default "\$(sys_dir_sys)/library"
 
             config sys_dir_newroot_lib_modules
                 string "/usr/lib/modules"
-                default "$[sys_dir_sys]/base/modules"
+                default "\$(sys_dir_sys)/base/modules"
 
             config sys_dir_newroot_libexec
                 string "/usr/libexec"
-                default "$[sys_dir_sys]/library/services"
+                default "\$(sys_dir_sys)/library/services"
 
             config sys_dir_newroot_share
                 string "/usr/share"
-                default "$[sys_dir_sys]/shared"
+                default "\$(sys_dir_sys)/shared"
 
             config sys_dir_newroot_sbin
                 string "/usr/sbin"
-                default "$[sys_dir_sys]/sysapps"
+                default "\$(sys_dir_sys)/sysapps"
 
             config sys_dir_newroot_var
                 string "/var"
-                default "$[sys_dir_sys]/variable"
+                default "\$(sys_dir_sys)/variable"
         endmenu
 endmenu
 
@@ -489,7 +435,7 @@ endmenu
 menu "OS Applications configuration"
     config src_dir_apps
         string "Applications source directory"
-        default "$[src_dir]/applications"
+        default "\$(SRC)/applications"
         help
             Specify the source directory where all the applications to be
             added are located.
@@ -500,7 +446,7 @@ menu "OS Applications configuration"
 
     config app_dir_microwindows
         string "Nano-X/Microwindows"
-        default "$[src_dir_apps]/microwindows"
+        default "\$(src_dir_apps)/microwindows"
         help
             Microwindows or Nano-X is a small graphical windowing system that implements
             both Win32 and Nano-X (X11-like) APIs for clipped graphics drawing in windows
@@ -512,7 +458,7 @@ menu "OS Applications configuration"
 
     config app_dir_setup
         string "Setup application"
-        default "$[src_dir_apps]/setup"
+        default "\$(src_dir_apps)/setup"
         help
             Setup is a utility used to install MarkedRain Linux.
             This program also displays the custom bootup screen.
@@ -521,7 +467,7 @@ menu "OS Applications configuration"
 
     config app_dir_v86d
         string "v86d"
-        default "$[src_dir_apps]/v86d"
+        default "\$(src_dir_apps)/v86d"
         help
             v86d provides a backend for kernel drivers that need to execute
             x86 BIOS code.  The code is executed in a controlled environment

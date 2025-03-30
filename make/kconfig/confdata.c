@@ -1018,18 +1018,6 @@ end_check:
 	}
 
 	conf_message("configuration written to %s", name);
-	conf_message("\n\n\e[36m    // Generating '.config.mk' from '.config' //\e[0m");
-	system("sed -n 's/^CONFIG_\\(.*\\)=\\(\\\"\\(.*\\)\\\"\\|\\(.*\\)\\)/\\1=\\3\\4/p' .config > .config.mk; \
-			if grep -q '^syslinux-vga_' .config.mk; then \
-			    sed -i 's/^syslinux-vga_\\([0-9]*\\)=.*/val_sylin-entry-one_li_vga_mode=\\1/p' .config.mk; \
-			else \
-			    echo \"val_sylin-entry-one_li_vga_mode=792\" >> .config.mk; \
-			fi; \
-			if ! grep -q '^val_grub-boot_resolution' .config.mk; then \
-			    echo \"val_grub-boot_resolution=1024x768\" >> .config.mk; \
-			fi; \
-			sed -i 's/\\$\\[\\([^]]*\\)\\]/\\$\\(\\1\\)/g' .config.mk"); // Added for MRain -- 31/5/2024 8:38 pm
-
 	conf_set_changed(false);
 
 	return 0;

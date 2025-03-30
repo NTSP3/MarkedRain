@@ -1,4 +1,4 @@
-savedcmd_make/kconfig/lexer.lex.o := gcc -Wp,-MMD,make/kconfig/.lexer.lex.o.d   -I /mnt/personal/Applications/MRain-Linux/make/kconfig -c -o make/kconfig/lexer.lex.o make/kconfig/lexer.lex.c
+savedcmd_make/kconfig/lexer.lex.o := cc -Wp,-MMD,make/kconfig/.lexer.lex.o.d   -I /mnt/personal/Applications/MRain-Linux/make/kconfig -c -o make/kconfig/lexer.lex.o make/kconfig/lexer.lex.c
 
 source_make/kconfig/lexer.lex.o := make/kconfig/lexer.lex.c
 

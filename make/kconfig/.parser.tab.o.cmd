@@ -1,4 +1,4 @@
-savedcmd_make/kconfig/parser.tab.o := gcc -Wp,-MMD,make/kconfig/.parser.tab.o.d   -I /mnt/personal/Applications/MRain-Linux/make/kconfig -c -o make/kconfig/parser.tab.o make/kconfig/parser.tab.c
+savedcmd_make/kconfig/parser.tab.o := cc -Wp,-MMD,make/kconfig/.parser.tab.o.d   -I /mnt/personal/Applications/MRain-Linux/make/kconfig -c -o make/kconfig/parser.tab.o make/kconfig/parser.tab.c
 
 source_make/kconfig/parser.tab.o := make/kconfig/parser.tab.c
 

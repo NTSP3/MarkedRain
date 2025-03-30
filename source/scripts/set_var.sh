@@ -61,5 +61,5 @@ elif [ "$num_definitions" -gt 1 ]; then
     error "More than one definition for '${variable}'. Cannot continue." "$out_file"
 else
     # Use sed to find the line starting with the variable name and replace the whole line
-    sed -i "s/^$variable=.*/$variable=$value/" "$out_file"
+    sed "s/^$variable=.*/$variable=$value/" "$out_file" > ".tmp" && mv ".tmp" "$out_file"
 fi

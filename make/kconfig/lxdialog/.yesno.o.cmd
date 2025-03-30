@@ -1,4 +1,4 @@
-savedcmd_make/kconfig/lxdialog/yesno.o := gcc -Wp,-MMD,make/kconfig/lxdialog/.yesno.o.d   -D_GNU_SOURCE -I/usr/include/ncursesw -c -o make/kconfig/lxdialog/yesno.o make/kconfig/lxdialog/yesno.c
+savedcmd_make/kconfig/lxdialog/yesno.o := cc -Wp,-MMD,make/kconfig/lxdialog/.yesno.o.d   -D_GNU_SOURCE -I/usr/include/ncursesw -c -o make/kconfig/lxdialog/yesno.o make/kconfig/lxdialog/yesno.c
 
 source_make/kconfig/lxdialog/yesno.o := make/kconfig/lxdialog/yesno.c
 

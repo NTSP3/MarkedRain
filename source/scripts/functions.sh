@@ -9,13 +9,30 @@ me_dir="$(dirname "$0")"
 source "${me_dir}/main"
 
 # Fancy output functions
+imp() {
+	echo -e "${col_IMP} O.o !! $1 !! o.O ${col_NORMAL}"
+}
+
 heading() {
-	echo -e "${col_HEADING}>>> $1 ${col_NORMAL}"
+	echo ""
+	echo -e "${col_HEADING}---[ $1 ]---${col_NORMAL}"
+}
+
+sub() {
+	echo -e "${col_SUBHEADING}> $1 ${col_NORMAL}"
+}
+
+sub2() {
+	echo -e "${col_SUBHEADING}>> $1 ${col_NORMAL}"
+}
+
+info() {
+	echo -e "${col_INFOHEADING} ++ $1${col_INFOHEADING} ++ ${col_NORMAL}"
 }
 
 error() {
 	echo ""
-	echo -e "${col_ERROR}>>> $1${col_NORMAL}." >&2
+	echo -e "${col_ERROR}x_x >>> $1 <<< x_x${col_NORMAL}." >&2
 	echo ""
 	exit 1
 }
@@ -31,7 +48,7 @@ clone() {
 	fi
 
 	# Add directory to github's safe list
-	git config --global --get-all safe.directory | grep -Fxq "${val_mkfile_dir}/${2}" || git config --global --add safe.directory "${val_mkfile_dir}/${2}"
+	git config --global --get-all safe.directory | grep -Fxq "${CURDIR}/${2}" || git config --global --add safe.directory "${CURDIR}/${2}"
 
 	# If directory exists and is a git repo, verify URL.
 	if [ -d "$2/.git" ]; then

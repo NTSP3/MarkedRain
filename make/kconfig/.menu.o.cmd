@@ -1,4 +1,4 @@
-savedcmd_make/kconfig/menu.o := gcc -Wp,-MMD,make/kconfig/.menu.o.d    -c -o make/kconfig/menu.o make/kconfig/menu.c
+savedcmd_make/kconfig/menu.o := cc -Wp,-MMD,make/kconfig/.menu.o.d    -c -o make/kconfig/menu.o make/kconfig/menu.c
 
 source_make/kconfig/menu.o := make/kconfig/menu.c
 

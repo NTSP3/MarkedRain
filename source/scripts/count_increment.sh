@@ -74,5 +74,8 @@ new_number=$((current_number + 1))
 "${me_dir}/set_var.sh" "$src_str" "$new_number" "$out_file"
 
 # Use sed to put the os count information stuff
-sed -i "/^$src_str=$new_number/a\\
-$current_number - $time : $desc" "$out_file"
+sed "/^$src_str=$new_number/a\\
+$current_number - $time : $desc" "$out_file" > ".tmp"
+
+# Move the temporary file
+mv ".tmp" "$out_file"

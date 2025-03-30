@@ -1,4 +1,4 @@
-savedcmd_make/kconfig/lxdialog/inputbox.o := gcc -Wp,-MMD,make/kconfig/lxdialog/.inputbox.o.d   -D_GNU_SOURCE -I/usr/include/ncursesw -c -o make/kconfig/lxdialog/inputbox.o make/kconfig/lxdialog/inputbox.c
+savedcmd_make/kconfig/lxdialog/inputbox.o := cc -Wp,-MMD,make/kconfig/lxdialog/.inputbox.o.d   -D_GNU_SOURCE -I/usr/include/ncursesw -c -o make/kconfig/lxdialog/inputbox.o make/kconfig/lxdialog/inputbox.c
 
 source_make/kconfig/lxdialog/inputbox.o := make/kconfig/lxdialog/inputbox.c
 

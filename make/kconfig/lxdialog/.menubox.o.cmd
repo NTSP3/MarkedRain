@@ -1,4 +1,4 @@
-savedcmd_make/kconfig/lxdialog/menubox.o := gcc -Wp,-MMD,make/kconfig/lxdialog/.menubox.o.d   -D_GNU_SOURCE -I/usr/include/ncursesw -c -o make/kconfig/lxdialog/menubox.o make/kconfig/lxdialog/menubox.c
+savedcmd_make/kconfig/lxdialog/menubox.o := cc -Wp,-MMD,make/kconfig/lxdialog/.menubox.o.d   -D_GNU_SOURCE -I/usr/include/ncursesw -c -o make/kconfig/lxdialog/menubox.o make/kconfig/lxdialog/menubox.c
 
 source_make/kconfig/lxdialog/menubox.o := make/kconfig/lxdialog/menubox.c
 
