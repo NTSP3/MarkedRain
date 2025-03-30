@@ -1,4 +1,4 @@
-savedcmd_make/kconfig/lxdialog/checklist.o := gcc -Wp,-MMD,make/kconfig/lxdialog/.checklist.o.d   -D_GNU_SOURCE -I/usr/include/ncursesw -c -o make/kconfig/lxdialog/checklist.o make/kconfig/lxdialog/checklist.c
+savedcmd_make/kconfig/lxdialog/checklist.o := cc -Wp,-MMD,make/kconfig/lxdialog/.checklist.o.d   -D_GNU_SOURCE -I/usr/include/ncursesw -c -o make/kconfig/lxdialog/checklist.o make/kconfig/lxdialog/checklist.c
 
 source_make/kconfig/lxdialog/checklist.o := make/kconfig/lxdialog/checklist.c
 

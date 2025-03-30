@@ -1,4 +1,4 @@
-savedcmd_make/kconfig/util.o := gcc -Wp,-MMD,make/kconfig/.util.o.d    -c -o make/kconfig/util.o make/kconfig/util.c
+savedcmd_make/kconfig/util.o := cc -Wp,-MMD,make/kconfig/.util.o.d    -c -o make/kconfig/util.o make/kconfig/util.c
 
 source_make/kconfig/util.o := make/kconfig/util.c
 

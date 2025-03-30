@@ -1,4 +1,4 @@
-savedcmd_make/kconfig/lxdialog/util.o := gcc -Wp,-MMD,make/kconfig/lxdialog/.util.o.d   -D_GNU_SOURCE -I/usr/include/ncursesw -c -o make/kconfig/lxdialog/util.o make/kconfig/lxdialog/util.c
+savedcmd_make/kconfig/lxdialog/util.o := cc -Wp,-MMD,make/kconfig/lxdialog/.util.o.d   -D_GNU_SOURCE -I/usr/include/ncursesw -c -o make/kconfig/lxdialog/util.o make/kconfig/lxdialog/util.c
 
 source_make/kconfig/lxdialog/util.o := make/kconfig/lxdialog/util.c
 

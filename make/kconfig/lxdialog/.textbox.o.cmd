@@ -1,4 +1,4 @@
-savedcmd_make/kconfig/lxdialog/textbox.o := gcc -Wp,-MMD,make/kconfig/lxdialog/.textbox.o.d   -D_GNU_SOURCE -I/usr/include/ncursesw -c -o make/kconfig/lxdialog/textbox.o make/kconfig/lxdialog/textbox.c
+savedcmd_make/kconfig/lxdialog/textbox.o := cc -Wp,-MMD,make/kconfig/lxdialog/.textbox.o.d   -D_GNU_SOURCE -I/usr/include/ncursesw -c -o make/kconfig/lxdialog/textbox.o make/kconfig/lxdialog/textbox.c
 
 source_make/kconfig/lxdialog/textbox.o := make/kconfig/lxdialog/textbox.c
 

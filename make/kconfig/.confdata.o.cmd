@@ -1,4 +1,4 @@
-savedcmd_make/kconfig/confdata.o := gcc -Wp,-MMD,make/kconfig/.confdata.o.d    -c -o make/kconfig/confdata.o make/kconfig/confdata.c
+savedcmd_make/kconfig/confdata.o := cc -Wp,-MMD,make/kconfig/.confdata.o.d    -c -o make/kconfig/confdata.o make/kconfig/confdata.c
 
 source_make/kconfig/confdata.o := make/kconfig/confdata.c
 

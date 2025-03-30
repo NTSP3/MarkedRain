@@ -1,4 +1,4 @@
-savedcmd_make/basic/fixdep := gcc -Wp,-MMD,make/basic/.fixdep.d     -o make/basic/fixdep make/basic/fixdep.c  
+savedcmd_make/basic/fixdep := cc -Wp,-MMD,make/basic/.fixdep.d     -o make/basic/fixdep make/basic/fixdep.c  
 
 source_make/basic/fixdep := make/basic/fixdep.c
 

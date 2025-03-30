@@ -1,4 +1,4 @@
-savedcmd_make/kconfig/symbol.o := gcc -Wp,-MMD,make/kconfig/.symbol.o.d    -c -o make/kconfig/symbol.o make/kconfig/symbol.c
+savedcmd_make/kconfig/symbol.o := cc -Wp,-MMD,make/kconfig/.symbol.o.d    -c -o make/kconfig/symbol.o make/kconfig/symbol.c
 
 source_make/kconfig/symbol.o := make/kconfig/symbol.c
 

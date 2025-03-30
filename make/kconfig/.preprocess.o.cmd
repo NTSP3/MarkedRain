@@ -1,4 +1,4 @@
-savedcmd_make/kconfig/preprocess.o := gcc -Wp,-MMD,make/kconfig/.preprocess.o.d    -c -o make/kconfig/preprocess.o make/kconfig/preprocess.c
+savedcmd_make/kconfig/preprocess.o := cc -Wp,-MMD,make/kconfig/.preprocess.o.d    -c -o make/kconfig/preprocess.o make/kconfig/preprocess.c
 
 source_make/kconfig/preprocess.o := make/kconfig/preprocess.c
 

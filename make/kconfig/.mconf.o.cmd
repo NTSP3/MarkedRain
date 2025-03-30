@@ -1,4 +1,4 @@
-savedcmd_make/kconfig/mconf.o := gcc -Wp,-MMD,make/kconfig/.mconf.o.d   -D_GNU_SOURCE -I/usr/include/ncursesw -c -o make/kconfig/mconf.o make/kconfig/mconf.c
+savedcmd_make/kconfig/mconf.o := cc -Wp,-MMD,make/kconfig/.mconf.o.d   -D_GNU_SOURCE -I/usr/include/ncursesw -c -o make/kconfig/mconf.o make/kconfig/mconf.c
 
 source_make/kconfig/mconf.o := make/kconfig/mconf.c
 
