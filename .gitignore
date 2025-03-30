@@ -19,7 +19,7 @@ changelog
 
 # make menuconfig tmp & usr cfg
 .config
-.config.mk
+.config.in
 .config.old
 .kconfig.d
 .tmpconfig.h

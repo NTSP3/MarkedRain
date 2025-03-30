@@ -1,0 +1,20 @@
+# Default configuration for MarkedRain
+
+Q := @
+USER_CONFIG := .confige
+SRC := source
+SCRIPTS := $(SRC)/scripts
+S := $(SCRIPTS)/functions.sh
+
+# Colours
+
+col_HEADING = \e[1;37;45m
+col_SUBHEADING = \e[1;35;40m
+col_INFOHEADING = \e[37;44m
+col_INFO = \e[36m
+col_TRUE = \e[32m
+col_FALSE = \e[91m
+col_DONE = \e[92m
+col_ERROR = \e[1;91m
+col_IMP = \e[1;37;41m
+col_NORMAL = \e[0m

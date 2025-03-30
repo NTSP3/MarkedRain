@@ -2,8 +2,7 @@
 # Text file appending: '<os>/etc/zprofile'
 
 cat << EOF
-# Check if the user is asking to switch drives
-export disk_path="$val_disks_path"
+export disk_path="/boot/disks"
 mkdir -p "\$disk_path/C:"
 mount --bind / "\$disk_path/C:"
 
@@ -28,7 +27,7 @@ preexec() {
     fi
 }
 
-# Run before displaying prompt: Check if we are in the /disks (val_disks_path) directory.
+# Run before displaying prompt: Check if we are in the <disks> directory.
 precmd() {
     if [[ "\$PWD" =~ ^\$disk_path/([A-Za-z]:)(/.*)?\$ ]]; then
         # Extract the path, excluding mount folder
@@ -40,8 +39,8 @@ precmd() {
     fi
 }
 
-# If the command wasn't found (file with some name like 'c:' or something)
-# & begins with '<letter>:', then execute whatever is after it.
+# If the command wasn't found (file with some name like 'c:helloworld' or something)
+# & begins with '<letter>:', then execute whatever is after it ('helloworld' in 'c:helloworld').
 command_not_found_handler() {
     local string="\$*"
     if [[ \$string =~ ^[a-zA-Z]: ]]; then

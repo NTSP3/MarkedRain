@@ -1,0 +1,6 @@
+TREE:
+
+1. Multiple ttys
+    > R/W image
+        > Improved initramfs
+            > Auto-updatable repo downloader

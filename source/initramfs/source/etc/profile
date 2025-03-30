@@ -1,0 +1,7 @@
+echo
+echo You are now in the emergency busybox shell.
+echo View previous messages to view what brought you here.
+echo
+echo Type poweroff to shut down
+echo Type reboot to restart
+echo
