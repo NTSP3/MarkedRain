@@ -1,10 +1,21 @@
 # Default configuration for MarkedRain
 
-Q := @
-USER_CONFIG := .confige
-SRC := source
-SCRIPTS := $(SRC)/scripts
-S := $(SCRIPTS)/functions.sh
+# Initialization
+bool_show_cmd = n
+bool_show_cmd_out = y
+bool_hide_mkfile_dir_entry = y
+USER_CONFIG = .config.in
+
+# Help file
+HELPFILE := helptext
+
+# Source directories
+
+SRC = source
+SCRIPTS = $(SRC)/scripts
+CONF = $(SRC)/configs
+S_CMD = $(SCRIPTS)/functions.sh
+S = $(Q)$(S_CMD)
 
 # Colours
 
@@ -18,3 +29,11 @@ col_DONE = \e[92m
 col_ERROR = \e[1;91m
 col_IMP = \e[1;37;41m
 col_NORMAL = \e[0m
+
+# Other settings
+
+HOME = $(CURDIR)/$(bin_dir)/home
+
+# Go to 'all' if nothing is specified
+
+.DEFAULT_GOAL := all
