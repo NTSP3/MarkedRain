@@ -13,9 +13,10 @@ builds/
 # MarkedRain files
 help/
 source/configs/hashes.txt
-source/initramfs/source/init
+source/initramfs/initramfs
 source/buildroot/package/pkg-generic.mk
 changelog
+source/home
 
 # make menuconfig tmp & usr cfg
 .config
