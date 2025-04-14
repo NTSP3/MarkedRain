@@ -26,6 +26,8 @@ source/home
 .tmpconfig.h
 *.o
 include/
+make/**/*.o
+make/**/*.o.cmd
 
 # Random
 config.h
