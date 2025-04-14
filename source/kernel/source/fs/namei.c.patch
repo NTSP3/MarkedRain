@@ -1,5 +1,5 @@
---- namei.c	2025-02-25 11:18:46.067057700 +0000
-+++ namei.c	2025-02-25 11:27:30.200533200 +0000
+--- fs/namei.c	2025-04-10 16:37:51.151840100 +0000
++++ fs/namei.c	2025-04-10 16:12:41.392287000 +0000
 @@ -44,6 +44,9 @@
  #include "internal.h"
  #include "mount.h"
@@ -10,7 +10,7 @@
  /* [Feb-1997 T. Schoebel-Theuer]
   * Fundamental changes in the pathname lookup mechanisms (namei)
   * were necessary because of omirr.  The reason is that omirr needs
-@@ -2425,7 +2428,21 @@
+@@ -2425,7 +2428,22 @@
  static const char *path_init(struct nameidata *nd, unsigned flags)
  {
  	int error;
@@ -25,6 +25,7 @@
 +	if (isalpha(s[0]) && s[1] == ':') {
 +		char *buffer = kmalloc(maximum_potential_memory, GFP_KERNEL); // Allocate buffer
 +		strcpy(buffer, path_prefix); // Prepend drive path
++		strcat(buffer, "/"); // Append a slash to ensure stuff like 'A:' by itself gets treated as 'A:/'
 +		strcat(buffer, s); // Append path with drive letter
 +		buffer[strlen(path_prefix)] = toupper(buffer[strlen(path_prefix)]); // Uppercase the drive letter
 +		strcpy(s, buffer);
