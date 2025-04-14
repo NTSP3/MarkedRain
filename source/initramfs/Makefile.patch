@@ -1,0 +1,8 @@
+--- Makefile	2025-03-31 15:07:40.307213300 +0000
++++ Makefile.new	2025-03-31 19:53:57.091390800 +0000
+@@ -13,4 +13,4 @@
+ release:
+ 	@scripts/release
+ bootstrap-all:
+-	@bootstrap/bootstrap-all $(filter-out $@,$(MAKECMDGOALS))
++	@bootstrap/bootstrap-all x86_64
