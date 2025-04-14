@@ -45,11 +45,6 @@ main:
 	$(Q)pv -i 0.01 "$(src_dir_buildroot)/output/images/rootfs.tar" | tar -xf "-" -C "$(bin_dir_tmp_squashfs)"
 #  -- Applications --  #
 	$(call applications)
-    ifneq ($(shell "$(SCRIPTS)/get_var.sh" "hash_apps" "$(CONF)/hashes.txt"), $(shell $(call get_hash_dir, $(src_dir_apps))))
-	    $(call save_hash_dir, hash_apps, $(src_dir_apps))
-	    $(eval bool_do_update_count := y)
-	    $(eval val_changes += Applications directory changed\n)
-    endif
 #  -- Kernel --  #
 	$(call heading, Adding the linux kernel)
     ifneq ($(shell [ -f "$(src_dir_linux)" ] && echo y), y)
@@ -77,14 +72,6 @@ main:
 	    $(eval val_changes += Text files created in [SquashFS/System archive] changed\n)
     endif
 	$(Q)"$(SCRIPTS)/make_text_files.sh" "$(src_dir_mktext)/root" "$(bin_dir_tmp_squashfs)"
-	$(call heading, Generating/Appending to text files in the InitRamFS archive)
-    ifneq ($(shell "$(SCRIPTS)/get_var.sh" "hash_mktext_init" "$(CONF)/hashes.txt"), $(shell $(call get_hash_dir, $(src_dir_mktext)/init)))
-	    $(call save_hash_dir, hash_mktext_init, $(src_dir_mktext)/init)
-	    $(eval bool_do_update_count := y)
-	    $(eval val_changes += Text files created in [init archive] changed\n)
-    endif
-	$(Q)export sys_dir_squashfs="$(sys_dir_squashfs)"; \
-	"$(SCRIPTS)/make_text_files.sh" "$(src_dir_mktext)/init" "$(src_dir_initramfs)/source"
 	$(call heading, Generating/Appending to text files in the final image)
     ifneq ($(shell "$(SCRIPTS)/get_var.sh" "hash_mktext_image" "$(CONF)/hashes.txt"), $(shell $(call get_hash_dir, $(src_dir_mktext)/image)))
 	    $(call save_hash_dir, hash_mktext_image, $(src_dir_mktext)/image)
@@ -96,16 +83,14 @@ main:
 	export boot_timeout="$(val_grub-boot_timeout)"; \
 	export entry_name="$(val_grub-entry-one_name)"; \
 	export sys_dir_linux="$(sys_dir_linux)"; \
-	export linux_params=$(val_grub-entry-one_li_params); \
+	export linux_params="$(val_grub-entry-one_li_params)"; \
 	export sys_dir_initramfs="$(sys_dir_initramfs)"; \
 	"$(SCRIPTS)/make_text_files.sh" "$(src_dir_mktext)/image" "$(bin_dir_tmp)"
-#  -- Initramfs --  #
+#  -- Clone initramfs --  #
 	$(call heading, Adding initramfs)
-	$(call sub, Making 'init' executable)
-	$(Q)chmod +x "$(src_dir_initramfs)/source/init"
-	$(call sub, Creating init archive)
-	$(Q)cd "$(src_dir_initramfs)/source"; \
-	find . | cpio -o -H newc --quiet | pv -i 0.01 -s $$(du -sb . | awk '{print $$1}') | zstd --force --quiet -o "$(CURDIR)/$(bin_dir_tmp)$(sys_dir_initramfs)"
+# Add initramfs.mk here to give its main_compile and main_install priority
+	$(eval include $(src_dir_initramfs)/initramfs.mk)
+	$(call application_installer,src_dir_initramfs,$(src_dir_initramfs)/initramfs)
 #  -- Finalization --  #
 	$(call heading, Doing finalization procedures)
 #   - Branding -   #
@@ -146,3 +131,5 @@ main:
 	        sed -i 's/ -t [0-9]*//g' "$$file"; \
 	    fi; \
 	fi
+#   - MarkedRain ISO Verification file -   #
+	$(Q)echo "MarkedRain $(MRAIN_VERSION)" > "$(bin_dir_tmp)/boot/.MARKEDRAIN_ISO"
