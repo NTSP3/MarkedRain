@@ -1,9 +1,6 @@
 # Default configuration for MarkedRain
 
 # Initialization
-bool_show_cmd = n
-bool_show_cmd_out = y
-bool_hide_mkfile_dir_entry = y
 USER_CONFIG = .config.in
 
 # Help file
@@ -32,7 +29,7 @@ col_NORMAL = \e[0m
 
 # Other settings
 
-HOME = $(CURDIR)/$(bin_dir)/home
+HOME = $(CURDIR)/$(SRC)/home
 
 # Go to 'all' if nothing is specified
 
