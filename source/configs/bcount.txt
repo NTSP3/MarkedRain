@@ -5,7 +5,19 @@
 # 23-6-2024 21:22
 #
 
-latest_next=121
+latest_next=133
+132 - 2025-04-10 16:39:06 : kernel adds '/'
+131 - 2025-04-05 09:28:27 : grub parameter fix
+130 - 2025-04-05 09:21:40 : Squashfs image test
+129 - 2025-04-05 09:04:30 : Move /overlay to /newroot
+128 - 2025-04-05 08:58:41 : Include overlayfs and squashfs directly in kernel
+127 - 2025-04-05 08:34:03 : Support for squashfs Image test 1
+126 - 2025-04-04 23:37:11 : Autocd test 4
+125 - 2025-04-04 23:25:35 : Auto detect cd test 3
+124 - 2025-04-04 22:41:15 : Initramfs auto-detect cd test 2
+123 - 2025-04-04 21:48:11 : Auto-detect CDROM test
+122 - 2025-03-31 21:16:57 : Initramfs Hook testing
+121 - 2025-03-31 20:07:29 : Better-initramfs test 1
 119 - 2025-03-30 12:33:00 : Makefile split
 118 - 2025-03-06 21:12:13 : Exec busybox init instead of /bin/sh directly
 117 - 2025-03-06 20:49:32 : Create dirs before mounting
