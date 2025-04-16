@@ -33,7 +33,7 @@ define initialize
 	$(Q)ln -s /dev/shm/mrain-bin "$(bin_dir)"
 	$(Q)mkdir -p "$(bin_dir_tmp)" "$(bin_dir_tmp_squashfs)" "$$HOME"
 	$(call sub, Creating system directories)
-	$(Q)mkdir -p "$(bin_dir_tmp)/boot" "$(bin_dir_tmp)/boot/grub"
+	$(Q)mkdir -p "$(bin_dir_tmp)/boot" "$(bin_dir_tmp)/boot/grub" "$(bin_dir_tmp)/dev"
 	$(Q)"$(SCRIPTS)/mk_sys_dir.sh" "$(CONF)/dir.txt" "$(bin_dir_tmp_squashfs)"
 endef
 
