@@ -12,15 +12,15 @@ endif
 include Default.in
 
 #
-# The USER_CONFIG file (.config) contains settings
+# The USER_CONFIG file (.config.in) contains settings
 # that can be changed via menuconfig.
 #
-# This function adds .config if it exists, and
-# creates an exception if it doesn't but the
+# This function adds USER_CONFIG file if it exists, and
+# creates an exception if it or .config doesn't but the
 # user asked to open configuration (config, menuconfig, ...)
 # If the file doesn't exist and user didn't ask to open
 # configuration, then Makefile will exit.
-ifeq ($(or $(wildcard $(USER_CONFIG)),$(filter %config,$(MAKECMDGOALS))),)
+ifeq ($(or $(filter %config,$(MAKECMDGOALS)),$(filter 2,$(words $(wildcard $(USER_CONFIG) .config)))),)
     $(error Please run 'make menuconfig' before running 'make')
 else ifneq ($(wildcard $(USER_CONFIG)),)
     include $(USER_CONFIG)
@@ -68,6 +68,9 @@ ifeq ($(bool_hide_mkfile_dir_entry), y)
 endif
 
 export HOME CURDIR Q OUT
+
+# MarkedRain system version
+export MRAIN_VERSION := $(VERSION).$(PATCHLEVEL).$(SUBLEVEL)-$(RELEASE_TAG)
 
 # ---[ Menuconfig ] --- #
 export srctree := $(CURDIR)
@@ -128,7 +131,7 @@ prepare-image:
 #  -- Make writable image --  #
 	$(call heading, Creating the writable & portable image)
 	$(call sub, Creating an empty file ($(val_portable_size)MB))
-	$(Q)truncate -s $$(expr $$(sudo du -sB1 "$(bin_dir_tmp_squashfs)" | awk '{print int($$1 / 1024 / 1024)}') + 1 + $(val_portable_size_extension))M "$(bin_dir)/boot.iso" $(OUT)
+	$(Q)truncate -s $$(expr $$(du -sB1 "$(bin_dir_tmp_squashfs)" | awk '{print int($$1 / 1024 / 1024)}') + 1 + $(val_portable_size_extension))M "$(bin_dir)/boot.iso" $(OUT)
 	$(call imp, Please provide password to perform operations on this image)
 	$(Q)sudo losetup -fP --show "$(bin_dir)/boot.iso" > "$(bin_dir)/.tmp"
 	$(call sub, Creating partition table)
@@ -142,6 +145,8 @@ prepare-image:
 	$(Q)sudo grub-install --target=i386-pc --boot-directory="$(bin_dir_tmp)/boot" "$$(cat $(bin_dir)/.tmp)"
 	$(call sub2, Updating root= value)
 	$(Q)sed -i "s/root=auto_cd/root=UUID=$$(cat '$(bin_dir)/.uuid')/g" "$(bin_dir_tmp_squashfs)/boot/grub/grub.cfg"
+	$(call sub2, Removing squashfs_file= value)
+	$(Q)sed -Ei 's/squashfs_file=[^[:space:]"]+(")/\1/g; s/squashfs_file=[^[:space:]"]+ ?//g' "$(bin_dir_tmp_squashfs)/boot/grub/grub.cfg"
 	$(call sub, Copying system into the image)
 	$(Q)sudo cp -r "$(bin_dir_tmp_squashfs)/"* "$(bin_dir_tmp)"
 	$(call sub, Unmounting image)
@@ -159,7 +164,7 @@ prepare-image:
 finalize:
 #  -- Version updation --  #
 	$(Q)if [ "$(bool_ver_change)" = "y" ]; then \
-	    $(subst @echo, echo, $(call heading, info, Saving version: $(MRAIN_VERSION))); \
+	    $(subst @$(S_CMD), $(S_CMD), $(call inf, Saving version: $(MRAIN_VERSION))); \
 	    "$(SCRIPTS)/set_var.sh" "ver_previous_mrain-sys" "$(MRAIN_VERSION)" "$(CONF)/variables.txt"; \
 	fi
 	$(Q)if [ "$(bool_do_update_count)" = "y" ] || [ "$(update)" = "true" ]; then \
@@ -208,10 +213,10 @@ run:
 	$(eval util_vm_params += -cdrom $(bin_dir)/boot.iso)
 	$(Q)if [ -f "$(bin_dir)/boot.iso" ]; then \
 	    echo ""; \
-	    $(subst @echo, echo, $(call ok,    // Now running CD image "$(bin_dir)/boot.iso" using "$(util_vm)" and parameters "$(util_vm_params)" //    )); \
+	    $(subst @echo, echo, $(call ok,    // Now running CD image \"$(bin_dir)/boot.iso\" using \"$(util_vm)\" and parameters \"$(util_vm_params)\" //    )); \
 	    "$(util_vm)" $(shell echo -n $(util_vm_params)); \
 	else \
-	    $(subst @echo, echo, $(call stop, Supplied file "$(bin_dir)/boot.iso" doesn't exist. Make sure you ran "make"; and try again.)); \
+	    $(subst @$(S_CMD), $(S_CMD), $(call stop, Supplied file \"$(bin_dir)/boot.iso\" doesn't exist. Make sure you ran \"make\" and try again.)); \
 	fi
 	@echo ""
 
@@ -225,10 +230,10 @@ imagerun:
 	$(eval util_vm_params += -hda $(bin_dir)/boot.iso)
 	$(Q)if [ -f "$(bin_dir)/boot.iso" ]; then \
 	    echo ""; \
-	    $(subst @echo, echo, $(call ok,    // Now running hdd image "$(bin_dir)/boot.iso" using "$(util_vm)" and parameters "$(util_vm_params)" //    )); \
+	    $(subst @echo, echo, $(call ok,    // Now running hdd image \"$(bin_dir)/boot.iso\" using \"$(util_vm)\" and parameters \"$(util_vm_params)\" //    )); \
 	    "$(util_vm)" $(shell echo -n $(util_vm_params)); \
 	else \
-	    $(subst @echo, echo, $(call stop, Supplied file "$(bin_dir)/boot.iso" doesn't exist. Make sure you ran "make"; and try again.)); \
+	    $(subst @$(S_CMD), $(S_CMD), $(call stop, Supplied file \"$(bin_dir)/boot.iso\" doesn't exist. Make sure you ran \"make\" and try again.)); \
 	fi
 	@echo ""
 
@@ -251,9 +256,9 @@ cleanall:
 	$(Q)read choice; \
 	if [ "$$choice" = "Y" ] || [ "$$choice" = "y" ]; then \
 	    $(call cleancode); \
-	    $(subst @echo, echo, $(call inf, $(col_FALSE)Removing downloaded application source code)); \
+	    $(subst @$(S_CMD), $(S_CMD), $(call inf, $(col_FALSE)Removing downloaded application source code)); \
 	    find "$(src_dir_applications)" -mindepth 1 -maxdepth 1 -type d -exec rm -rf {} +; \
-	    $(subst @echo, echo, $(call inf, $(col_FALSE)Cleaning buildroot)); \
+	    $(subst @$(S_CMD), $(S_CMD), $(call inf, $(col_FALSE)Cleaning buildroot)); \
 	    echo ""; \
 	    $(subst @echo, echo, $(call ok,  Done. Run 'make' to re-compile. Be prepared to wait a long time.  )); \
 	    echo ""; \
