@@ -5,7 +5,11 @@
 # 23-6-2024 21:22
 #
 
-latest_next=133
+latest_next=137
+136 - 2025-04-16 10:50:42 : Kernel now handles lowercase drive letters
+135 - 2025-04-15 20:13:16 : Kernel auto converts drive letters to uppercase
+134 - 2025-04-15 09:40:26 : Kernel adds '/' only if it doesn't already exist
+133 - 2025-04-14 16:15:16 : grub cfg updated to include parameter squashfs_file=
 132 - 2025-04-10 16:39:06 : kernel adds '/'
 131 - 2025-04-05 09:28:27 : grub parameter fix
 130 - 2025-04-05 09:21:40 : Squashfs image test
