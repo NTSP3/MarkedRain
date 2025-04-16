@@ -70,7 +70,11 @@ endif
 export HOME CURDIR Q OUT
 
 # MarkedRain system version
-export MRAIN_VERSION := $(VERSION).$(PATCHLEVEL).$(SUBLEVEL)-$(RELEASE_TAG)
+EXTRAVERSION			:= $(shell "$(S_CMD)" get "latest_next" "$(CONF)/bcount.txt")
+export MRAIN_VERSION	:= $(VERSION).$(PATCHLEVEL).$(SUBLEVEL).$(EXTRAVERSION)-$(RELEASE_TAG)
+$(info )
+$(info $(shell $(S_CMD) info "MarkedRain Version $(MRAIN_VERSION)"))
+$(info )
 
 # ---[ Menuconfig ] --- #
 export srctree := $(CURDIR)
