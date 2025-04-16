@@ -5,10 +5,10 @@ define main_compile
 	$(Q)if [ ! -f "$(src_dir_initramfs)/initramfs/.bootstrapped" ]; then \
 	    $(subst @$(S_CMD),$(S_CMD),$(call sub, Bootstrapping)); \
 	    $(MAKE) -C "$(src_dir_initramfs)/initramfs" bootstrap-all $(OUT); \
-	    $(subst @$(S_CMD),$(S_CMD),$(call sub, Installing hooks)); \
-	    cp -r "$(src_dir_initramfs)/hooks" "$(src_dir_initramfs)/initramfs/sourceroot/"; \
 	    echo "This initramfs had been bootstrapped once. Delete this file to bootstrap again when the folder hash changes." > "$(src_dir_initramfs)/initramfs/.bootstrapped"; \
 	fi
+	$(call sub, Installing hooks)
+	$(Q)cp -r "$(src_dir_initramfs)/hooks" "$(src_dir_initramfs)/initramfs/sourceroot/"
 	$(call sub, Preparing)
 	$(Q)fakeroot $(MAKE) -C "$(src_dir_initramfs)/initramfs" prepare $(OUT)
 	$(call sub, Imaging)
