@@ -83,12 +83,12 @@ main:
 	export boot_timeout="$(val_grub-boot_timeout)"; \
 	export entry_name="$(val_grub-entry-one_name)"; \
 	export sys_dir_linux="$(sys_dir_linux)"; \
-	export linux_params="$(val_grub-entry-one_li_params)"; \
+	export linux_params="$(val_grub-entry-one_li_params) root=auto_cd squashfs_file=/boot/system.squashfs"; \
 	export sys_dir_initramfs="$(sys_dir_initramfs)"; \
 	"$(SCRIPTS)/make_text_files.sh" "$(src_dir_mktext)/image" "$(bin_dir_tmp)"
 #  -- Clone initramfs --  #
 	$(call heading, Adding initramfs)
-# Add initramfs.mk here to give its main_compile and main_install priority
+# Adding initramfs.mk here to give its main_compile and main_install priority
 	$(eval include $(src_dir_initramfs)/initramfs.mk)
 	$(call application_installer,src_dir_initramfs,$(src_dir_initramfs)/initramfs)
 #  -- Finalization --  #
