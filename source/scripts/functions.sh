@@ -60,11 +60,35 @@ clone() {
 	# If directory exists but not initialized OR directory doesn't exist, check if empty.
 	elif [ ! -d "$2" ] || [ -z "$(ls -A "$2" 2>/dev/null)" ]; then
 		[ -d "$2" ] && rmdir "$2"
-		heading "Cloning $1 into $2..."
+		info "Cloning $1 into $2..."
 		git clone --progress "$1" "$2" || error "Cloning $1 into $2 failed."
 	else
 		error "'$2' is uninitialized and not empty."
 	fi
+}
+
+# Shorter way to get a variable's value using get_var.sh
+get() {
+	if [ -z "$1" ]; then
+		error "Variable name is empty"
+	elif [ -z "$2" ]; then
+		error "Configuration filename is empty"
+	fi
+
+	${me_dir}/get_var.sh "$1" "$2"
+}
+
+# Shorter way to set a variable's value using set_var.sh
+set() {
+	if [ -z "$1" ]; then
+		error "Variable name is empty"
+	elif [ -z "$2" ]; then
+		error "Variable value is empty"
+	elif [ -z "$3" ]; then
+		error "Configuration filename is empty"
+	fi
+
+	${me_dir}/set_var.sh "$1" "$2" "$3"
 }
 
 # Code to jump to functions
