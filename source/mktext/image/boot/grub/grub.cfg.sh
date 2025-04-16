@@ -84,7 +84,7 @@ function progress {
 
 menuentry "$entry_name [Pretty]" {
     linux_file="$sys_dir_linux"
-    linux_parameters="root=auto_cd $linux_params"
+    linux_parameters="$linux_params"
     initrd_file="$sys_dir_initramfs"
 
     clear
@@ -99,13 +99,13 @@ menuentry "$entry_name [Pretty]" {
 
 menuentry "$entry_name [Noisy]" {
     linux_file="$sys_dir_linux"
-    linux_parameters="root=auto_cd $linux_params console=ttyS0 console=tty0"
+    linux_parameters="$linux_params console=ttyS0 console=tty0"
     initrd_file="$sys_dir_initramfs"
 
     clear
     echo -n "Kernel location at '\$linux_file', parameters '\$linux_parameters' "
     progress "$text_kernel" "$space_kernel" "$kernel_progress" "$kernel_remain"
-    linux "$linux_file" \$linux_parameters
+    linux "\$linux_file" \$linux_parameters
     clear
     echo -n "InitRD location at '\$initrd_file'"
     progress "$text_initrd" "$space_initrd" "$initrd_progress" "$initrd_remain"
@@ -117,7 +117,7 @@ menuentry "$entry_name [Noisy]" {
 
 menuentry "$entry_name [Control from Serial/Terminal]" {
     linux_file="$sys_dir_linux"
-    linux_parameters="root=auto_cd $linux_params console=ttyS0"
+    linux_parameters="$linux_params console=ttyS0"
     initrd_file="$sys_dir_initramfs"
 
     echo ":: View ttyS0 for output & control."
