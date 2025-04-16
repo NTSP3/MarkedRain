@@ -1,5 +1,5 @@
---- fs/namei.c	2025-04-10 16:37:51.151840100 +0000
-+++ fs/namei.c	2025-04-10 16:12:41.392287000 +0000
+--- namei.c	2025-04-10 16:37:51.151840100 +0000
++++ namei.c	2025-04-16 10:13:03.296576600 +0000
 @@ -44,6 +44,9 @@
  #include "internal.h"
  #include "mount.h"
@@ -10,25 +10,41 @@
  /* [Feb-1997 T. Schoebel-Theuer]
   * Fundamental changes in the pathname lookup mechanisms (namei)
   * were necessary because of omirr.  The reason is that omirr needs
-@@ -2425,7 +2428,22 @@
+@@ -2425,7 +2428,38 @@
  static const char *path_init(struct nameidata *nd, unsigned flags)
  {
  	int error;
 -	const char *s = nd->name->name;
 +	const char *old_path = nd->name->name; // MarkedRain edit begin
 +	const char *path_prefix = "/boot/disks/"; // <-- Fixed path of disks with drive letters assigned
-+	size_t maximum_potential_memory = strlen(path_prefix) + strlen(old_path) + 1;
++	int extra_space = 10; // Space to extend 's' and 'buffer' size
++	size_t maximum_potential_memory = strlen(path_prefix) + strlen(old_path) + extra_space;
 +        char *s = kmalloc(maximum_potential_memory, GFP_KERNEL); // Allocate appropriate memory
-+        strcpy(s, old_path);
++
++	strcpy(s, old_path);
 +
 +	// Check if the path begins in format 'A:' to 'z:'
 +	if (isalpha(s[0]) && s[1] == ':') {
 +		char *buffer = kmalloc(maximum_potential_memory, GFP_KERNEL); // Allocate buffer
-+		strcpy(buffer, path_prefix); // Prepend drive path
-+		strcat(buffer, "/"); // Append a slash to ensure stuff like 'A:' by itself gets treated as 'A:/'
-+		strcat(buffer, s); // Append path with drive letter
-+		buffer[strlen(path_prefix)] = toupper(buffer[strlen(path_prefix)]); // Uppercase the drive letter
-+		strcpy(s, buffer);
++		size_t buffer_len;
++
++		strncpy(buffer, path_prefix, maximum_potential_memory - 1); // Prepend drive path
++		buffer[maximum_potential_memory - 1] = '\0'; // Null-terminate
++
++		s[0] = toupper(s[0]); // Uppercase the drive letter
++
++		if (s[2] != '/') { // Append a slash if it isn't already present
++			buffer_len = strlen(buffer);
++			snprintf(buffer + buffer_len, maximum_potential_memory - buffer_len, "%c:/", s[0]); // Append drive letter, colon, and slash
++			memmove(s, s + 2, strlen(s + 2) + 1); // Shift path two spaces to get rid of drive letter from the rest of the path
++		}
++
++		buffer_len = strlen(buffer);
++		scnprintf(buffer + buffer_len, maximum_potential_memory - buffer_len, "%s", s); // Append path with drive letter or the remaining path
++
++		strncpy(s, buffer, maximum_potential_memory - 1); // Copy into s for compatibility
++		s[maximum_potential_memory - 1] = '\0'; // Null-terminate
++
 +		kfree(buffer); // Unallocate buffer
 +	} // MarkedRain edit end
  
