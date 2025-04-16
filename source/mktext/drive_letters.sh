@@ -35,14 +35,24 @@ preexec() {
 
 # Run before displaying prompt: Check if we are in the <disks> directory.
 precmd() {
-    if [[ "\$PWD" =~ ^\$disk_path/([A-Za-z]:)(/.*)?\$ ]]; then
+    if [[ "\$PWD" =~ ^\$disk_path/([A-Z]:)(/.*)?\$ ]]; then
         # Extract the path, excluding mount folder
         local cur_drive_path=\${PWD#\$disk_path}
         # Remove any trailing '/'
         cur_drive_path=\${cur_drive_path#/}
         # Add a trailing '/' if we are in root of the drive
-        [[ \$cur_drive_path =~ ^[A-Za-z]:\$ ]] && cur_drive_path=\${cur_drive_path}/
+        [[ \$cur_drive_path =~ ^[A-Z]:\$ ]] && cur_drive_path=\${cur_drive_path}/
         PROMPT=\$prompt_start\$cur_drive_path\$prompt_end
+
+        # lol fun easter egg 16th april 2025 10:04pm
+        if [[ \$cur_drive_path =~ ^C: ]]; then
+            echo ""
+            echo "Hehe you are trapped."
+            echo "Try changing to any directory using 'cd' lol."
+            echo "Or, you can type 'unstuck_me' to teleport to your home :)"
+            echo "I guess just doing 'C:' works too :P"
+            echo ""
+        fi
     else
         PROMPT=\${prompt_start}C:'%~'\$prompt_end
     fi
@@ -92,6 +102,14 @@ function cd() {
 
     # Change directory
     builtin cd "\$newpath"
+}
+
+# fun
+function unstuck_me {
+    echo ""
+    echo "Okay buddy, you're going to Home whether you like it or not."
+    echo ""
+    builtin cd "\$HOME"
 }
 
 EOF
