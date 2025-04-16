@@ -17,7 +17,7 @@ define save_hash_dir
 endef
 
 define cleancode
-    $(S) heading "Cleaning previous files"; \
+    $(S_CMD) heading "Cleaning previous files"; \
 	if mountpoint -q "$(bin_dir_tmp)"; then \
 	    $(S_CMD) sub "Unmounting image"; \
     	sudo umount "$(bin_dir_tmp)"; \
