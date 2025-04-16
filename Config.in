@@ -355,7 +355,7 @@ menu "Operating System configuration"
 
         config val_grub-entry-one_li_params
             string "Additional parameters to pass to kernel"
-            default "ro squashfs_file=/boot/system.squashfs"
+            default "ro"
             help
                 The options here will get passed into kernel,
                 after everything before it like "root=/dev".
