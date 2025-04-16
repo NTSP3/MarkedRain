@@ -6,9 +6,9 @@
 if [ ! -z "$squashfs_file" ]; then
     run dodir /lower /upper /overlay
 
-	if [ ! -f "/newroot/$squashfs_file" ]; then
-		eerror "Specified SquashFS file '$squashfs_file' does not exist on device $root mounted at /newroot"
-	fi
+    if [ ! -f "/newroot/$squashfs_file" ]; then
+        eerror "Specified SquashFS file '$squashfs_file' does not exist on device $root mounted at /newroot"
+    fi
 
     einfo "Moving /newroot to $tmp_mount"
     run mount --move /newroot "$tmp_mount"
