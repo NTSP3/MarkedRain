@@ -261,8 +261,11 @@ cleanall:
 	if [ "$$choice" = "Y" ] || [ "$$choice" = "y" ]; then \
 	    $(call cleancode); \
 	    $(subst @$(S_CMD), $(S_CMD), $(call inf, $(col_FALSE)Removing downloaded application source code)); \
-	    find "$(src_dir_applications)" -mindepth 1 -maxdepth 1 -type d -exec rm -rf {} +; \
+	    find "$(src_dir_apps)" -mindepth 1 -maxdepth 1 -type d -exec rm -rf {} +; \
+	    $(subst @$(S_CMD), $(S_CMD), $(call inf, $(col_FALSE)Removing initramfs code)); \
+	    rm -rf "$(src_dir_initramfs)/initramfs"; \
 	    $(subst @$(S_CMD), $(S_CMD), $(call inf, $(col_FALSE)Cleaning buildroot)); \
+	    $(MAKE) -C "$(src_dir_buildroot)" clean; \
 	    echo ""; \
 	    $(subst @echo, echo, $(call ok,  Done. Run 'make' to re-compile. Be prepared to wait a long time.  )); \
 	    echo ""; \
