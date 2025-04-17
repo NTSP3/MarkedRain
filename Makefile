@@ -218,7 +218,7 @@ run:
 	$(Q)if [ -f "$(bin_dir)/boot.iso" ]; then \
 	    echo ""; \
 	    $(subst @echo, echo, $(call ok,    // Now running CD image \"$(bin_dir)/boot.iso\" using \"$(util_vm)\" and parameters \"$(util_vm_params)\" //    )); \
-	    "$(util_vm)" $(shell echo -n $(util_vm_params)); \
+	    $(call run_qemu); \
 	else \
 	    $(subst @$(S_CMD), $(S_CMD), $(call stop, Supplied file \"$(bin_dir)/boot.iso\" doesn't exist. Make sure you ran \"make\" and try again.)); \
 	fi
@@ -235,7 +235,7 @@ imagerun:
 	$(Q)if [ -f "$(bin_dir)/boot.iso" ]; then \
 	    echo ""; \
 	    $(subst @echo, echo, $(call ok,    // Now running hdd image \"$(bin_dir)/boot.iso\" using \"$(util_vm)\" and parameters \"$(util_vm_params)\" //    )); \
-	    "$(util_vm)" $(shell echo -n $(util_vm_params)); \
+	    $(call run_qemu); \
 	else \
 	    $(subst @$(S_CMD), $(S_CMD), $(call stop, Supplied file \"$(bin_dir)/boot.iso\" doesn't exist. Make sure you ran \"make\" and try again.)); \
 	fi

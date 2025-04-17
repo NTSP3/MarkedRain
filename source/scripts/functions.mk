@@ -65,3 +65,41 @@ define buildroot_packages_to_be_remade
 	    done; \
 	fi
 endef
+
+#
+# run_qemu loads up terminal and runs Qemu (or the one specified in util_vm)
+#
+define run_qemu
+	Logfile="$$(mktemp)"; \
+	("$(util_vm)" $(util_vm_params) 2>&1 | tee "$$Logfile") $(OUT) & \
+	Qemu_Process_ID=$$!; \
+	while ! grep -q "char device redirected to" "$$Logfile"; do \
+	    sleep 0.1; \
+	done; \
+	SERIAL_DEVICE=$$(grep "char device redirected to" "$$Logfile" | sed 's/.*redirected to \(.*\) (label.*$$/\1/'); \
+	sleep 1; \
+	if [ ! "$$(command -v screen)" ]; then \
+	    $(S_CMD) error "Application 'screen' not installed!"; \
+	    exit; \
+	else \
+	    if [ "$$(command -v x-terminal-emulator)" ]; then \
+	        x-terminal-emulator -T "Serial console" -e "socat -,raw,echo=0 '$$SERIAL_DEVICE'" & \
+	        Console_Process_ID=$$!; \
+	    elif [ "$$(command -v xterm)" ]; then \
+	        xterm -T "Serial console" -e "socat -,raw,echo=0 '$$SERIAL_DEVICE'" & \
+	        Console_Process_ID=$$!; \
+	    else \
+	        $(S_CMD) error "Suitable terminal emulators not found."; \
+	        exit; \
+	    fi; \
+	fi; \
+	while kill -0 "$$Qemu_Process_ID" 2>/dev/null; do \
+	    sleep 1; \
+	done; \
+	if kill -0 "$$Qemu_Process_ID" 2>/dev/null; then \
+	    kill "$$Qemu_Process_ID"; \
+	fi; \
+	if kill -0 "$$Console_Process_ID" 2>/dev/null; then \
+	    kill "$$Console_Process_ID"; \
+	fi
+endef
