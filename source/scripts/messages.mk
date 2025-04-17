@@ -3,7 +3,7 @@ define stop
 endef
 
 define ok
-	@echo "$(col_DONE)$(1)$(col_NORMAL)"
+	@echo '$(col_DONE)$(1)$(col_NORMAL)'
 endef
 
 define imp
