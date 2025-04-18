@@ -1,9 +1,13 @@
 define get_hash
-	shasum "$(strip $(1))" | cut -d ' ' -f 1
+	if [ -f "$(strip $(1))" ]; then \
+	    shasum "$(strip $(1))" | cut -d ' ' -f 1; \
+	fi
 endef
 
 define get_hash_dir
-	find "$(strip $(1))" -type f -exec stat --format="%s %Y %n" {} + | sort | shasum | cut -d ' ' -f 1
+	if [ -d "$(strip $(1))" ]; then \
+	    find "$(strip $(1))" -type f -exec stat --format="%s %Y %n" {} + | sort | shasum | cut -d ' ' -f 1; \
+	fi
 endef
 
 define save_hash
