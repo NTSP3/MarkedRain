@@ -80,6 +80,7 @@ $(info )
 export srctree := $(CURDIR)
 include $(srctree)/make/Kbuild.include
 export HOSTCC := $(CC)
+export src_dir_apps
 
 # This code runs if user typed anything
 # that ends in 'onfig', eg: 'config',

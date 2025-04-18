@@ -13,6 +13,7 @@ SCRIPTS = $(SRC)/scripts
 CONF = $(SRC)/configs
 S_CMD = $(SCRIPTS)/functions.sh
 S = $(Q)$(S_CMD)
+src_dir_apps = $(SRC)/applications
 
 # Colours
 
