@@ -1,1 +1,3 @@
 source "$(src_dir_apps)/microwindows.in"
+source "$(src_dir_apps)/ohmyzsh.in"
+source "$(src_dir_apps)/v86d.in"
