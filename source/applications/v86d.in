@@ -1,0 +1,8 @@
+config app_dir_v86d
+    string "v86d"
+    default "\$(src_dir_apps)/v86d"
+    help
+        v86d provides a backend for kernel drivers that need to execute
+        x86 BIOS code.  The code is executed in a controlled environment
+        and the results are passed back to the kernel via the netlink
+        interface.
