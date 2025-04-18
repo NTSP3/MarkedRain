@@ -51,4 +51,4 @@ source/buildroot/*.pyc
 # Applications output directory
 source/applications/*
 !source/applications/*.mk
-
+!source/applications/*.in
