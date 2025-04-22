@@ -35,6 +35,8 @@ config.h
 # Random
 linux/
 test/
+fun/
+old/
 
 # Applications output directory
 source/applications/*
