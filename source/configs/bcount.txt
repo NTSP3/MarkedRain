@@ -5,7 +5,12 @@
 # 23-6-2024 21:22
 #
 
-latest_next=137
+latest_next=142
+141 - 2025-04-22 10:07:53 : Login text changed
+140 - 2025-04-21 17:41:34 : DRM_KMS_HELPER enabled
+139 - 2025-04-21 16:46:44 : Kernel simplefb removed
+138 - 2025-04-21 15:18:18 : Simplefb test
+137 - 2025-04-21 14:40:43 : Buildroot updated and simplified, X11 first test
 136 - 2025-04-16 10:50:42 : Kernel now handles lowercase drive letters
 135 - 2025-04-15 20:13:16 : Kernel auto converts drive letters to uppercase
 134 - 2025-04-15 09:40:26 : Kernel adds '/' only if it doesn't already exist
