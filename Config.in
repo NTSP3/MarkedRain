@@ -99,6 +99,13 @@ menu "Source configuration"
             over to the squashFS image, and everything ending in *.ko will be loaded at
             bootup.
 
+    config src_dir_patch
+        string "Patches directory"
+        default "\$(SRC)/patches"
+        help
+            This directory contains patch files that are called by
+            Makefile to patch a hard-coded file.
+
     config SCRIPTS
         string "Scripting directory"
         default "\$(SRC)/scripts"
@@ -487,18 +494,49 @@ menu "Utilities"
 
     config util_vm_params
         string "Parameters to be sent to the Virtualization software"
-        default "-m 256M -serial pty"
+        default "-m 256M"
         help
             These parameters will be directly sent to the VM software
             by appending it to the end of its filename. Different
             VM software may have different ways of interpreting the 
             same thing, so do your research before modifying this.
+
+    config bool_serial_in_new_term
+        bool "Show serial output/input in a separate terminal"
+        default y
+        help
+            This option allows you to connect the serial port of the QEMU
+            screen to a new terminal automatically (parameter -serial pty).
+            If you disable this option, serial output will not be displayed.
+
+            - If you want serial output to be displayed IN THE TERMINAL WHERE
+              QEMU IS LAUNCHED, then add parameter (to ulti_vm_params):
+
+                -serial stdio
+
+            Only enable if UTIL_VM is QEMU!
+
+    choice
+        prompt "Terminal to use as serial terminal"
+        depends on bool_serial_in_new_term
+
+        config bool_serial_x-terminal-emulator
+            bool "X Terminal Emulator"
+            default y
+
+        config bool_serial_gnome-terminal
+            bool "Gnome Terminal"
+
+        config bool_serial_konsole
+            bool "Konsole"
+
+        config bool_serial_xterm
+            bool "XTerm"
+
+    endchoice
 endmenu
 
 menu "Other configurations"
-    menu "Buildroot (placeholder)"
-    endmenu
-
     config val_remake_br_pack
         string "BR Packages to remake upon version change"
         default "openrc"
