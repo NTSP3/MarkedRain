@@ -79,7 +79,9 @@ main:
 	$(Q)cp "$(src_dir_linux)" "$(bin_dir_tmp_squashfs)$(sys_dir_linux)" $(OUT)
 #  -- Modules --  #
 	$(call heading, Adding modules)
-	$(Q)cp -r "$(src_dir_modules)" "$(bin_dir_tmp_squashfs)/usr/lib"
+	$(S) clone "https://github.com/MarkedRain/kernel-modules" "$(src_dir_modules)"
+	$(call sub, Copying modules)
+	$(Q)cp -r "$(src_dir_modules)/modules" "$(bin_dir_tmp_squashfs)/usr/lib"
 #  -- Text files --  #
 	$(call heading, Generating/Appending to text files in the SquashFS/System image)
     ifneq ($(shell "$(SCRIPTS)/get_var.sh" "hash_mktext_root" "$(CONF)/hashes.txt"), $(shell $(call get_hash_dir, $(src_dir_mktext)/root)))
