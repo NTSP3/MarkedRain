@@ -7,16 +7,16 @@
 #
 
 # MarkedRain directories & symlinks
-bin
+bin/
 builds/
 
 # MarkedRain files
-help/
-source/configs/hashes.txt
-source/initramfs/initramfs
-source/buildroot/package/pkg-generic.mk
 changelog
+help/
+source/buildroot
+source/configs/hashes.txt
 source/home
+source/initramfs/initramfs
 
 # make menuconfig tmp & usr cfg
 .config
@@ -28,25 +28,12 @@ source/home
 include/
 make/**/*.o
 make/**/*.o.cmd
+make/**/.*
+config.h
 
 # Random
-config.h
 linux/
 test/
-mwx11/
-
-# gitignore of Buildroot
-source/buildroot/output
-source/buildroot/dl
-source/buildroot/.auto.deps
-source/buildroot/*.depend
-source/buildroot/*.o
-source/buildroot/*.patch
-source/buildroot/*.diff
-source/buildroot/*.orig
-source/buildroot/*.rej
-source/buildroot/*~
-source/buildroot/*.pyc
 
 # Applications output directory
 source/applications/*
