@@ -1,3 +1,9 @@
+# Tip
+
+**Use `--depth 1` when using `git clone`, because the actual size of this repo is ~50mb. Without it, you will clone like *~200mb*! If you care about internet bandwidth or speed, clone like this (an example):**
+
+```git clone https://github.com/NTSP3/MarkedRain.git --depth=1```
+
 # "MarkedRain" Operating System
 
 ![Logogram](media/Logograms/Full.png)
