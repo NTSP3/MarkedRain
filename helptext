@@ -2,24 +2,27 @@
          =============================== HELP ===============================
 
 Build targets for ISO9660 iso:
-  (default)     - Creates a temporary ISO image that loads into memory. All changes are lost after poweroff.
-  run           - Runs the pre-made ISO image from the <bin> directory.
-  runs          - Auto-runs the iso image after building.
+  (default)           - Creates a temporary ISO image that loads into memory. All changes are lost after poweroff.
+  run                 - Runs the pre-made ISO image from the <bin> directory.
+  runs                - Auto-runs the iso image after building.
 
 Build targets for ext4 iso:
-  image         - Creates a temporary disk image that saves user changes.
-  ir/imagerun   - Runs the pre-made disk image from the <bin> directory.
-  irs/imageruns - Auto-runs the disk image after building.
+  image               - Creates a temporary disk image that saves user changes.
+  ir/imagerun         - Runs the pre-made disk image from the <bin> directory.
+  irs/imageruns       - Auto-runs the disk image after building.
 
 Variables:
-  ISO=[y]       - Creates a persistant ISO image in <bin_dir_iso>.
+  ISO=[y]             - Creates a persistant ISO image in <bin_dir_iso>.
 
 Configuration targets:
-  menuconfig    - Opens the configuration menu.
+  menuconfig          - Opens the configuration menu.
+
+Application targets:
+  buildroot-<target>  - Run 'make' on buildroot and pass 'target'
 
 Cleaning targets:
   clean         - Clears the temporary directory and removes the ISO image.
-  cleanall      - Clears all generated output, similar to Buildroot cleanup.
+  cleanall      - Clears all generated output, and reset everything but configuration.
 
 Others:
   help          - Displays this help text

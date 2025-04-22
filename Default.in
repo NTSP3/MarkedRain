@@ -14,6 +14,7 @@ CONF = $(SRC)/configs
 S_CMD = $(SCRIPTS)/functions.sh
 S = $(Q)$(S_CMD)
 src_dir_apps = $(SRC)/applications
+src_dir_buildroot = $(SRC)/buildroot
 
 # Colours
 

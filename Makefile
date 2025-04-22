@@ -31,13 +31,8 @@ endif
 #
 # The make_os.mk file contains code used to
 # compile the Operating system
-#
-# Only include these if no configuration utilities
-# are asked to run
-ifeq ($(and $(MAKECMDGOALS), $(filter %config,$(MAKECMDGOALS)), $(MAKECMDGOALS)), )
-    include $(SCRIPTS)/scripts.mk
-    include make_os.mk
-endif
+include $(SCRIPTS)/scripts.mk
+include make_os.mk
 
 # Exports color settings to makefile shell
 export col_HEADING col_SUBHEADING col_INFOHEADING col_INFO col_TRUE col_FALSE col_DONE col_ERROR col_IMP col_NORMAL
@@ -68,6 +63,7 @@ ifeq ($(bool_hide_mkfile_dir_entry), y)
 endif
 
 export HOME CURDIR Q OUT
+export FORCE_UNSAFE_CONFIGURE=1
 
 # MarkedRain system version
 EXTRAVERSION			:= $(shell "$(S_CMD)" get "latest_next" "$(CONF)/bcount.txt")
@@ -75,6 +71,14 @@ export MRAIN_VERSION	:= $(VERSION).$(PATCHLEVEL).$(SUBLEVEL).$(EXTRAVERSION)-$(R
 $(info )
 $(info $(shell $(S_CMD) info "MarkedRain Version $(MRAIN_VERSION)"))
 $(info )
+
+# ---[ Buildroot ]--- #
+buildroot-%:
+	$(Q)if [ -d "$(src_dir_buildroot)" ] && [ -e "$(src_dir_buildroot)/Makefile" ]; then \
+	    $(MAKE) -C "$(src_dir_buildroot)" $*; \
+	else \
+	    $(subst @$(S_CMD),$(S_CMD),$(call stop, Buildroot not found.)); \
+	fi
 
 # ---[ Menuconfig ] --- #
 export srctree := $(CURDIR)
@@ -86,8 +90,11 @@ export src_dir_apps
 # that ends in 'onfig', eg: 'config',
 # 'menuconfig'
 %onfig:
+	$(Q)if echo "$@" | grep -q '^buildroot-'; then \
+	    exit 0; \
+	fi
 	$(Q)$(MAKE) $(build)=make/basic
-	$(Q)$(MAKE) $(build)=make/kconfig $@ 
+	$(Q)$(MAKE) $(build)=make/kconfig $@
 	@echo "$(col_INFO)Generating configuration...$(col_NORMAL)"
 	$(Q)sed -n 's/^CONFIG_\([^\=]*\)=\("\([^"]*\)"\|\([^"]*\)\)/\1=\3\4/p' .config > $(USER_CONFIG)
 
@@ -214,6 +221,9 @@ all: main prepare-iso finalize
 run:
     ifeq ($(bool_use_qemu_kvm), y)
 	    $(eval util_vm_params += -enable-kvm -cpu host)
+    endif
+    ifeq ($(bool_serial_in_new_term), y)
+	    $(eval util_vm_params += -serial pty)
     endif
 	$(eval util_vm_params += -cdrom $(bin_dir)/boot.iso)
 	$(Q)if [ -f "$(bin_dir)/boot.iso" ]; then \
