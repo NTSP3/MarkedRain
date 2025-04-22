@@ -18,6 +18,7 @@ source/buildroot
 source/configs/hashes.txt
 source/home
 source/initramfs/initramfs
+source/kernel/modules
 
 # make menuconfig tmp & usr cfg
 .config
