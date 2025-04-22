@@ -1,0 +1,1 @@
+savedcmd_make/kconfig/conf := cc  -o make/kconfig/conf make/kconfig/conf.o make/kconfig/confdata.o make/kconfig/expr.o make/kconfig/lexer.lex.o make/kconfig/menu.o make/kconfig/parser.tab.o make/kconfig/preprocess.o make/kconfig/symbol.o make/kconfig/util.o  
