@@ -73,6 +73,7 @@ endef
 #
 # run_qemu loads up terminal and runs Qemu (or the one specified in util_vm)
 #
+ifeq ($(bool_serial_in_new_term),y)
 define run_qemu
 	Logfile="$$(mktemp)"; \
 	("$(util_vm)" $(util_vm_params) 2>&1 | tee "$$Logfile") $(OUT) & \
@@ -86,16 +87,7 @@ define run_qemu
 	    $(S_CMD) error "Application 'screen' not installed!"; \
 	    exit; \
 	else \
-	    if [ "$$(command -v x-terminal-emulator)" ]; then \
-	        x-terminal-emulator -T "Serial console" -e "socat -,raw,echo=0 '$$SERIAL_DEVICE'" & \
-	        Console_Process_ID=$$!; \
-	    elif [ "$$(command -v xterm)" ]; then \
-	        xterm -T "Serial console" -e "socat -,raw,echo=0 '$$SERIAL_DEVICE'" & \
-	        Console_Process_ID=$$!; \
-	    else \
-	        $(S_CMD) error "Suitable terminal emulators not found."; \
-	        exit; \
-	    fi; \
+	    $(call qemu_run_serial_terminal); \
 	fi; \
 	while kill -0 "$$Qemu_Process_ID" 2>/dev/null; do \
 	    sleep 1; \
@@ -105,5 +97,33 @@ define run_qemu
 	fi; \
 	if kill -0 "$$Console_Process_ID" 2>/dev/null; then \
 	    kill "$$Console_Process_ID"; \
+	fi
+endef
+else
+define run_qemu
+	"$(util_vm)" $(util_vm_params)
+endef
+endif
+
+#
+# qemu_run_serial_terminal finds and loads appropriate terminal for use as serial console
+#
+
+define qemu_run_serial_terminal
+	if [ "$(bool_serial_x-terminal-emulator)" = "y" ] && [ "$$(command -v x-terminal-emulator)" ]; then \
+	    x-terminal-emulator -T "Cereal console" -e "socat -,raw,echo=0 '$$SERIAL_DEVICE'" & \
+	    Console_Process_ID=$$!; \
+	elif [ "$(bool_serial_xterm)" = "y" ] && [ "$$(command -v xterm)" ]; then \
+	    xterm -T "Cereal console" -e "socat -,raw,echo=0 '$$SERIAL_DEVICE'" & \
+	    Console_Process_ID=$$!; \
+	elif [ "$(bool_serial_gnome-terminal)" = "y" ] && [ "$$(command -v gnome-terminal)" ]; then \
+	    gnome-terminal --title="Cereal console" -- bash -c "socat -,raw,echo=0 '$$SERIAL_DEVICE'" & \
+	    Console_Process_ID=$$!; \
+	elif [ "$(bool_serial_konsole)" = "y" ] && [ "$$(command -v konsole)" ]; then \
+	    konsole --hold --new-tab -p tabtitle="Cereal console" -e "socat -,raw,echo=0 '$$SERIAL_DEVICE'" & \
+	    Console_Process_ID=$$!; \
+	else \
+	    $(S_CMD) error "Suitable terminal emulators not found. Either install the terminal you chose, or choose another terminal that's available"; \
+	    exit; \
 	fi
 endef
