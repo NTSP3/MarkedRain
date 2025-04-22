@@ -1,1 +1,0 @@
-savedcmd_make/kconfig/nconf := gcc  -o make/kconfig/nconf make/kconfig/nconf.o make/kconfig/nconf.gui.o make/kconfig/confdata.o make/kconfig/expr.o make/kconfig/lexer.lex.o make/kconfig/menu.o make/kconfig/parser.tab.o make/kconfig/preprocess.o make/kconfig/symbol.o make/kconfig/util.o  -lncursesw -lmenuw -lpanelw
