@@ -61,7 +61,7 @@ clone() {
 	elif [ ! -d "$2" ] || [ -z "$(ls -A "$2" 2>/dev/null)" ]; then
 		[ -d "$2" ] && rmdir "$2"
 		info "Cloning $1 into $2..."
-		git clone --progress "$1" "$2" || error "Cloning $1 into $2 failed."
+		git clone --depth 1 --progress "$1" "$2" || error "Cloning $1 into $2 failed."
 	else
 		error "'$2' is uninitialized and not empty."
 	fi
