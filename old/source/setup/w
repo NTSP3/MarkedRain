@@ -1,4 +1,0 @@
-#!/bin/bash
-
-gcc -o t setup.c -lncursesw -DOSNAME="\"MarkedRain\"" -DOSVER="\"1.0.0.0\""
-./t log.txt

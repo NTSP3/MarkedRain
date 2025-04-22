@@ -1,9 +1,0 @@
-What you are doing:
-
--Add new optino in menuconfig to supress output of errors when supress output is enabled (do "> /dev/null 2>&1" instead of "> /dev/null")
--Add new option in menuconfig to use "//" instaed of "--[]" (code in oledmakkeeeee.mk)
--Make sure scripts get their colors
--Replace random shortners
-
-FINISHED
-Last one moved to todo app
