@@ -242,6 +242,9 @@ imagerun:
     ifeq ($(bool_use_qemu_kvm), y)
 	    $(eval util_vm_params += -enable-kvm -cpu host)
     endif
+    ifeq ($(bool_serial_in_new_term), y)
+	    $(eval util_vm_params += -serial pty)
+    endif
 	$(eval util_vm_params += -hda $(bin_dir)/boot.iso)
 	$(Q)if [ -f "$(bin_dir)/boot.iso" ]; then \
 	    echo ""; \
