@@ -40,14 +40,14 @@ error() {
 # Clones GitHub repository
 clone() {
 	if [ -z "$1" ]; then
-		error "Source git link is empty"
+		error "Clonable .git link (second parameter) is empty."
 	elif [ -z "$2" ]; then
-		error "Destination path is empty"
+		error "Destination path (third parameter) is empty"
 	elif ! command -v git &> /dev/null; then
-		error "Git is not installed."
+		error "git is not installed."
 	fi
 
-	# Add directory to github's safe list
+	# Add directory to git's safe list
 	git config --global --get-all safe.directory | grep -Fxq "${CURDIR}/${2}" || git config --global --add safe.directory "${CURDIR}/${2}"
 
 	# If directory exists and is a git repo, verify URL.
@@ -65,6 +65,82 @@ clone() {
 	else
 		error "'$2' is uninitialized and not empty."
 	fi
+}
+
+# Downloads an internet item using curl
+download() {
+	if [ -z "$1" ]; then
+		error "File's downloadable link (second parameter) is empty"
+	elif [ -z "$2" ]; then
+		error "Destination path (third parameter) is empty"
+	elif ! command -v curl &> /dev/null; then
+		error "curl is not installed."
+	fi
+
+	# If directory/file exists, exit
+	if [ -e "$2" ]; then
+		info "$2 already exists"
+		exit
+	fi
+
+	# Start downloading the item
+	info "Downloading $1 into $2..."
+	curl -L "$1" -o "$2"
+
+	if [ $? -ne 0 ]; then 
+		error "While trying to download the item, curl failed!"
+	fi
+}
+
+# Downloads and auto-extracts
+download_and_extract() {
+	if [ -z "$1" ]; then
+		error "File's downloadable link (second parameter) is empty"
+	elif [ -z "$2" ]; then
+		error "Destination path (third parameter) is empty"
+	elif ! command -v curl &> /dev/null; then
+		error "curl is not installed."
+	elif ! command -v zip &> /dev/null; then
+		error "unzip is not installed."
+	fi
+
+	echo $2
+
+	# If directory/file exists, exit
+	if [ -e "$2" ]; then
+		info "$2 already exists"
+		exit
+	fi
+
+	# Check for temporary directory
+	if [ ! -d "/tmp" ]; then
+		error "/tmp does not exist"
+	else
+		[ -e "/tmp/markedrain_archive_to_extract" ] && rm -rf "/tmp/markedrain_archive_to_extract"
+	fi
+
+	# Download the archive
+	download "$1" "/tmp/markedrain_archive_to_extract"
+
+	# Extract the archive
+	file_type=$(file "/tmp/markedrain_archive_to_extract")
+
+	case "$file_type" in
+		*"Zip archive data"*)
+			# Extract the ZIP Archive
+			info "Extracting $1 into $2..."
+	    	unzip "/tmp/markedrain_archive_to_extract" -d "$2"
+			if [ $? -ne 0 ]; then
+				error "While extracting the item, unzip failed!"
+			fi
+			;;
+		*)
+			error "The file is of type '$file_type', which isn't recognized yet."
+			;;
+	esac
+
+	# Delete the temp files
+	[ -e "/tmp/markedrain_archive_to_extract" ] && rm -rf "/tmp/markedrain_archive_to_extract"
 }
 
 # Shorter way to get a variable's value using get_var.sh
