@@ -11,6 +11,22 @@ main:
 #  -- Initialize --  #
 	$(call initialize)
 #  -- Buildroot --  #
+	@echo
+	$(Q)if [ ! -d "$(src_dir_buildroot)" ]; then \
+	    $(S_CMD) download_and_extract "https://github.com/buildroot/buildroot/archive/refs/tags/2025.02.zip" "$(src_dir_buildroot)"; \
+	fi
+	$(Q)if [ -d "$(src_dir_buildroot)/buildroot-2025.02" ]; then \
+	    mv "$(src_dir_buildroot)/buildroot-2025.02"/* "$(src_dir_buildroot)"; \
+	    rm -rf "$(src_dir_buildroot)/buildroot-2025.02"; \
+	    $(subst @$(S_CMD),$(S_CMD),$(call inf, Patching OpenRC OS Branding)); \
+	    patch "$(src_dir_buildroot)/package/openrc/openrc.mk" < "$(src_dir_patch)/openrc-system-branding-update.patch"; \
+	    $(subst @$(S_CMD),$(S_CMD),$(call inf, Disabling fakeroot for TAR in buildroot [Patch])); \
+	    patch "$(src_dir_buildroot)/fs/common.mk" < "$(src_dir_patch)/disable-buildroot-tar-fakeroot.patch"; \
+	fi
+	$(Q)if [ ! -f "$(src_dir_buildroot)/.config" ]; then \
+	    $(subst @$(S_CMD),$(S_CMD),$(call inf, Copying default buildroot configuration)); \
+	    cp "$(CONF)/buildroot_config.txt" "$(src_dir_buildroot)/.config"; \
+	fi
 	$(call heading, Adding buildroot into the image)
     ifeq ($(shell [ -f ".recombr" ] && echo y), y)
 	    $(Q)rm .recombr
